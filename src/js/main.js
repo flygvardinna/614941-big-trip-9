@@ -19,4 +19,7 @@ render(tripControls, createFilterTemplate(), `beforeend`);
 const tripEvents = document.querySelector(`.trip-events`);
 
 render(tripEvents, createEventFormTemplate(), `beforeend`);
-new Array(3).fill(``).forEach(() => render(tripEvents, createEventTemplate(), `beforeend`));
+
+for (let i = 0; i < 3; i++ ) {
+    render(tripEvents, createEventTemplate(), `beforeend`);
+}

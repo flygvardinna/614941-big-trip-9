@@ -20,6 +20,6 @@ const tripEvents = document.querySelector(`.trip-events`);
 
 render(tripEvents, createEventFormTemplate(), `beforeend`);
 
-for (let i = 0; i < 3; i++ ) {
-    render(tripEvents, createEventTemplate(), `beforeend`);
+for (let i = 0; i < 3; i++) {
+  render(tripEvents, createEventTemplate(), `beforeend`);
 }

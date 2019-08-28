@@ -1,7 +1,7 @@
-export const renderMenu = tabs => {
+export const renderMenu = (tabs) => {
   let tabsToRender = [];
-  const createTabs = tabs => {
-    tabs.forEach(tab => {
+  const createTabs = (menuTabs) => {
+    menuTabs.forEach((tab) => {
       tabsToRender.push(`<a class="trip-tabs__btn" href="#">${tab}</a>`);
     });
     return tabsToRender.join(``);

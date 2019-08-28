@@ -1,9 +1,9 @@
 import {capitalize} from '../utils.js';
 
-export const renderFilter = filters => {
+export const renderFilter = (filters) => {
   let filtersToRender = [];
-  const createFilters = filters => {
-    filters.forEach(filter => {
+  const createFilters = (eventFilters) => {
+    eventFilters.forEach((filter) => {
       filtersToRender.push(`<div class="trip-filters__filter">
         <input id="filter-${filter}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filter}">
         <label class="trip-filters__filter-label" for="filter-${filter}">${capitalize(filter)}</label>

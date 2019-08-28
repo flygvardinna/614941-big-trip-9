@@ -1,12 +1,21 @@
 import {capitalize} from '../utils.js';
 
-export const renderEventForm = ({ eventType, destination, dateStart, dateEnd, price, offers, description, pictures }) => {
-  const renderDate = date => {
-    return date.toLocaleTimeString(navigator.language);
+export const renderEventForm = ({eventType, destination, dateTime, price, offers, description, pictures}) => {
+  const eventDateStart = new Date(dateTime.dateStart);
+  const eventDateEnd = new Date(dateTime.dateEnd());
+
+  const renderDate = (date) => {
+    return date.toLocaleTimeString(navigator.language, {
+      day: `2-digit`,
+      month: `2-digit`,
+      year: `2-digit`,
+      hour: `2-digit`,
+      minute: `2-digit`
+    });
   };
 
-  const renderAvailableOffers = offers => {
-    const makeOffer = offer => {
+  const renderAvailableOffers = (offersToRender) => {
+    const makeOffer = (offer) => {
       return `<div class="event__available-offers">
         <div class="event__offer-selector">
           <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${offer.selected ? `checked` : ``}>
@@ -18,33 +27,36 @@ export const renderEventForm = ({ eventType, destination, dateStart, dateEnd, pr
         </div>`;
     };
 
-    const createOffersList = offers => {
+    const createOffersList = (offersList) => {
       let selectedOffers = [];
-      offers.forEach(offer => selectedOffers.push(makeOffer(offer)));
+      offersList.forEach((offer) => selectedOffers.push(makeOffer(offer)));
       return selectedOffers.join(``);
     };
 
-    return `<section class="event__section  event__section--offers">
-      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-      ${createOffersList(offers)}
-      </div>
-    </section>`;
+    if (offersToRender.length > 0) {
+      return `<section class="event__section  event__section--offers">
+        <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+        ${createOffersList(offersToRender)}
+        </div>
+      </section>`;
+    }
+    return ``;
   };
 
-  const renderDestination = (description, pictures) => {
-    const renderPictures = pictures => {
+  const renderDestination = (eventDescription, eventPictures) => {
+    const renderPictures = (picturesToRender) => {
       let picturesFeed = [];
-      pictures.forEach(picture => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
+      picturesToRender().forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
       return picturesFeed.join(``);
     };
 
     return `<section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${description}</p>
+      <p class="event__destination-description">${eventDescription()}</p>
 
       <div class="event__photos-container">
         <div class="event__photos-tape">
-          ${renderPictures(pictures)}
+          ${renderPictures(eventPictures)}
         </div>
       </div>
     </section>`;
@@ -136,12 +148,12 @@ export const renderEventForm = ({ eventType, destination, dateStart, dateEnd, pr
         <label class="visually-hidden" for="event-start-time-1">
           From
         </label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${renderDate(new Date(dateStart))}">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${renderDate(eventDateStart)}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">
           To
         </label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${renderDate(new Date(dateEnd))}">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${renderDate(eventDateEnd)}">
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -170,7 +182,7 @@ export const renderEventForm = ({ eventType, destination, dateStart, dateEnd, pr
 
     <section class="event__details">
 
-      ${(offers.length > 0) ? renderAvailableOffers(offers) : ``}
+      ${renderAvailableOffers(offers())}
 
       ${description ? renderDestination(description, pictures) : ``}
 

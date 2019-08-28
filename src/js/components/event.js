@@ -1,8 +1,12 @@
 import {capitalize} from '../utils.js';
 
-export const renderEvent = ({ eventType, destination, dateStart, dateEnd, duration, price, offers }) => {
-  const renderOffers = offers => {
-    const makeOffer = offer => {
+export const renderEvent = ({eventType, destination, dateTime, price, offers}) => {
+  const eventDateStart = new Date(dateTime.dateStart);
+  const eventDateEnd = new Date(dateTime.dateEnd());
+  const eventDuration = dateTime.duration(eventDateStart, eventDateEnd);
+
+  const renderOffers = (offersToRender) => {
+    const makeOffer = (offer) => {
       return `<li class="event__offer">
         <span class="event__offer-title">${offer.name}</span>
         &plus;
@@ -10,22 +14,27 @@ export const renderEvent = ({ eventType, destination, dateStart, dateEnd, durati
        </li>`;
     };
 
-    const createOffersList = (offers) => {
+    const createOffersList = (offersList) => {
       let selectedOffers = [];
-      offers.forEach(offer => selectedOffers.push(offer.selected ? makeOffer(offer) : ``));
+      offersList.forEach((offer) => {
+        selectedOffers.push(offer.selected ? makeOffer(offer) : ``);
+      });
       return selectedOffers.join(``);
     };
 
-    return `<h4 class="visually-hidden">Offers:</h4>
-    <ul class="event__selected-offers">
-      ${createOffersList(offers)}
-    </ul>`;
+    if (offersToRender.length > 0) {
+      return `<h4 class="visually-hidden">Offers:</h4>
+      <ul class="event__selected-offers">
+        ${createOffersList(offersToRender)}
+      </ul>`;
+    }
+    return ``;
   };
 
-  const showHours = date => {
+  const renderHours = (date) => {
     return date.toLocaleTimeString(navigator.language, {
-      hour: '2-digit',
-      minute: '2-digit'
+      hour: `2-digit`,
+      minute: `2-digit`
     });
   };
 
@@ -37,18 +46,18 @@ export const renderEvent = ({ eventType, destination, dateStart, dateEnd, durati
 
     <div class="event__schedule">
       <p class="event__time">
-        <time class="event__start-time" datetime="${new Date(dateStart).toISOString()}">${showHours(new Date(dateStart))}</time>
+        <time class="event__start-time" datetime="${eventDateStart}">${renderHours(eventDateStart)}</time>
         &mdash;
-        <time class="event__end-time" datetime="${new Date(dateEnd).toISOString()}">${showHours(new Date(dateEnd))}</time>
+        <time class="event__end-time" datetime="${eventDateEnd}">${renderHours(eventDateEnd)}</time>
       </p>
-      <p class="event__duration">${duration.hours}H ${duration.minuts}M</p>
+      <p class="event__duration">${eventDuration.hours}H ${eventDuration.minuts()}M</p>
     </div>
 
     <p class="event__price">
       &euro;&nbsp;<span class="event__price-value">${price}</span>
     </p>
 
-    ${(offers.length > 0) ? renderOffers(offers) : ``}
+    ${renderOffers(offers())}
 
     <button class="event__rollup-btn" type="button">
       <span class="visually-hidden">Open event</span>

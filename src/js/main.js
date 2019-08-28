@@ -18,13 +18,21 @@ const render = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
 };
 
-const renderEvents = (container, events) => {
-  events.sort((a,b) => (a.dateStart > b.dateStart) ? 1 : ((b.dateStart > a.dateStart) ? -1 : 0));
+const renderEvents = (container, eventsToRender) => {
+  events.sort((a, b) => {
+    if (a.dateTime.dateStart < b.dateTime.dateStart) {
+      return -1;
+    }
+    if (a.dateTime.dateStart > b.dateTime.dateStart) {
+      return 1;
+    }
+    return 0;
+  });
 
-  const renderEventsList = eventsToList => {
-    let eventsToRender = [];
-    eventsToList.forEach(event => eventsToRender.push(renderEvent(event)));
-    return eventsToRender.join(``);
+  const renderEventsList = (eventsToList) => {
+    let eventsArray = [];
+    eventsToList.forEach((event) => eventsArray.push(renderEvent(event)));
+    return eventsArray.join(``);
   };
 
   const renderElements = (eventToForm, eventsToList) => {
@@ -32,26 +40,17 @@ const renderEvents = (container, events) => {
     container.insertAdjacentHTML(`beforeend`, renderEventsList(eventsToList));
   };
 
-  renderElements(events[0], events.slice(1, events.length));
+  renderElements(eventsToRender[0], eventsToRender.slice(1, eventsToRender.length));
 };
 
-const countTripCost = events => {
-  let tripCost = 0;
-  let offersTotal = 0;
-  for (const event of events) {
-    if (event.offers.length > 0) {
-      for (const offer of event.offers) {
-        if (offer.selected) {
-          offersTotal = offersTotal + offer.price;
-        }
-      }
-    }
-    tripCost = tripCost + event.price;
+const countTripCost = (eventsToSum) => {
+  let cost = 0;
+  for (const event of eventsToSum) {
+    cost = cost + event.price;
   }
-  return Math.floor(tripCost + offersTotal);
+  return Math.floor(cost);
+  // TODO: count offers price also
 };
-
-console.log(events);
 
 render(tripMenuTitle, renderMenu(menuTabs), `afterend`);
 render(tripControls, renderFilter(filterOptions), `beforeend`);

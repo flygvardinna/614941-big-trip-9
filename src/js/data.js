@@ -1,6 +1,6 @@
 import {shuffleArray} from './utils.js';
 
-const PICTURES_COUNT = 5;
+const PICTURE_COUNT = 5;
 
 export const getEvent = () => ({
   type: [
@@ -69,7 +69,7 @@ export const getEvent = () => ({
     return shuffleArray(descriptionList).slice(0, descriptionCount).join(` `);
   },
   pictures() {
-    const pictures = [...Array(PICTURES_COUNT)].map(() => `http://picsum.photos/300/150?r=${Math.random()}`);
+    const pictures = [...Array(PICTURE_COUNT)].map(() => `http://picsum.photos/300/150?r=${Math.random()}`);
     return pictures;
   }
 });

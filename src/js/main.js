@@ -1,13 +1,13 @@
-import {createElement, render, unrender} from './utils.js';
+import {Position, createElement, render, unrender} from './utils.js';
 import {getEvent, menuTabs, filterOptions, getTripInfo} from './data.js';
 import {renderMenu} from './components/menu.js';
 import {renderFilter} from './components/filter.js';
-import {renderEvent} from './components/event.js';
-import {renderEventForm} from './components/event-form.js';
+import {Event} from './components/event.js';
+import {EventForm} from './components/event-form.js';
 import {renderTripInfo} from './components/trip-info.js';
 
-const EVENTS_COUNT = 4;
-const events = [...Array(EVENTS_COUNT)].map(() => getEvent());
+const EVENT_COUNT = 4;
+const events = [...Array(EVENT_COUNT)].map(() => getEvent());
 
 const tripInfo = document.querySelector(`.trip-info`);
 const tripControls = document.querySelector(`.trip-controls`);
@@ -31,6 +31,27 @@ const sortByStartDate = (array) => {
   });
 };
 
+const renderEvent = (eventMock) => {
+  const event = new Event(eventMock);
+  const eventForm = new EventForm(eventMock);
+
+  const onEscKeyDown = (evt) => {
+    if (evt.key === `Escape` || evt.key === `Esc`) {
+      //tasksContainer.replaceChild(task.getElement(), taskEdit.getElement());
+      //document.removeEventListener(`keydown`, onEscKeyDown);
+    }
+  };
+
+  event.getElement()
+    //.querySelector(`.card__btn--edit`)
+    //.addEventListener(`click`, () => {
+      //tasksContainer.replaceChild(taskEdit.getElement(), task.getElement());
+      //document.addEventListener(`keydown`, onEscKeyDown);
+    //});
+
+  render(tripEvents, event.getElement(), Position.BEFOREEND);
+}
+
 const renderEventsList = (eventsToList) => {
   let eventsArray = [];
   eventsToList.forEach((event) => eventsArray.push(renderEvent(event)));
@@ -50,6 +71,10 @@ render(tripMenuTitle, renderMenu(menuTabs), `afterend`);
 render(tripControls, renderFilter(filterOptions), `beforeend`);
 
 const eventsSorted = sortByStartDate(events);
+const eventMocks = new Array(EVENT_COUNT)
+                .fill(``)
+                .map(getEvent);
+
 render(tripEvents, renderEventForm(eventsSorted[0]), `beforeend`);
 render(tripEvents, renderEventsList(eventsSorted.slice(1, eventsSorted.length)), `beforeend`);
 render(tripInfo, renderTripInfo(getTripInfo(eventsSorted)), `afterbegin`);

@@ -1,4 +1,4 @@
-import {capitalize} from '../utils.js';
+import {createElement, capitalize} from '../utils.js';
 
 const renderDate = (date) => {
   return date.toLocaleTimeString(navigator.language, {
@@ -58,7 +58,7 @@ const renderDestination = (eventDescription, eventPictures) => {
   </section>`;
 };
 
-class EventForm {
+export class EventForm {
   constructor ({type, destination, dateTime, price, offers, description, pictures}) {
     this._element = null;
     this._type = type.name;
@@ -78,6 +78,14 @@ class EventForm {
     }
 
     return this._element;
+  }
+
+  removeElement() {
+    if (this._element) {
+      this._element = null;
+    }
+
+    //return this._element;
   }
 
   getTemplate() {

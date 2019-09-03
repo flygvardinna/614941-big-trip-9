@@ -1,4 +1,4 @@
-const Position = {
+export const Position = {
   AFTERBEGIN: `afterbegin`,
   AFTEREND: `afterend`,
   BEFOREEND: `beforeend`

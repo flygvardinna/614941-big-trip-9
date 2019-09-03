@@ -1,42 +1,42 @@
 import {capitalize} from '../utils.js';
 
+const renderHours = (date) => {
+  return date.toLocaleTimeString(navigator.language, {
+    hour: `2-digit`,
+    minute: `2-digit`
+  });
+};
+
+const makeOffer = (offer) => {
+  return `<li class="event__offer">
+    <span class="event__offer-title">${offer.name}</span>
+    &plus;
+    &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
+   </li>`;
+};
+
+const createOffersList = (offersList) => {
+  let selectedOffers = [];
+  offersList.forEach((offer) => {
+    selectedOffers.push(offer.selected ? makeOffer(offer) : ``);
+  });
+  return selectedOffers.join(``);
+};
+
+const renderOffers = (offersToRender) => {
+  if (offersToRender.length > 0) {
+    return `<h4 class="visually-hidden">Offers:</h4>
+    <ul class="event__selected-offers">
+      ${createOffersList(offersToRender)}
+    </ul>`;
+  }
+  return ``;
+};
+
 export const renderEvent = ({eventType, destination, dateTime, price, offers}) => {
   const eventDateStart = new Date(dateTime.dateStart);
   const eventDateEnd = new Date(dateTime.dateEnd());
   const eventDuration = dateTime.duration(eventDateStart, eventDateEnd);
-
-  const renderOffers = (offersToRender) => {
-    const makeOffer = (offer) => {
-      return `<li class="event__offer">
-        <span class="event__offer-title">${offer.name}</span>
-        &plus;
-        &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
-       </li>`;
-    };
-
-    const createOffersList = (offersList) => {
-      let selectedOffers = [];
-      offersList.forEach((offer) => {
-        selectedOffers.push(offer.selected ? makeOffer(offer) : ``);
-      });
-      return selectedOffers.join(``);
-    };
-
-    if (offersToRender.length > 0) {
-      return `<h4 class="visually-hidden">Offers:</h4>
-      <ul class="event__selected-offers">
-        ${createOffersList(offersToRender)}
-      </ul>`;
-    }
-    return ``;
-  };
-
-  const renderHours = (date) => {
-    return date.toLocaleTimeString(navigator.language, {
-      hour: `2-digit`,
-      minute: `2-digit`
-    });
-  };
 
   return `<div class="event">
     <div class="event__type">

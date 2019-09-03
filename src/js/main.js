@@ -18,8 +18,8 @@ const render = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
 };
 
-const renderEvents = (container, eventsToRender) => {
-  events.sort((a, b) => {
+const sortByStartDate = (array) => {
+  return array.slice().sort((a, b) => {
     if (a.dateTime.dateStart < b.dateTime.dateStart) {
       return -1;
     }
@@ -28,19 +28,12 @@ const renderEvents = (container, eventsToRender) => {
     }
     return 0;
   });
+}
 
-  const renderEventsList = (eventsToList) => {
-    let eventsArray = [];
-    eventsToList.forEach((event) => eventsArray.push(renderEvent(event)));
-    return eventsArray.join(``);
-  };
-
-  const renderElements = (eventToForm, eventsToList) => {
-    container.insertAdjacentHTML(`beforeend`, renderEventForm(eventToForm));
-    container.insertAdjacentHTML(`beforeend`, renderEventsList(eventsToList));
-  };
-
-  renderElements(eventsToRender[0], eventsToRender.slice(1, eventsToRender.length));
+const renderEventsList = (eventsToList) => {
+  let eventsArray = [];
+  eventsToList.forEach((event) => eventsArray.push(renderEvent(event)));
+  return eventsArray.join(``);
 };
 
 const countTripCost = (eventsToSum) => {
@@ -55,6 +48,8 @@ const countTripCost = (eventsToSum) => {
 render(tripMenuTitle, renderMenu(menuTabs), `afterend`);
 render(tripControls, renderFilter(filterOptions), `beforeend`);
 
-renderEvents(tripEvents, events);
-render(tripInfo, renderTripInfo(getTripInfo(events)), `afterbegin`);
+const eventsSorted = sortByStartDate(events);
+render(tripEvents, renderEventForm(eventsSorted[0]), `beforeend`);
+render(tripEvents, renderEventsList(eventsSorted.slice(1, eventsSorted.length)), `beforeend`);
+render(tripInfo, renderTripInfo(getTripInfo(eventsSorted)), `afterbegin`);
 tripCost.innerHTML = countTripCost(events);

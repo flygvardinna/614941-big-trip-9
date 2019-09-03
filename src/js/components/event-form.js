@@ -1,66 +1,66 @@
 import {capitalize} from '../utils.js';
 
+const renderDate = (date) => {
+  return date.toLocaleTimeString(navigator.language, {
+    day: `2-digit`,
+    month: `2-digit`,
+    year: `2-digit`,
+    hour: `2-digit`,
+    minute: `2-digit`
+  });
+};
+
+const makeOffer = (offer) => {
+  return `<div class="event__available-offers">
+    <div class="event__offer-selector">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${offer.selected ? `checked` : ``}>
+      <label class="event__offer-label" for="event-offer-luggage-1">
+        <span class="event__offer-title">${offer.name}</span>
+        &plus;
+        &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
+      </label>
+    </div>`;
+};
+
+const createOffersList = (offersList) => {
+  let selectedOffers = [];
+  offersList.forEach((offer) => selectedOffers.push(makeOffer(offer)));
+  return selectedOffers.join(``);
+};
+
+const renderAvailableOffers = (offersToRender) => {
+  if (offersToRender.length > 0) {
+    return `<section class="event__section  event__section--offers">
+      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+      ${createOffersList(offersToRender)}
+      </div>
+    </section>`;
+  }
+  return ``;
+};
+
+const renderPictures = (picturesToRender) => {
+  let picturesFeed = [];
+  picturesToRender().forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
+  return picturesFeed.join(``);
+};
+
+const renderDestination = (eventDescription, eventPictures) => {
+  return `<section class="event__section  event__section--destination">
+    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+    <p class="event__destination-description">${eventDescription()}</p>
+
+    <div class="event__photos-container">
+      <div class="event__photos-tape">
+        ${renderPictures(eventPictures)}
+      </div>
+    </div>
+  </section>`;
+};
+
 export const renderEventForm = ({eventType, destination, dateTime, price, offers, description, pictures}) => {
   const eventDateStart = new Date(dateTime.dateStart);
   const eventDateEnd = new Date(dateTime.dateEnd());
-
-  const renderDate = (date) => {
-    return date.toLocaleTimeString(navigator.language, {
-      day: `2-digit`,
-      month: `2-digit`,
-      year: `2-digit`,
-      hour: `2-digit`,
-      minute: `2-digit`
-    });
-  };
-
-  const renderAvailableOffers = (offersToRender) => {
-    const makeOffer = (offer) => {
-      return `<div class="event__available-offers">
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${offer.selected ? `checked` : ``}>
-          <label class="event__offer-label" for="event-offer-luggage-1">
-            <span class="event__offer-title">${offer.name}</span>
-            &plus;
-            &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
-          </label>
-        </div>`;
-    };
-
-    const createOffersList = (offersList) => {
-      let selectedOffers = [];
-      offersList.forEach((offer) => selectedOffers.push(makeOffer(offer)));
-      return selectedOffers.join(``);
-    };
-
-    if (offersToRender.length > 0) {
-      return `<section class="event__section  event__section--offers">
-        <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-        ${createOffersList(offersToRender)}
-        </div>
-      </section>`;
-    }
-    return ``;
-  };
-
-  const renderDestination = (eventDescription, eventPictures) => {
-    const renderPictures = (picturesToRender) => {
-      let picturesFeed = [];
-      picturesToRender().forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
-      return picturesFeed.join(``);
-    };
-
-    return `<section class="event__section  event__section--destination">
-      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${eventDescription()}</p>
-
-      <div class="event__photos-container">
-        <div class="event__photos-tape">
-          ${renderPictures(eventPictures)}
-        </div>
-      </div>
-    </section>`;
-  };
 
   return `<form class="event  event--edit" action="#" method="post">
     <header class="event__header">

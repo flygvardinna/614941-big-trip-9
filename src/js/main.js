@@ -28,7 +28,7 @@ const sortByStartDate = (array) => {
     }
     return 0;
   });
-}
+};
 
 const renderEventsList = (eventsToList) => {
   let eventsArray = [];

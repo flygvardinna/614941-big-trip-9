@@ -1,20 +1,20 @@
-export const createFilterTemplate = () => {
+import {capitalize} from '../utils.js';
+
+const createFilters = (eventFilters) => {
+  let filtersToRender = [];
+  eventFilters.forEach((filter) => {
+    filtersToRender.push(`<div class="trip-filters__filter">
+      <input id="filter-${filter}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filter}">
+      <label class="trip-filters__filter-label" for="filter-${filter}">${capitalize(filter)}</label>
+    </div>`);
+  });
+  return filtersToRender.join(``);
+  // TODO: mark first filter as checked
+};
+
+export const renderFilter = (filters) => {
   return `<form class="trip-filters" action="#" method="get">
-    <div class="trip-filters__filter">
-      <input id="filter-everything" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="everything" checked>
-      <label class="trip-filters__filter-label" for="filter-everything">Everything</label>
-    </div>
-
-    <div class="trip-filters__filter">
-      <input id="filter-future" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="future">
-      <label class="trip-filters__filter-label" for="filter-future">Future</label>
-    </div>
-
-    <div class="trip-filters__filter">
-      <input id="filter-past" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="past">
-      <label class="trip-filters__filter-label" for="filter-past">Past</label>
-    </div>
-
+    ${createFilters(filters)}
     <button class="visually-hidden" type="submit">Accept filter</button>
   </form>`;
 };

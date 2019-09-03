@@ -1,6 +1,14 @@
-export const createMenuTemplate = () => {
+const createTabs = (menuTabs) => {
+  let tabsToRender = [];
+  menuTabs.forEach((tab) => {
+    tabsToRender.push(`<a class="trip-tabs__btn" href="#">${tab}</a>`);
+  });
+  return tabsToRender.join(``);
+  // TODO: add class active for first item
+};
+
+export const renderMenu = (tabs) => {
   return `<nav class="trip-controls__trip-tabs  trip-tabs">
-    <a class="trip-tabs__btn  trip-tabs__btn--active" href="#">Table</a>
-    <a class="trip-tabs__btn" href="#">Stats</a>
+    ${createTabs(tabs)}
   </nav>`;
 };

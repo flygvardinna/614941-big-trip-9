@@ -1,3 +1,4 @@
+import {createElement, render, unrender} from './utils.js';
 import {getEvent, menuTabs, filterOptions, getTripInfo} from './data.js';
 import {renderMenu} from './components/menu.js';
 import {renderFilter} from './components/filter.js';
@@ -14,9 +15,9 @@ const tripMenuTitle = tripControls.querySelector(`h2`);
 const tripEvents = document.querySelector(`.trip-events`);
 const tripCost = tripInfo.querySelector(`.trip-info__cost-value`);
 
-const render = (container, template, place) => {
+/*const render = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
-};
+};*/
 
 const sortByStartDate = (array) => {
   return array.slice().sort((a, b) => {

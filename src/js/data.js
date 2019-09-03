@@ -3,17 +3,17 @@ import {shuffleArray} from './utils.js';
 const PICTURES_COUNT = 5;
 
 export const getEvent = () => ({
-  eventType: [
-    {type: `taxi`, text: `to`},
-    {type: `bus`, text: `to`},
-    {type: `train`, text: `to`},
-    {type: `ship`, text: `to`},
-    {type: `transport`, text: `to`},
-    {type: `drive`, text: `to`},
-    {type: `flight`, text: `to`},
-    {type: `check`, text: `in`},
-    {type: `sightseeing`, text: `in`},
-    {type: `restaurant`, text: `in`}][Math.floor(Math.random() * 10)],
+  type: [
+    {name: `taxi`, text: `to`},
+    {name: `bus`, text: `to`},
+    {name: `train`, text: `to`},
+    {name: `ship`, text: `to`},
+    {name: `transport`, text: `to`},
+    {name: `drive`, text: `to`},
+    {name: `flight`, text: `to`},
+    {name: `check`, text: `in`},
+    {name: `sightseeing`, text: `in`},
+    {name: `restaurant`, text: `in`}][Math.floor(Math.random() * 10)],
   destination: [
     `Paris`, `London`, `New York`, `Moscow`, `Amsterdam`, `Tokyo`, `Madrid`, `Buenos Aires`, `Lisbon`, `Rome`
   ][Math.floor(Math.random() * 10)],

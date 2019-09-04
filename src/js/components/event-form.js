@@ -84,8 +84,6 @@ export class EventForm {
     if (this._element) {
       this._element = null;
     }
-
-    //return this._element;
   }
 
   getTemplate() {

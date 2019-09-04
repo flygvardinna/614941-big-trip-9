@@ -1,13 +1,13 @@
 import {Position, createElement, render, unrender} from './utils.js';
-import {getEvent, menuTabs, filterOptions, getTripInfo} from './data.js';
-import {renderMenu} from './components/menu.js';
-import {renderFilter} from './components/filter.js';
+import {getEvent, menuTabs, filterOptions, getTripDetails} from './data.js';
+import {Menu} from './components/menu.js';
+import {Filter} from './components/filter.js';
 import {Event} from './components/event.js';
 import {EventForm} from './components/event-form.js';
-import {renderTripInfo} from './components/trip-info.js';
+import {TripDetails} from './components/trip-details.js';
 
 const EVENT_COUNT = 4;
-const events = [...Array(EVENT_COUNT)].map(() => getEvent());
+//const events = [...Array(EVENT_COUNT)].map(() => getEvent());
 
 const tripInfo = document.querySelector(`.trip-info`);
 const tripControls = document.querySelector(`.trip-controls`);
@@ -37,17 +37,30 @@ const renderEvent = (eventMock) => {
 
   const onEscKeyDown = (evt) => {
     if (evt.key === `Escape` || evt.key === `Esc`) {
-      //tasksContainer.replaceChild(task.getElement(), taskEdit.getElement());
-      //document.removeEventListener(`keydown`, onEscKeyDown);
+      tripEvents.replaceChild(event.getElement(), eventForm.getElement());
+      document.removeEventListener(`keydown`, onEscKeyDown);
     }
   };
 
   event.getElement()
-    //.querySelector(`.card__btn--edit`)
-    //.addEventListener(`click`, () => {
-      //tasksContainer.replaceChild(taskEdit.getElement(), task.getElement());
-      //document.addEventListener(`keydown`, onEscKeyDown);
-    //});
+    .querySelector(`.event__rollup-btn`)
+    .addEventListener(`click`, () => {
+      tripEvents.replaceChild(eventForm.getElement(), event.getElement());
+      document.addEventListener(`keydown`, onEscKeyDown);
+    });
+
+  eventForm.getElement()
+    .addEventListener(`submit`, () => {
+      tripEvents.replaceChild(event.getElement(), eventForm.getElement());
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    });
+
+  eventForm.getElement()
+    .querySelector(`.event__rollup-btn`)
+    .addEventListener(`click`, () => {
+      tripEvents.replaceChild(event.getElement(), eventForm.getElement());
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    });
 
   render(tripEvents, event.getElement(), Position.BEFOREEND);
 }
@@ -67,15 +80,22 @@ const countTripCost = (eventsToSum) => {
   // TODO: count offers price also
 };
 
-render(tripMenuTitle, renderMenu(menuTabs), `afterend`);
-render(tripControls, renderFilter(filterOptions), `beforeend`);
+//render(tripMenuTitle, renderMenu(menuTabs), `afterend`);
+//render(tripControls, renderFilter(filterOptions), `beforeend`);
+const menu = new Menu(menuTabs);
+render(tripMenuTitle, menu.getElement(), Position.AFTEREND);
 
-const eventsSorted = sortByStartDate(events);
+const filter = new Filter(filterOptions);
+render(tripControls, filter.getElement(), Position.BEFOREEND);
+
 const eventMocks = new Array(EVENT_COUNT)
                 .fill(``)
                 .map(getEvent);
 
-render(tripEvents, renderEventForm(eventsSorted[0]), `beforeend`);
-render(tripEvents, renderEventsList(eventsSorted.slice(1, eventsSorted.length)), `beforeend`);
-render(tripInfo, renderTripInfo(getTripInfo(eventsSorted)), `afterbegin`);
-tripCost.innerHTML = countTripCost(events);
+const eventsSorted = sortByStartDate(eventMocks);
+eventsSorted.forEach((eventMock) => renderEvent(eventMock));
+
+const tripDetails = new TripDetails(getTripDetails(eventsSorted));
+render(tripInfo, tripDetails.getElement(), Position.AFTERBEGIN);
+//render(tripInfo, renderTripInfo(getTripInfo(eventsSorted)), `afterbegin`);
+tripCost.innerHTML = countTripCost(eventsSorted);

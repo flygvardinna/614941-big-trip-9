@@ -1,4 +1,4 @@
-import {capitalize} from '../utils.js';
+import {createElement, capitalize} from '../utils.js';
 
 const createFilters = (eventFilters) => {
   let filtersToRender = [];
@@ -12,9 +12,30 @@ const createFilters = (eventFilters) => {
   // TODO: mark first filter as checked
 };
 
-export const renderFilter = (filters) => {
-  return `<form class="trip-filters" action="#" method="get">
-    ${createFilters(filters)}
-    <button class="visually-hidden" type="submit">Accept filter</button>
-  </form>`;
-};
+export class Filter {
+  constructor (filters) {
+    this._element = null;
+    this._filters = filters;
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    if (this._element) {
+      this._element = null;
+    }
+  }
+
+  getTemplate() {
+    return `<form class="trip-filters" action="#" method="get">
+      ${createFilters(this._filters)}
+      <button class="visually-hidden" type="submit">Accept filter</button>
+    </form>`;
+  }
+}

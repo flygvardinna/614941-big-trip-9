@@ -78,7 +78,7 @@ export const menuTabs = [`Table`, `Stats`];
 
 export const filterOptions = [`everything`, `future`, `past`];
 
-export const getTripInfo = (eventsList) => ({
+export const getTripDetails = (eventsList) => ({
   title() {
     let tripRoute = [];
     eventsList.forEach((event) => {

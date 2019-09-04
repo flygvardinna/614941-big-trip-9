@@ -58,8 +58,6 @@ export class Event {
     if (this._element) {
       this._element = null;
     }
-
-    //return this._element;
   }
 
   getTemplate() {

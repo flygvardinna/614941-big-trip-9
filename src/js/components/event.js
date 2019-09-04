@@ -1,38 +1,5 @@
 import {createElement, capitalize} from '../utils.js';
 
-const renderHours = (date) => {
-  return date.toLocaleTimeString(navigator.language, {
-    hour: `2-digit`,
-    minute: `2-digit`
-  });
-};
-
-const makeOffer = (offer) => {
-  return `<li class="event__offer">
-    <span class="event__offer-title">${offer.name}</span>
-    &plus;
-    &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
-   </li>`;
-};
-
-const createOffersList = (offersList) => {
-  let selectedOffers = [];
-  offersList.forEach((offer) => {
-    selectedOffers.push(offer.selected ? makeOffer(offer) : ``);
-  });
-  return selectedOffers.join(``);
-};
-
-const renderOffers = (offersToRender) => {
-  if (offersToRender.length > 0) {
-    return `<h4 class="visually-hidden">Offers:</h4>
-    <ul class="event__selected-offers">
-      ${createOffersList(offersToRender)}
-    </ul>`;
-  }
-  return ``;
-};
-
 export class Event {
   constructor ({type, destination, dateTime, price, offers}) {
     this._element = null;
@@ -60,6 +27,39 @@ export class Event {
     }
   }
 
+  createOffersList(offersList) {
+    let selectedOffers = [];
+    offersList.forEach((offer) => {
+      selectedOffers.push(offer.selected ? this.getOfferTemplate(offer) : ``);
+    });
+    return selectedOffers.join(``);
+  }
+
+  renderHours(date) {
+    return date.toLocaleTimeString(navigator.language, {
+      hour: `2-digit`,
+      minute: `2-digit`
+    });
+  }
+
+  getOfferTemplate(offer) {
+    return `<li class="event__offer">
+      <span class="event__offer-title">${offer.name}</span>
+      &plus;
+      &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
+     </li>`;
+  }
+
+  getOffersTemplate(offersToRender) {
+    if (offersToRender.length > 0) {
+      return `<h4 class="visually-hidden">Offers:</h4>
+      <ul class="event__selected-offers">
+        ${this.createOffersList(offersToRender)}
+      </ul>`;
+    }
+    return ``;
+  }
+
   getTemplate() {
     return `<div class="event">
       <div class="event__type">
@@ -69,9 +69,9 @@ export class Event {
 
       <div class="event__schedule">
         <p class="event__time">
-          <time class="event__start-time" datetime="${this._dateStart}">${renderHours(this._dateStart)}</time>
+          <time class="event__start-time" datetime="${this._dateStart}">${this.renderHours(this._dateStart)}</time>
           &mdash;
-          <time class="event__end-time" datetime="${this._dateEnd}">${renderHours(this._dateEnd)}</time>
+          <time class="event__end-time" datetime="${this._dateEnd}">${this.renderHours(this._dateEnd)}</time>
         </p>
         <p class="event__duration">${this._duration.hours}H ${this._duration.minuts()}M</p>
       </div>
@@ -80,7 +80,7 @@ export class Event {
         &euro;&nbsp;<span class="event__price-value">${this._price}</span>
       </p>
 
-      ${renderOffers(this._offers)}
+      ${this.getOffersTemplate(this._offers)}
 
       <button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>

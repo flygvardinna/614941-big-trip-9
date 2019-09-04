@@ -1,63 +1,5 @@
 import {createElement, capitalize} from '../utils.js';
 
-const renderDate = (date) => {
-  return date.toLocaleTimeString(navigator.language, {
-    day: `2-digit`,
-    month: `2-digit`,
-    year: `2-digit`,
-    hour: `2-digit`,
-    minute: `2-digit`
-  });
-};
-
-const makeOffer = (offer) => {
-  return `<div class="event__available-offers">
-    <div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${offer.selected ? `checked` : ``}>
-      <label class="event__offer-label" for="event-offer-luggage-1">
-        <span class="event__offer-title">${offer.name}</span>
-        &plus;
-        &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
-      </label>
-    </div>`;
-};
-
-const createOffersList = (offersList) => {
-  let selectedOffers = [];
-  offersList.forEach((offer) => selectedOffers.push(makeOffer(offer)));
-  return selectedOffers.join(``);
-};
-
-const renderAvailableOffers = (offersToRender) => {
-  if (offersToRender.length > 0) {
-    return `<section class="event__section  event__section--offers">
-      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-      ${createOffersList(offersToRender)}
-      </div>
-    </section>`;
-  }
-  return ``;
-};
-
-const renderPictures = (picturesToRender) => {
-  let picturesFeed = [];
-  picturesToRender().forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
-  return picturesFeed.join(``);
-};
-
-const renderDestination = (eventDescription, eventPictures) => {
-  return `<section class="event__section  event__section--destination">
-    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${eventDescription}</p>
-
-    <div class="event__photos-container">
-      <div class="event__photos-tape">
-        ${renderPictures(eventPictures)}
-      </div>
-    </div>
-  </section>`;
-};
-
 export class EventForm {
   constructor ({type, destination, dateTime, price, offers, description, pictures}) {
     this._element = null;
@@ -84,6 +26,64 @@ export class EventForm {
     if (this._element) {
       this._element = null;
     }
+  }
+
+  renderDate(date) {
+    return date.toLocaleTimeString(navigator.language, {
+      day: `2-digit`,
+      month: `2-digit`,
+      year: `2-digit`,
+      hour: `2-digit`,
+      minute: `2-digit`
+    });
+  }
+
+  renderPictures(picturesToRender) {
+    let picturesFeed = [];
+    picturesToRender().forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
+    return picturesFeed.join(``);
+  }
+
+  createOffersList(offersList) {
+    let selectedOffers = [];
+    offersList.forEach((offer) => selectedOffers.push(this.getOfferTemplate(offer)));
+    return selectedOffers.join(``);
+  }
+
+  getOfferTemplate(offer) {
+    return `<div class="event__available-offers">
+      <div class="event__offer-selector">
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${offer.selected ? `checked` : ``}>
+        <label class="event__offer-label" for="event-offer-luggage-1">
+          <span class="event__offer-title">${offer.name}</span>
+          &plus;
+          &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
+        </label>
+      </div>`;
+  }
+
+  getAvailableOffersTemplate(offersToRender) {
+    if (offersToRender.length > 0) {
+      return `<section class="event__section  event__section--offers">
+        <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+        ${this.createOffersList(offersToRender)}
+        </div>
+      </section>`;
+    }
+    return ``;
+  }
+
+  getDestinationTemplate(eventDescription, eventPictures) {
+    return `<section class="event__section  event__section--destination">
+      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+      <p class="event__destination-description">${eventDescription}</p>
+
+      <div class="event__photos-container">
+        <div class="event__photos-tape">
+          ${this.renderPictures(eventPictures)}
+        </div>
+      </div>
+    </section>`;
   }
 
   getTemplate() {
@@ -173,12 +173,12 @@ export class EventForm {
           <label class="visually-hidden" for="event-start-time-1">
             From
           </label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${renderDate(this._dateStart)}">
+          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${this.renderDate(this._dateStart)}">
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">
             To
           </label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${renderDate(this._dateEnd)}">
+          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${this.renderDate(this._dateEnd)}">
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -207,9 +207,9 @@ export class EventForm {
 
       <section class="event__details">
 
-        ${renderAvailableOffers(this._offers)}
+        ${this.getAvailableOffersTemplate(this._offers)}
 
-        ${this._description ? renderDestination(this._description, this._pictures) : ``}
+        ${this._description ? this.getDestinationTemplate(this._description, this._pictures) : ``}
 
       </section>
     </form>`.trim();

@@ -1,4 +1,4 @@
-import {Position, createElement, render, unrender} from './utils.js';
+import {Position, render} from './utils.js';
 import {getEvent, menuTabs, filterOptions, getTripDetails} from './data.js';
 import {Menu} from './components/menu.js';
 import {Filter} from './components/filter.js';
@@ -58,12 +58,6 @@ const renderEvent = (eventMock) => {
     });
 
   render(tripEvents, event.getElement(), Position.BEFOREEND);
-}
-
-const renderEventsList = (eventsToList) => {
-  let eventsArray = [];
-  eventsToList.forEach((event) => eventsArray.push(renderEvent(event)));
-  return eventsArray.join(``);
 };
 
 const countTripCost = (eventsToSum) => {

@@ -10,7 +10,7 @@ const createTabs = (menuTabs) => {
 };
 
 export class Menu {
-  constructor (tabs) {
+  constructor(tabs) {
     this._element = null;
     this._tabs = tabs;
   }

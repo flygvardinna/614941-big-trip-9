@@ -10,7 +10,19 @@ const renderDate = (date) => {
   });
 };
 
-const makeOffer = (offer) => {
+const renderPictures = (picturesToRender) => {
+  let picturesFeed = [];
+  picturesToRender().forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
+  return picturesFeed.join(``);
+};
+
+const createOffersList = (offersList) => {
+  let selectedOffers = [];
+  offersList.forEach((offer) => selectedOffers.push(getOfferTemplate(offer)));
+  return selectedOffers.join(``);
+};
+
+const getOfferTemplate = (offer) => {
   return `<div class="event__available-offers">
     <div class="event__offer-selector">
       <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${offer.selected ? `checked` : ``}>
@@ -22,13 +34,7 @@ const makeOffer = (offer) => {
     </div>`;
 };
 
-const createOffersList = (offersList) => {
-  let selectedOffers = [];
-  offersList.forEach((offer) => selectedOffers.push(makeOffer(offer)));
-  return selectedOffers.join(``);
-};
-
-const renderAvailableOffers = (offersToRender) => {
+const getAvailableOffersTemplate = (offersToRender) => {
   if (offersToRender.length > 0) {
     return `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -39,13 +45,7 @@ const renderAvailableOffers = (offersToRender) => {
   return ``;
 };
 
-const renderPictures = (picturesToRender) => {
-  let picturesFeed = [];
-  picturesToRender().forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
-  return picturesFeed.join(``);
-};
-
-const renderDestination = (eventDescription, eventPictures) => {
+const getDestinationTemplate = (eventDescription, eventPictures) => {
   return `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
     <p class="event__destination-description">${eventDescription}</p>
@@ -59,7 +59,7 @@ const renderDestination = (eventDescription, eventPictures) => {
 };
 
 export class EventForm {
-  constructor ({type, destination, dateTime, price, offers, description, pictures}) {
+  constructor({type, destination, dateTime, price, offers, description, pictures}) {
     this._element = null;
     this._type = type.name;
     this._text = type.text;
@@ -207,9 +207,9 @@ export class EventForm {
 
       <section class="event__details">
 
-        ${renderAvailableOffers(this._offers)}
+        ${getAvailableOffersTemplate(this._offers)}
 
-        ${this._description ? renderDestination(this._description, this._pictures) : ``}
+        ${this._description ? getDestinationTemplate(this._description, this._pictures) : ``}
 
       </section>
     </form>`.trim();

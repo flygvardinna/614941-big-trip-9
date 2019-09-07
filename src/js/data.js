@@ -77,25 +77,3 @@ export const getEvent = () => ({
 export const menuTabs = [`Table`, `Stats`];
 
 export const filterOptions = [`everything`, `future`, `past`];
-
-export const getTripDetails = (eventsList) => ({
-  title() {
-    let tripRoute = [];
-    eventsList.forEach((event) => {
-      tripRoute.push(event.destination);
-    });
-    if (tripRoute.length > 3) {
-      let tripTitle = [];
-      tripTitle.push(tripRoute.shift(), tripRoute.pop());
-      return tripTitle.join(` — ... — `);
-    } else {
-      return tripRoute.join(` — `);
-    }
-  },
-  dates() {
-    let tripDates = [...Array(2)];
-    tripDates[0] = new Date(eventsList[0].dateTime.dateStart).toString().slice(4, 10);
-    tripDates[1] = new Date(eventsList[eventsList.length - 1].dateTime.dateEnd()).toString().slice(4, 10);
-    return tripDates.join(`&nbsp;—&nbsp;`);
-  }
-});

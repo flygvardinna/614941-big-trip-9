@@ -13,7 +13,7 @@ const createFilters = (eventFilters) => {
 };
 
 export class Filter {
-  constructor (filters) {
+  constructor(filters) {
     this._element = null;
     this._filters = filters;
   }

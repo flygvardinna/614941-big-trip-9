@@ -1,5 +1,5 @@
-import {Position, createElement, render, unrender} from './utils.js';
-import {getEvent, menuTabs, filterOptions, getTripDetails} from './data.js';
+import {Position, render} from './utils.js';
+import {getEvent, menuTabs, filterOptions} from './data.js';
 import {Menu} from './components/menu.js';
 import {Filter} from './components/filter.js';
 import {Event} from './components/event.js';
@@ -7,17 +7,12 @@ import {EventForm} from './components/event-form.js';
 import {TripDetails} from './components/trip-details.js';
 
 const EVENT_COUNT = 4;
-//const events = [...Array(EVENT_COUNT)].map(() => getEvent());
 
 const tripInfo = document.querySelector(`.trip-info`);
 const tripControls = document.querySelector(`.trip-controls`);
 const tripMenuTitle = tripControls.querySelector(`h2`);
 const tripEvents = document.querySelector(`.trip-events`);
 const tripCost = tripInfo.querySelector(`.trip-info__cost-value`);
-
-/*const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};*/
 
 const sortByStartDate = (array) => {
   return array.slice().sort((a, b) => {
@@ -63,12 +58,6 @@ const renderEvent = (eventMock) => {
     });
 
   render(tripEvents, event.getElement(), Position.BEFOREEND);
-}
-
-const renderEventsList = (eventsToList) => {
-  let eventsArray = [];
-  eventsToList.forEach((event) => eventsArray.push(renderEvent(event)));
-  return eventsArray.join(``);
 };
 
 const countTripCost = (eventsToSum) => {
@@ -80,8 +69,6 @@ const countTripCost = (eventsToSum) => {
   // TODO: count offers price also
 };
 
-//render(tripMenuTitle, renderMenu(menuTabs), `afterend`);
-//render(tripControls, renderFilter(filterOptions), `beforeend`);
 const menu = new Menu(menuTabs);
 render(tripMenuTitle, menu.getElement(), Position.AFTEREND);
 
@@ -94,8 +81,9 @@ const eventMocks = new Array(EVENT_COUNT)
 
 const eventsSorted = sortByStartDate(eventMocks);
 eventsSorted.forEach((eventMock) => renderEvent(eventMock));
+// TODO: Make offers of event and eventForm be the same
 
-const tripDetails = new TripDetails(getTripDetails(eventsSorted));
+const tripDetails = new TripDetails(eventsSorted);
 render(tripInfo, tripDetails.getElement(), Position.AFTERBEGIN);
-//render(tripInfo, renderTripInfo(getTripInfo(eventsSorted)), `afterbegin`);
+// TODO: fix getTripDetails function, dateEnd isn't correct sometimes
 tripCost.innerHTML = countTripCost(eventsSorted);

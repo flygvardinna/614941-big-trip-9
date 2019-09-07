@@ -7,7 +7,15 @@ const renderHours = (date) => {
   });
 };
 
-const makeOffer = (offer) => {
+const createOffersList = (offersList) => {
+  let selectedOffers = [];
+  offersList.forEach((offer) => {
+    selectedOffers.push(offer.selected ? getOfferTemplate(offer) : ``);
+  });
+  return selectedOffers.join(``);
+};
+
+const getOfferTemplate = (offer) => {
   return `<li class="event__offer">
     <span class="event__offer-title">${offer.name}</span>
     &plus;
@@ -15,15 +23,7 @@ const makeOffer = (offer) => {
    </li>`;
 };
 
-const createOffersList = (offersList) => {
-  let selectedOffers = [];
-  offersList.forEach((offer) => {
-    selectedOffers.push(offer.selected ? makeOffer(offer) : ``);
-  });
-  return selectedOffers.join(``);
-};
-
-const renderOffers = (offersToRender) => {
+const getOffersTemplate = (offersToRender) => {
   if (offersToRender.length > 0) {
     return `<h4 class="visually-hidden">Offers:</h4>
     <ul class="event__selected-offers">
@@ -34,7 +34,7 @@ const renderOffers = (offersToRender) => {
 };
 
 export class Event {
-  constructor ({type, destination, dateTime, price, offers}) {
+  constructor({type, destination, dateTime, price, offers}) {
     this._element = null;
     this._type = type.name;
     this._text = type.text;
@@ -80,7 +80,7 @@ export class Event {
         &euro;&nbsp;<span class="event__price-value">${this._price}</span>
       </p>
 
-      ${renderOffers(this._offers)}
+      ${getOffersTemplate(this._offers)}
 
       <button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>

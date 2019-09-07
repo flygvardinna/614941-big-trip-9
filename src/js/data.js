@@ -1,19 +1,19 @@
 import {shuffleArray} from './utils.js';
 
-const PICTURES_COUNT = 5;
+const PICTURE_COUNT = 5;
 
 export const getEvent = () => ({
-  eventType: [
-    {type: `taxi`, text: `to`},
-    {type: `bus`, text: `to`},
-    {type: `train`, text: `to`},
-    {type: `ship`, text: `to`},
-    {type: `transport`, text: `to`},
-    {type: `drive`, text: `to`},
-    {type: `flight`, text: `to`},
-    {type: `check`, text: `in`},
-    {type: `sightseeing`, text: `in`},
-    {type: `restaurant`, text: `in`}][Math.floor(Math.random() * 10)],
+  type: [
+    {name: `taxi`, text: `to`},
+    {name: `bus`, text: `to`},
+    {name: `train`, text: `to`},
+    {name: `ship`, text: `to`},
+    {name: `transport`, text: `to`},
+    {name: `drive`, text: `to`},
+    {name: `flight`, text: `to`},
+    {name: `check`, text: `in`},
+    {name: `sightseeing`, text: `in`},
+    {name: `restaurant`, text: `in`}][Math.floor(Math.random() * 10)],
   destination: [
     `Paris`, `London`, `New York`, `Moscow`, `Amsterdam`, `Tokyo`, `Madrid`, `Buenos Aires`, `Lisbon`, `Rome`
   ][Math.floor(Math.random() * 10)],
@@ -69,7 +69,7 @@ export const getEvent = () => ({
     return shuffleArray(descriptionList).slice(0, descriptionCount).join(` `);
   },
   pictures() {
-    const pictures = [...Array(PICTURES_COUNT)].map(() => `http://picsum.photos/300/150?r=${Math.random()}`);
+    const pictures = [...Array(PICTURE_COUNT)].map(() => `http://picsum.photos/300/150?r=${Math.random()}`);
     return pictures;
   }
 });
@@ -77,25 +77,3 @@ export const getEvent = () => ({
 export const menuTabs = [`Table`, `Stats`];
 
 export const filterOptions = [`everything`, `future`, `past`];
-
-export const getTripInfo = (eventsList) => ({
-  title() {
-    let tripRoute = [];
-    eventsList.forEach((event) => {
-      tripRoute.push(event.destination);
-    });
-    if (tripRoute.length > 3) {
-      let tripTitle = [];
-      tripTitle.push(tripRoute.shift(), tripRoute.pop());
-      return tripTitle.join(` — ... — `);
-    } else {
-      return tripRoute.join(` — `);
-    }
-  },
-  dates() {
-    let tripDates = [...Array(2)];
-    tripDates[0] = new Date(eventsList[0].dateTime.dateStart).toString().slice(4, 10);
-    tripDates[1] = new Date(eventsList[eventsList.length - 1].dateTime.dateEnd()).toString().slice(4, 10);
-    return tripDates.join(`&nbsp;—&nbsp;`);
-  }
-});

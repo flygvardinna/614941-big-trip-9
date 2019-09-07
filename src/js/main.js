@@ -1,22 +1,18 @@
-import {getEvent, menuTabs, filterOptions, getTripInfo} from './data.js';
-import {renderMenu} from './components/menu.js';
-import {renderFilter} from './components/filter.js';
-import {renderEvent} from './components/event.js';
-import {renderEventForm} from './components/event-form.js';
-import {renderTripInfo} from './components/trip-info.js';
+import {Position, render} from './utils.js';
+import {getEvent, menuTabs, filterOptions} from './data.js';
+import {Menu} from './components/menu.js';
+import {Filter} from './components/filter.js';
+import {Event} from './components/event.js';
+import {EventForm} from './components/event-form.js';
+import {TripDetails} from './components/trip-details.js';
 
-const EVENTS_COUNT = 4;
-const events = [...Array(EVENTS_COUNT)].map(() => getEvent());
+const EVENT_COUNT = 4;
 
 const tripInfo = document.querySelector(`.trip-info`);
 const tripControls = document.querySelector(`.trip-controls`);
 const tripMenuTitle = tripControls.querySelector(`h2`);
 const tripEvents = document.querySelector(`.trip-events`);
 const tripCost = tripInfo.querySelector(`.trip-info__cost-value`);
-
-const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};
 
 const sortByStartDate = (array) => {
   return array.slice().sort((a, b) => {
@@ -30,10 +26,38 @@ const sortByStartDate = (array) => {
   });
 };
 
-const renderEventsList = (eventsToList) => {
-  let eventsArray = [];
-  eventsToList.forEach((event) => eventsArray.push(renderEvent(event)));
-  return eventsArray.join(``);
+const renderEvent = (eventMock) => {
+  const event = new Event(eventMock);
+  const eventForm = new EventForm(eventMock);
+
+  const onEscKeyDown = (evt) => {
+    if (evt.key === `Escape` || evt.key === `Esc`) {
+      tripEvents.replaceChild(event.getElement(), eventForm.getElement());
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    }
+  };
+
+  event.getElement()
+    .querySelector(`.event__rollup-btn`)
+    .addEventListener(`click`, () => {
+      tripEvents.replaceChild(eventForm.getElement(), event.getElement());
+      document.addEventListener(`keydown`, onEscKeyDown);
+    });
+
+  eventForm.getElement()
+    .addEventListener(`submit`, () => {
+      tripEvents.replaceChild(event.getElement(), eventForm.getElement());
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    });
+
+  eventForm.getElement()
+    .querySelector(`.event__rollup-btn`)
+    .addEventListener(`click`, () => {
+      tripEvents.replaceChild(event.getElement(), eventForm.getElement());
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    });
+
+  render(tripEvents, event.getElement(), Position.BEFOREEND);
 };
 
 const countTripCost = (eventsToSum) => {
@@ -45,11 +69,21 @@ const countTripCost = (eventsToSum) => {
   // TODO: count offers price also
 };
 
-render(tripMenuTitle, renderMenu(menuTabs), `afterend`);
-render(tripControls, renderFilter(filterOptions), `beforeend`);
+const menu = new Menu(menuTabs);
+render(tripMenuTitle, menu.getElement(), Position.AFTEREND);
 
-const eventsSorted = sortByStartDate(events);
-render(tripEvents, renderEventForm(eventsSorted[0]), `beforeend`);
-render(tripEvents, renderEventsList(eventsSorted.slice(1, eventsSorted.length)), `beforeend`);
-render(tripInfo, renderTripInfo(getTripInfo(eventsSorted)), `afterbegin`);
-tripCost.innerHTML = countTripCost(events);
+const filter = new Filter(filterOptions);
+render(tripControls, filter.getElement(), Position.BEFOREEND);
+
+const eventMocks = new Array(EVENT_COUNT)
+                .fill(``)
+                .map(getEvent);
+
+const eventsSorted = sortByStartDate(eventMocks);
+eventsSorted.forEach((eventMock) => renderEvent(eventMock));
+// TODO: Make offers of event and eventForm be the same
+
+const tripDetails = new TripDetails(eventsSorted);
+render(tripInfo, tripDetails.getElement(), Position.AFTERBEGIN);
+// TODO: fix getTripDetails function, dateEnd isn't correct sometimes
+tripCost.innerHTML = countTripCost(eventsSorted);

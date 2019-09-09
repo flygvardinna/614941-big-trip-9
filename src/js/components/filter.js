@@ -1,4 +1,5 @@
-import {createElement, capitalize} from '../utils.js';
+import {AbstractComponent} from './abstract-component.js';
+import {capitalize} from '../utils.js';
 
 const createFilters = (eventFilters) => {
   let filtersToRender = [];
@@ -12,24 +13,10 @@ const createFilters = (eventFilters) => {
   // TODO: mark first filter as checked
 };
 
-export class Filter {
+export class Filter extends AbstractComponent {
   constructor(filters) {
-    this._element = null;
+    super();
     this._filters = filters;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    if (this._element) {
-      this._element = null;
-    }
   }
 
   getTemplate() {

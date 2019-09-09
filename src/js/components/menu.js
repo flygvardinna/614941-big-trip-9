@@ -1,4 +1,4 @@
-import {createElement} from '../utils.js';
+import {AbstractComponent} from './abstract-component.js';
 
 const createTabs = (menuTabs) => {
   let tabsToRender = [];
@@ -9,24 +9,10 @@ const createTabs = (menuTabs) => {
   // TODO: add class active for first item
 };
 
-export class Menu {
+export class Menu extends AbstractComponent {
   constructor(tabs) {
-    this._element = null;
+    super();
     this._tabs = tabs;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    if (this._element) {
-      this._element = null;
-    }
   }
 
   getTemplate() {

@@ -1,4 +1,4 @@
-import {createElement} from '../utils.js';
+import {AbstractComponent} from './abstract-component.js';
 
 const getTripTitle = (eventsList) => {
   let tripRoute = [];
@@ -21,25 +21,11 @@ const getTripDates = (eventsList) => {
   return tripDates.join(`&nbsp;—&nbsp;`);
 };
 
-export class TripDetails {
+export class TripDetails extends AbstractComponent {
   constructor(eventsList) {
-    this._element = null;
+    super();
     this._title = getTripTitle(eventsList);
     this._dates = getTripDates(eventsList);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    if (this._element) {
-      this._element = null;
-    }
   }
 
   getTemplate() {

@@ -1,4 +1,5 @@
-import {createElement, capitalize} from '../utils.js';
+import {AbstractComponent} from './abstract-component.js';
+import {capitalize} from '../utils.js';
 
 const renderHours = (date) => {
   return date.toLocaleTimeString(navigator.language, {
@@ -33,9 +34,9 @@ const getOffersTemplate = (offersToRender) => {
   return ``;
 };
 
-export class Event {
+export class Event extends AbstractComponent {
   constructor({type, destination, dateTime, price, offers}) {
-    this._element = null;
+    super();
     this._type = type.name;
     this._text = type.text;
     this._destination = destination;
@@ -46,22 +47,9 @@ export class Event {
     this._offers = offers();
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    if (this._element) {
-      this._element = null;
-    }
-  }
-
   getTemplate() {
-    return `<div class="event">
+    return `<li class="trip-events__item">
+    <div class="event">
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${this._type}.png" alt="Event type icon">
       </div>
@@ -85,6 +73,7 @@ export class Event {
       <button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>
       </button>
-    </div>`.trim();
+    </div>
+    </li>`.trim();
   }
 }

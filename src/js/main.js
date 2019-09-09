@@ -2,11 +2,10 @@ import {Position, render} from './utils.js';
 import {getEvent, menuTabs, filterOptions} from './data.js';
 import {Menu} from './components/menu.js';
 import {Filter} from './components/filter.js';
-import {Event} from './components/event.js';
-import {EventForm} from './components/event-form.js';
+import {TripController} from './controllers/trip.js';
 import {TripDetails} from './components/trip-details.js';
 
-const EVENT_COUNT = 4;
+const EVENT_COUNT = 6;
 
 const tripInfo = document.querySelector(`.trip-info`);
 const tripControls = document.querySelector(`.trip-controls`);
@@ -24,40 +23,6 @@ const sortByStartDate = (array) => {
     }
     return 0;
   });
-};
-
-const renderEvent = (eventMock) => {
-  const event = new Event(eventMock);
-  const eventForm = new EventForm(eventMock);
-
-  const onEscKeyDown = (evt) => {
-    if (evt.key === `Escape` || evt.key === `Esc`) {
-      tripEvents.replaceChild(event.getElement(), eventForm.getElement());
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    }
-  };
-
-  event.getElement()
-    .querySelector(`.event__rollup-btn`)
-    .addEventListener(`click`, () => {
-      tripEvents.replaceChild(eventForm.getElement(), event.getElement());
-      document.addEventListener(`keydown`, onEscKeyDown);
-    });
-
-  eventForm.getElement()
-    .addEventListener(`submit`, () => {
-      tripEvents.replaceChild(event.getElement(), eventForm.getElement());
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    });
-
-  eventForm.getElement()
-    .querySelector(`.event__rollup-btn`)
-    .addEventListener(`click`, () => {
-      tripEvents.replaceChild(event.getElement(), eventForm.getElement());
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    });
-
-  render(tripEvents, event.getElement(), Position.BEFOREEND);
 };
 
 const countTripCost = (eventsToSum) => {
@@ -80,7 +45,9 @@ const eventMocks = new Array(EVENT_COUNT)
                 .map(getEvent);
 
 const eventsSorted = sortByStartDate(eventMocks);
-eventsSorted.forEach((eventMock) => renderEvent(eventMock));
+
+const tripController = new TripController(tripEvents, eventsSorted);
+tripController.init();
 // TODO: Make offers of event and eventForm be the same
 
 const tripDetails = new TripDetails(eventsSorted);

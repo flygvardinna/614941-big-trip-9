@@ -1,4 +1,5 @@
-import {createElement, capitalize} from '../utils.js';
+import {AbstractComponent} from './abstract-component.js';
+import {capitalize} from '../utils.js';
 
 const renderDate = (date) => {
   return date.toLocaleTimeString(navigator.language, {
@@ -59,9 +60,9 @@ const getDestinationTemplate = (eventDescription, eventPictures) => {
   </section>`;
 };
 
-export class EventForm {
+export class EventEdit extends AbstractComponent {
   constructor({type, destination, dateTime, price, offers, description, pictures}) {
-    this._element = null;
+    super();
     this._type = type.name;
     this._text = type.text;
     this._destination = destination;
@@ -71,20 +72,6 @@ export class EventForm {
     this._offers = offers();
     this._description = description();
     this._pictures = pictures;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    if (this._element) {
-      this._element = null;
-    }
   }
 
   getTemplate() {

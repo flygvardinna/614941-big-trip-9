@@ -1,6 +1,7 @@
 import {Position, Key, render} from '../utils.js';
 import {Sort} from '../components/sort.js';
-import {TripDays} from '../components/trip-days.js';
+import {EventsList} from '../components/events-list.js';
+import {Day} from '../components/day.js';
 import {Event} from '../components/event.js';
 import {EventEdit} from '../components/event-edit.js';
 
@@ -9,28 +10,58 @@ export class TripController {
     this._container = container;
     this._events = events;
     this._sort = new Sort();
-    this._tripDays = new TripDays(events);
-    this._dayEventsList = this._tripDays.getElement().querySelector(`.trip-events__list`);
+    this._eventsList = new EventsList();
+    // this._tripDays = new TripDays(events);
+    // this._dayEventsList = this._tripDays.getElement().querySelector(`.trip-events__list`);
   }
 
   init() {
     render(this._container, this._sort.getElement(), Position.AFTERBEGIN);
-    render(this._container, this._tripDays.getElement(), Position.BEFOREEND);
+    render(this._container, this._eventsList.getElement(), Position.BEFOREEND);
+    this._renderDays(this._events);
 
-    this._events.forEach((eventMock) => this._renderEvent(eventMock));
+    // this._events.forEach((eventMock) => this._renderEvent(eventMock));
 
     this._sort.getElement()
     .addEventListener(`click`, (evt) => this._onSortItemClick(evt));
   }
 
-  _renderEvent(eventMock) {
+  _renderDays(eventsArray) {
+    let days = new Set();
+    eventsArray.forEach((eventMock) => {
+      const date = new Date(eventMock.dateTime.dateStart).toString().slice(4, 10);
+      if (!days.has(date)) {
+        days.add(date);
+      }
+    });
+    Array.from(days).forEach((day, index) => {
+      const dayElement = new Day(day, index + 1).getElement();
+      render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
+      eventsArray.forEach((eventMock) => {
+        const eventDayStart = new Date(eventMock.dateTime.dateStart).toString().slice(4, 10);
+        if (day === eventDayStart) {
+          const eventsContainer = dayElement.querySelector(`.trip-events__list`);
+          this._renderEvent(eventsContainer, eventMock);
+        }
+      });
+    });
+  }
+
+  /* _renderEventsList(events) {
+    unrender(this._dayEventsList);
+
+    this._dayEventsList.removeElement();
+    render(this._container, this._tripDays.getElement(), Position.BEFOREEND);
+    this._events.forEach((eventMock) => this._renderEvent(eventMock));
+  } */
+
+  _renderEvent(dayContainer, eventMock) {
     const eventComponent = new Event(eventMock);
     const eventEditComponent = new EventEdit(eventMock);
 
-
     const onEscKeyDown = (evt) => {
       if (evt.key === Key.ESCAPE || evt.key === Key.ESCAPE_IE) {
-        this._dayEventsList.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+        dayContainer.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
         document.removeEventListener(`keydown`, onEscKeyDown);
       }
     };
@@ -38,24 +69,41 @@ export class TripController {
     eventComponent.getElement()
       .querySelector(`.event__rollup-btn`)
       .addEventListener(`click`, () => {
-        this._dayEventsList.replaceChild(eventEditComponent.getElement(), eventComponent.getElement());
+        dayContainer.replaceChild(eventEditComponent.getElement(), eventComponent.getElement());
         document.addEventListener(`keydown`, onEscKeyDown);
       });
 
     eventEditComponent.getElement()
-      .addEventListener(`submit`, () => {
-        this._dayEventsList.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+      .addEventListener(`submit`, (evt) => {
+        evt.preventDefault();
+
+        const formData = new FormData(eventEditComponent.getElement()); // заменить на this?
+        const entry = {
+          type: formData.get(`event-type`),
+          destination: formData.get(`event-destination`),
+          dateTime: {
+            dateStart: formData.get(`event-start-time`),
+            dateEnd: formData.get(`event-end-time`)
+          },
+          price: formData.get(`event-price`),
+          // offers: Array.from(formData.getAll(`event-offer`)), доработать
+        };
+
+        this._events[this._events.findIndex((it) => it === event)] = entry;
+
+        this._renderEventsList(this._events);
+        // this._dayEventsList.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
         document.removeEventListener(`keydown`, onEscKeyDown);
       });
 
     eventEditComponent.getElement()
       .querySelector(`.event__rollup-btn`)
       .addEventListener(`click`, () => {
-        this._dayEventsList.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+        dayContainer.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
         document.removeEventListener(`keydown`, onEscKeyDown);
       });
 
-    render(this._dayEventsList, eventComponent.getElement(), Position.BEFOREEND);
+    render(dayContainer, eventComponent.getElement(), Position.BEFOREEND);
   }
 
   _onSortItemClick(evt) {

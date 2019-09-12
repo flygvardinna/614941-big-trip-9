@@ -1,3 +1,10 @@
+// const typesOfTransport = new Set([`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`]);
+const typesOfPlace = new Set([`check-in`, `sightseeing`, `restaurant`]);
+
+export const getPlaceholder = (type) => {
+  return typesOfPlace.has(type) ? `in` : `to`;
+};
+
 export const Position = {
   AFTERBEGIN: `afterbegin`,
   AFTEREND: `afterend`,
@@ -32,7 +39,9 @@ export const render = (container, element, place) => {
 export const unrender = (element) => {
   if (element) {
     element.remove();
-    element.removeElement();
+    // element.removeElement();
+    // задание 4.1 Не забудьте после удаления элемента из DOM удалить ссылку на него
+    // с помощью метода класса removeElement, который мы описали в пятом пункте.
   }
 };
 

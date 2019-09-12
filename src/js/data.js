@@ -4,26 +4,19 @@ const PICTURE_COUNT = 5;
 
 export const getEvent = () => ({
   type: [
-    {name: `taxi`, text: `to`},
-    {name: `bus`, text: `to`},
-    {name: `train`, text: `to`},
-    {name: `ship`, text: `to`},
-    {name: `transport`, text: `to`},
-    {name: `drive`, text: `to`},
-    {name: `flight`, text: `to`},
-    {name: `check`, text: `in`},
-    {name: `sightseeing`, text: `in`},
-    {name: `restaurant`, text: `in`}][Math.floor(Math.random() * 10)],
+    `taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`
+  ][Math.floor(Math.random() * 10)],
   destination: [
     `Paris`, `London`, `New York`, `Moscow`, `Amsterdam`, `Tokyo`, `Madrid`, `Buenos Aires`, `Lisbon`, `Rome`
   ][Math.floor(Math.random() * 10)],
   dateTime: {
     dateStart: Date.now() + 1 + Math.floor(Math.random() * 7) * (Math.random() * 25) * 60 * 60 * 1000,
-    dateEnd() {
+    /* dateEnd() {
       return this.dateStart + (Math.random() * 25) * 60 * 60 * 1000;
-    },
+    }, */
+    dateEnd: Date.now() + 2 + Math.floor(Math.random() * 7) * (Math.random() * 25) * 2 * 60 * 60 * 1000,
     duration() {
-      const duration = (this.dateEnd() - this.dateStart) / (60 * 60 * 1000);
+      const duration = (this.dateEnd - this.dateStart) / (60 * 60 * 1000);
       return {
         hours: Math.trunc(duration),
         minuts() {

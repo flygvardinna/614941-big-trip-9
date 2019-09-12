@@ -45,6 +45,8 @@ const eventMocks = new Array(EVENT_COUNT)
                 .map(getEvent);
 
 const eventsSorted = sortByStartDate(eventMocks);
+// console.log(eventsSorted);
+// TODO: Put events sorting to controller also
 
 const tripController = new TripController(tripEvents, eventsSorted);
 tripController.init();

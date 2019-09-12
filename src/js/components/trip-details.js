@@ -17,7 +17,7 @@ const getTripTitle = (eventsList) => {
 const getTripDates = (eventsList) => {
   let tripDates = [...Array(2)];
   tripDates[0] = new Date(eventsList[0].dateTime.dateStart).toString().slice(4, 10);
-  tripDates[1] = new Date(eventsList[eventsList.length - 1].dateTime.dateEnd()).toString().slice(4, 10);
+  tripDates[1] = new Date(eventsList[eventsList.length - 1].dateTime.dateEnd).toString().slice(4, 10);
   return tripDates.join(`&nbsp;—&nbsp;`);
 };
 

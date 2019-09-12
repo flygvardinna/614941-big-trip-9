@@ -1,5 +1,6 @@
+import {Position, createElement, render, unrender} from '../utils.js';
 import {AbstractComponent} from './abstract-component.js';
-import {capitalize} from '../utils.js';
+import {getPlaceholder, capitalize} from '../utils.js';
 
 const renderDate = (date) => {
   return date.toLocaleTimeString(navigator.language, {
@@ -63,15 +64,18 @@ const getDestinationTemplate = (eventDescription, eventPictures) => {
 export class EventEdit extends AbstractComponent {
   constructor({type, destination, dateTime, price, offers, description, pictures}) {
     super();
-    this._type = type.name;
-    this._text = type.text;
+    this._type = type;
+    this._placeholder = getPlaceholder(type);
     this._destination = destination;
     this._dateStart = new Date(dateTime.dateStart);
-    this._dateEnd = new Date(dateTime.dateEnd());
+    // this._dateEnd = new Date(dateTime.dateEnd());
+    this._dateEnd = new Date(dateTime.dateEnd);
     this._price = price;
-    this._offers = offers();
-    this._description = description();
+    this._offers = offers;
+    this._description = description;
     this._pictures = pictures;
+
+    this._onEventTypeChange = this._onEventTypeChange.bind(this);
   }
 
   getTemplate() {
@@ -147,7 +151,7 @@ export class EventEdit extends AbstractComponent {
 
         <div class="event__field-group  event__field-group--destination">
           <label class="event__label  event__type-output" for="event-destination-1">
-            ${capitalize(this._type)} ${this._text}
+            ${capitalize(this._type)} ${this._placeholder}
           </label>
           <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._destination}" list="destination-list-1">
           <datalist id="destination-list-1">
@@ -195,11 +199,29 @@ export class EventEdit extends AbstractComponent {
 
       <section class="event__details">
 
-        ${getAvailableOffersTemplate(this._offers)}
+        ${getAvailableOffersTemplate(this._offers())}
 
-        ${this._description ? getDestinationTemplate(this._description, this._pictures) : ``}
+        ${this._description ? getDestinationTemplate(this._description(), this._pictures) : ``}
 
       </section>
     </form>`.trim();
+  }
+
+  _onEventTypeChange(element, type) {
+    // при клике на иконку в выпадающем списке должен быть отмечен как checked именно текущий элемент, а не flight
+    // проверка, если type уже был checked то ничего не должно происходить
+
+    element.querySelector(`.event__type-icon`).setAttribute(`src`, `img/icons/${type}.png`);
+    element.querySelector(`.event__type-output`).innerHTML = `${capitalize(type)} ${getPlaceholder(type)}`;
+    unrender(element.querySelector(`.event__section--offers`));
+    const newOffers = getAvailableOffersTemplate(this._offers());
+    if (newOffers) {
+      render(element.querySelector(`.event__details`), createElement(newOffers), Position.AFTERBEGIN);
+    }
+  }
+
+  _onDestinationChange(element) {
+    // фотки тоже должны обновляться
+    element.querySelector(`.event__destination-description`).innerHTML = `${this._description()}`;
   }
 }

@@ -1,5 +1,5 @@
 import {AbstractComponent} from './abstract-component.js';
-import {capitalize} from '../utils.js';
+import {getPlaceholder, capitalize} from '../utils.js';
 
 const renderHours = (date) => {
   return date.toLocaleTimeString(navigator.language, {
@@ -37,11 +37,12 @@ const getOffersTemplate = (offersToRender) => {
 export class Event extends AbstractComponent {
   constructor({type, destination, dateTime, price, offers}) {
     super();
-    this._type = type.name;
-    this._text = type.text;
+    this._type = type;
+    this._placeholder = getPlaceholder(type);
     this._destination = destination;
     this._dateStart = new Date(dateTime.dateStart);
-    this._dateEnd = new Date(dateTime.dateEnd());
+    // this._dateEnd = new Date(dateTime.dateEnd());
+    this._dateEnd = new Date(dateTime.dateEnd);
     this._duration = dateTime.duration(this._dateStart, this._dateEnd);
     this._price = price;
     this._offers = offers();
@@ -53,7 +54,7 @@ export class Event extends AbstractComponent {
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${this._type}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">${capitalize(this._type)} ${this._text} ${this._destination}</h3>
+      <h3 class="event__title">${capitalize(this._type)} ${this._placeholder} ${this._destination}</h3>
 
       <div class="event__schedule">
         <p class="event__time">

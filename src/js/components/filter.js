@@ -1,5 +1,5 @@
-import {AbstractComponent} from './abstract-component.js';
-import {capitalize} from '../utils.js';
+import {AbstractComponent} from './abstract-component';
+import {capitalize} from '../utils';
 
 const createFilters = (eventFilters) => {
   let filtersToRender = [];

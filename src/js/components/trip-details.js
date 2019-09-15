@@ -1,4 +1,5 @@
-import {AbstractComponent} from './abstract-component.js';
+import {AbstractComponent} from './abstract-component';
+import moment from '../../../node_modules/moment/src/moment';
 
 const getTripTitle = (eventsList) => {
   let tripRoute = [];
@@ -16,8 +17,8 @@ const getTripTitle = (eventsList) => {
 
 const getTripDates = (eventsList) => {
   let tripDates = [...Array(2)];
-  tripDates[0] = new Date(eventsList[0].dateTime.dateStart).toString().slice(4, 10);
-  tripDates[1] = new Date(eventsList[eventsList.length - 1].dateTime.dateEnd).toString().slice(4, 10);
+  tripDates[0] = moment(eventsList[0].dateStart).format(`MMM DD`);
+  tripDates[1] = moment(eventsList[eventsList.length - 1].dateEnd).format(`MMM DD`);
   return tripDates.join(`&nbsp;—&nbsp;`);
 };
 

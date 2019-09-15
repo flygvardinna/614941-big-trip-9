@@ -1,4 +1,4 @@
-import {AbstractComponent} from './abstract-component.js';
+import {AbstractComponent} from './abstract-component';
 
 export class Sort extends AbstractComponent {
   getTemplate() {

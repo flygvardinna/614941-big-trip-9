@@ -1,4 +1,4 @@
-import {shuffleArray} from './utils.js';
+import {shuffleArray} from './utils';
 
 const PICTURE_COUNT = 5;
 
@@ -9,22 +9,11 @@ export const getEvent = () => ({
   destination: [
     `Paris`, `London`, `New York`, `Moscow`, `Amsterdam`, `Tokyo`, `Madrid`, `Buenos Aires`, `Lisbon`, `Rome`
   ][Math.floor(Math.random() * 10)],
-  dateTime: {
-    dateStart: Date.now() + 1 + Math.floor(Math.random() * 7) * (Math.random() * 25) * 60 * 60 * 1000,
-    /* dateEnd() {
-      return this.dateStart + (Math.random() * 25) * 60 * 60 * 1000;
-    }, */
-    dateEnd: Date.now() + 2 + Math.floor(Math.random() * 7) * (Math.random() * 25) * 2 * 60 * 60 * 1000,
-    duration() {
-      const duration = (this.dateEnd - this.dateStart) / (60 * 60 * 1000);
-      return {
-        hours: Math.trunc(duration),
-        minuts() {
-          return Math.round((duration - this.hours) * 60);
-        },
-      };
-    }
-  },
+  dateStart: Date.now() + 1 + Math.floor(Math.random() * 7) * (Math.random() * 25) * 60 * 60 * 1000,
+  /* dateEnd() {
+    return this.dateStart + (Math.random() * 25) * 60 * 60 * 1000;
+  }, */
+  dateEnd: Date.now() + 8 * 24 * 60 * 60 * 1000,
   price: Math.floor(Math.random() * 500 + 1),
   offers() {
     let offersList = [
@@ -61,10 +50,7 @@ export const getEvent = () => ({
     const descriptionCount = Math.floor(Math.random() * 3) + 1;
     return shuffleArray(descriptionList).slice(0, descriptionCount).join(` `);
   },
-  pictures() {
-    const pictures = [...Array(PICTURE_COUNT)].map(() => `http://picsum.photos/300/150?r=${Math.random()}`);
-    return pictures;
-  }
+  pictures: [...Array(PICTURE_COUNT)].map(() => `http://picsum.photos/300/150?r=${Math.random()}`)
 });
 
 export const menuTabs = [`Table`, `Stats`];

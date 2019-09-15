@@ -1,3 +1,5 @@
+import moment from '../../node_modules/moment/src/moment';
+
 // const typesOfTransport = new Set([`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`]);
 const typesOfPlace = new Set([`check-in`, `sightseeing`, `restaurant`]);
 
@@ -55,4 +57,8 @@ export const shuffleArray = (array) => {
 
 export const capitalize = (string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+export const countEventDuration = (dateStart, dateEnd) => {
+  return moment.duration(moment(dateEnd).diff(moment(dateStart)));
 };

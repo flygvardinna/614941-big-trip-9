@@ -1,21 +1,14 @@
-import {Position, createElement, render, unrender} from '../utils.js';
-import {AbstractComponent} from './abstract-component.js';
-import {getPlaceholder, capitalize} from '../utils.js';
-
-const renderDate = (date) => {
-  return date.toLocaleTimeString(navigator.language, {
-    day: `2-digit`,
-    month: `2-digit`,
-    year: `2-digit`,
-    hour: `2-digit`,
-    minute: `2-digit`
-  });
-};
+import {AbstractComponent} from './abstract-component';
+import {Position, createElement, render, unrender, getPlaceholder, capitalize} from '../utils';
+import moment from '../../../node_modules/moment/src/moment';
+import 'flatpickr/dist/flatpickr.min.css';
+import 'flatpickr/dist/themes/light.css';
 
 const renderPictures = (picturesToRender) => {
   let picturesFeed = [];
-  picturesToRender().forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
+  picturesToRender.forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
   return picturesFeed.join(``);
+  // здесь нужно вставлять описание картинки в альт, будет приходить с сервера
 };
 
 const createOffersList = (offersList) => {
@@ -62,14 +55,13 @@ const getDestinationTemplate = (eventDescription, eventPictures) => {
 };
 
 export class EventEdit extends AbstractComponent {
-  constructor({type, destination, dateTime, price, offers, description, pictures}) {
+  constructor({type, destination, dateStart, dateEnd, price, offers, description, pictures}) {
     super();
     this._type = type;
     this._placeholder = getPlaceholder(type);
     this._destination = destination;
-    this._dateStart = new Date(dateTime.dateStart);
-    // this._dateEnd = new Date(dateTime.dateEnd());
-    this._dateEnd = new Date(dateTime.dateEnd);
+    this._dateStart = dateStart;
+    this._dateEnd = dateEnd;
     this._price = price;
     this._offers = offers;
     this._description = description;
@@ -123,7 +115,7 @@ export class EventEdit extends AbstractComponent {
               </div>
 
               <div class="event__type-item">
-                <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight" checked>
+                <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight">
                 <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
               </div>
             </fieldset>
@@ -165,12 +157,12 @@ export class EventEdit extends AbstractComponent {
           <label class="visually-hidden" for="event-start-time-1">
             From
           </label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${renderDate(this._dateStart)}">
+          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${moment(this._dateStart).format(`DD.MM.YYYY HH:mm`)}">
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">
             To
           </label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${renderDate(this._dateEnd)}">
+          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${moment(this._dateEnd).format(`DD.MM.YYYY HH:mm`)}">
         </div>
 
         <div class="event__field-group  event__field-group--price">

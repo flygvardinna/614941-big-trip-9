@@ -1,11 +1,22 @@
-import {AbstractComponent} from './abstract-component.js';
-import {getPlaceholder, capitalize} from '../utils.js';
+import {AbstractComponent} from './abstract-component';
+import {getPlaceholder, capitalize, countEventDuration} from '../utils';
+import moment from '../../../node_modules/moment/src/moment';
 
-const renderHours = (date) => {
-  return date.toLocaleTimeString(navigator.language, {
-    hour: `2-digit`,
-    minute: `2-digit`
-  });
+// TODO: fix warning in console about moment.js
+
+const renderEventDuration = (duration) => {
+  const days = duration.days();
+  const hours = duration.hours();
+  const minutes = duration.minutes();
+  let durationToRender;
+  if (days) {
+    durationToRender = `${days}D`;
+  }
+  if (hours) {
+    durationToRender = durationToRender + ` ${hours}H`;
+  }
+  durationToRender = durationToRender + ` ${minutes}M`;
+  return durationToRender;
 };
 
 const createOffersList = (offersList) => {
@@ -35,15 +46,14 @@ const getOffersTemplate = (offersToRender) => {
 };
 
 export class Event extends AbstractComponent {
-  constructor({type, destination, dateTime, price, offers}) {
+  constructor({type, destination, dateStart, dateEnd, price, offers}) {
     super();
     this._type = type;
     this._placeholder = getPlaceholder(type);
     this._destination = destination;
-    this._dateStart = new Date(dateTime.dateStart);
-    // this._dateEnd = new Date(dateTime.dateEnd());
-    this._dateEnd = new Date(dateTime.dateEnd);
-    this._duration = dateTime.duration(this._dateStart, this._dateEnd);
+    this._dateStart = dateStart;
+    this._dateEnd = dateEnd;
+    this._duration = renderEventDuration(countEventDuration(this._dateStart, this._dateEnd));
     this._price = price;
     this._offers = offers();
   }
@@ -58,11 +68,11 @@ export class Event extends AbstractComponent {
 
       <div class="event__schedule">
         <p class="event__time">
-          <time class="event__start-time" datetime="${this._dateStart}">${renderHours(this._dateStart)}</time>
+          <time class="event__start-time" datetime="${moment(this._dateStart).toISOString()}">${moment(this._dateStart).format(`HH:mm`)}</time>
           &mdash;
-          <time class="event__end-time" datetime="${this._dateEnd}">${renderHours(this._dateEnd)}</time>
+          <time class="event__end-time" datetime="${moment(this._dateEnd).toISOString()}">${moment(this._dateEnd).format(`HH:mm`)}</time>
         </p>
-        <p class="event__duration">${this._duration.hours}H ${this._duration.minuts()}M</p>
+        <p class="event__duration">${this._duration}</p>
       </div>
 
       <p class="event__price">

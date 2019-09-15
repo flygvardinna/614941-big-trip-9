@@ -1,6 +1,7 @@
-import {Position, Key, render, shuffleArray} from '../utils.js';
-import {Event} from '../components/event.js';
-import {EventEdit} from '../components/event-edit.js';
+import {Position, Key, render, shuffleArray} from '../utils';
+import {Event} from '../components/event';
+import {EventEdit} from '../components/event-edit';
+import flatpickr from 'flatpickr';
 
 export class PointController {
   constructor(container, data, onDataChange, onChangeView) {
@@ -15,12 +16,52 @@ export class PointController {
   }
 
   init() {
+    let minDateEnd = this._data.dateStart;
+    flatpickr(this._eventEdit.getElement().querySelector(`#event-start-time-1`), {
+      altInput: true,
+      allowInput: true,
+      altFormat: `d/m/y H:i`,
+      dateFormat: `Y-m-d H:i`,
+      defaultDate: this._data.dateStart,
+      minDate: `today`,
+      enableTime: true,
+      // time_24hr: true,
+      onChange(selectedDates, dateStr) {
+        minDateEnd = dateStr; // как переопределить дату для второго пикера? пока не получилось
+      }
+      // в ТЗ указан другой формат, не как в макетах, такой "d.m.Y H:i"
+      // Дата окончания не может быть меньше даты начала события.
+      // Наверное при смене даты, время не должно автоматически обнуляться тоже
+    });
+
+    flatpickr(this._eventEdit.getElement().querySelector(`#event-end-time-1`), {
+      altInput: true,
+      allowInput: true,
+      altFormat: `d/m/y H:i`,
+      dateFormat: `Y-m-d H:i`,
+      defaultDate: this._data.dateEnd,
+      minDate: minDateEnd,
+      enableTime: true,
+      // time_24hr: true
+    });
+
     const onEscKeyDown = (evt) => {
       if (evt.key === Key.ESCAPE || evt.key === Key.ESCAPE_IE) {
         this._container.replaceChild(this._eventView.getElement(), this._eventEdit.getElement());
         document.removeEventListener(`keydown`, onEscKeyDown);
       }
     };
+
+    const checkSelectedType = (type) => {
+      const options = Array.from(this._eventEdit.getElement().querySelectorAll(`.event__type-input`));
+      options.forEach((option) => {
+        if (option.getAttribute(`value`) === type) {
+          option.setAttribute(`checked`, `checked`);
+        }
+      });
+    };
+
+    checkSelectedType(this._data.type);
 
     this._eventView.getElement()
       .querySelector(`.event__rollup-btn`)
@@ -34,23 +75,15 @@ export class PointController {
       .addEventListener(`submit`, (evt) => {
         evt.preventDefault();
 
-        const formData = new FormData(this._eventEdit.getElement());
+        const form = this._eventEdit.getElement();
+        const formData = new FormData(form);
+        let picturesArray = [];
+        Array.from(form.querySelectorAll(`.event__photo`)).forEach((picture) => picturesArray.push(picture.getAttribute(`src`)));
         const entry = {
           type: formData.get(`event-type`),
           destination: formData.get(`event-destination`),
-          dateTime: {
-            dateStart: formData.get(`event-start-time`),
-            dateEnd: formData.get(`event-end-time`), // разберись, почему получается Invalid data после сохранения
-            duration() {
-              const duration = (this.dateEnd - this.dateStart) / (60 * 60 * 1000); // тут тоже должна быть другая функция, из этой даты нельзя вычесть
-              return {
-                hours: Math.trunc(duration),
-                minuts() {
-                  return Math.round((duration - this.hours) * 60);
-                },
-              };
-            }
-          },
+          dateStart: formData.get(`event-start-time`),
+          dateEnd: formData.get(`event-end-time`),
           price: formData.get(`event-price`),
           offers() {
             let offersList = [
@@ -70,7 +103,13 @@ export class PointController {
             const offersCount = Math.floor(Math.random() * 3);
             return shuffleArray(offersList).slice(0, offersCount);
           },
+          description() {
+            return form.querySelector(`.event__destination-description`).innerHTML;
+          },
+          pictures: picturesArray
           // мне нужно собирать объект с полным списком опций и информацией о том, какие отмечены, а какие нет
+          // видимо, нужно хранить id опций и инфу чекнуты или нет, а цена привязана к id
+          // и в шаблоне опции нужно менять name, id итд при вставке опций
         };
 
         this._onDataChange(entry, this._data);

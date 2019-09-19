@@ -6,7 +6,7 @@ const createTabs = (menuTabs) => {
     tabsToRender.push(`<a class="trip-tabs__btn" href="#">${tab}</a>`);
   });
   return tabsToRender.join(``);
-  // TODO: add class active for first item
+  // TODO: add class active for first item `trip-tabs__btn--active`;
 };
 
 export class Menu extends AbstractComponent {

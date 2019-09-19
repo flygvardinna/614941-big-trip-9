@@ -13,6 +13,11 @@ export const Position = {
   BEFOREEND: `beforeend`
 };
 
+export const Mode = {
+  ADDING: `adding`,
+  DEFAULT: `default`,
+};
+
 export const Key = {
   ESCAPE_IE: `Escape`,
   ESCAPE: `Esc`,

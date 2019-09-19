@@ -51,6 +51,7 @@ export const getEvent = () => ({
     return shuffleArray(descriptionList).slice(0, descriptionCount).join(` `);
   },
   pictures: [...Array(PICTURE_COUNT)].map(() => `http://picsum.photos/300/150?r=${Math.random()}`)
+  // добавится свойство isFavorite: true/false
 });
 
 export const menuTabs = [`Table`, `Stats`];

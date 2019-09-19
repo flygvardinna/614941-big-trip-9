@@ -1,9 +1,11 @@
-import {Position, render, countEventDuration} from '../utils';
+import {Position, Mode, render, countEventDuration} from '../utils';
 import {PointController} from './point';
 import {Sort} from '../components/sort';
 import {EventsList} from '../components/events-list';
 import {Day} from '../components/day';
 import {TripDetails} from '../components/trip-details';
+
+const PointControllerMode = Mode;
 
 export class TripController {
   constructor(container, events) {
@@ -12,6 +14,7 @@ export class TripController {
     this._events = this._sortByStartDate(events);
     this._sort = new Sort();
     this._eventsList = new EventsList();
+    // this._addingEvent = null;
 
     this._subscriptions = [];
     this._onChangeView = this._onChangeView.bind(this);
@@ -28,7 +31,7 @@ export class TripController {
     tripCost.innerHTML = this._countTripCost(this._events);
     // ? вынести это в отдельные функции чтобы вызывать их после изменения порядка событий и стоимости?
 
-    render(this._container, this._sort.getElement(), Position.AFTERBEGIN);
+    render(this._container, this._sort.getElement(), Position.BEFOREEND);
     render(this._container, this._eventsList.getElement(), Position.BEFOREEND);
     this._renderDays(this._events);
 
@@ -36,6 +39,49 @@ export class TripController {
 
     this._sort.getElement()
     .addEventListener(`click`, (evt) => this._onSortItemClick(evt));
+  }
+
+  hide() {
+    this._container.classList.add(`trip-events--hidden`);
+  }
+
+  show() {
+    this._container.classList.remove(`trip-events--hidden`);
+  }
+
+  addEvent() {
+    if (this._addingEvent) {
+      return;
+    }
+
+    const defaultEvent = {
+      type: `sightseeing`,
+      destination: ``,
+      dateStart: Date.now(),
+      dateEnd: Date.now(),
+      price: ``,
+      offers() {
+        return [];
+      },
+      description() {
+        return ``;
+      },
+      pictures: []
+    };
+    this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, PointControllerMode.ADDING,
+        this._onChangeView, (...args) => {
+          this._addingEvent = null;
+          this._onDataChange(...args);
+        });
+    // this._events.push(defaultEvent);
+    // const newEventForm = new EventAdd();
+    // render(this._sort.getElement(), newEventForm.getElement(), Position.AFTEREND);
+    // когда форму закрываем кнопка add New Event должна снова стать активной
+    // форма ведет себя так же, как форма редактирования, то есть у нее должны быть те же функции по изменению данных
+    // Из демки, в ТЗ ничего не указано, наверное, тоже так:
+    // Новая карточка должна сразу отображаться в режиме редактирования и не закрываться по ESC (у меня это так и работает)
+    // только у меня убирается обработчик эскейпа даже в том случае если он не был навешан (если форма добавления)
+    // это можно поправить
   }
 
   _renderDays(eventsArray) {
@@ -64,7 +110,7 @@ export class TripController {
   }
 
   _renderEvent(container, event) {
-    const pointController = new PointController(container, event, this._onDataChange, this._onChangeView);
+    const pointController = new PointController(container, event, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 
@@ -94,10 +140,34 @@ export class TripController {
   }
 
   _onDataChange(newData, oldData) {
-    this._events[this._events.findIndex((it) => it === oldData)] = newData;
+    const index = this._events.findIndex((event) => event === oldData);
     // this._events = this._sortByStartDate(this._events); это не работает, потому что у измененного ивента в
     // dateStart записывается строка вида 2019-09-20 03:52 а у остальных - количество миллисекунд
+    // НУЖНО ИСПРАВИТЬ, ИНАЧЕ НЕ БУДЕТ СОРТИРОВАТЬСЯ
+    // ИТОГОВЫЕ ДАННЫЕ БУДУТ ПРИХОДИТЬ В ТАКОМ ЖЕ ФОРМАТЕ
+    // ВИДИМО ДЛЯ СОРТИРОВКИ ИХ ТОЖЕ ПРИДЕТСЯ ПЕРЕВОДИТЬ В МИЛЛИСЕКУНДЫ
+
+    // для новой точки это должно работать так же, как для старой.
+    // но есть проблема в том, что в массиве ивентов нет записи для старой даты (точки с дефолтными значениями)
+    // и получается индекс -1
+
+    if (newData === null && oldData === null) {
+      this._addingEvent = null;
+    }
+
+    if (newData === null) {
+      this._events = [...this._events.slice(0, index), ...this._events.slice(index + 1)];
+      // проблема такая, что у новой карточки получается индекс -1 и она не отрисовывается
+    } else if (oldData === null) {
+      this._addingEvent = null;
+      this._events = [newData, ...this._events];
+    } else {
+      this._events[index] = newData;
+    }
+
+    this._events = this._sortByStartDate(this._events);
     this._renderDays(this._events);
+
     // При изменении дат (после кнопки save) должны перерендериваться duration (готово),
     // список дней (инфа о днях) - готово - и шапка с датами маршрута
     // TO DO После сохранения точка маршрута располагается в списке точек маршрута в порядке определенном

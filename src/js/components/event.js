@@ -1,23 +1,8 @@
 import {AbstractComponent} from './abstract-component';
-import {getPlaceholder, capitalize, countEventDuration} from '../utils';
+import {getPlaceholder, capitalize, countEventDuration, renderEventDuration} from '../utils';
 import moment from '../../../node_modules/moment/src/moment';
 
 // TODO: fix warning in console about moment.js
-
-const renderEventDuration = (duration) => {
-  const days = duration.days();
-  const hours = duration.hours();
-  const minutes = duration.minutes();
-  let durationToRender;
-  if (days) {
-    durationToRender = `${days}D`;
-  }
-  if (hours) {
-    durationToRender = durationToRender + ` ${hours}H`;
-  }
-  durationToRender = durationToRender + ` ${minutes}M`;
-  return durationToRender;
-};
 
 const createOffersList = (offersList) => {
   let selectedOffers = [];

@@ -103,7 +103,7 @@ export class PointController {
           destination: formData.get(`event-destination`),
           dateStart: formData.get(`event-start-time`) * 1000,
           dateEnd: formData.get(`event-end-time`) * 1000,
-          price: formData.get(`event-price`),
+          price: parseInt(formData.get(`event-price`), 10),
           offers() {
             let offersList = [
               {name: `Add luggage`,
@@ -168,6 +168,13 @@ export class PointController {
     this._eventEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {
         this._onDataChange(null, this._data);
+
+        if (mode === Mode.ADDING) {
+          unrender(this._eventEdit.getElement());
+          document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
+          // этот код дублируется выше, можно вынести в отдельную функцию Закрыть форму редактирования
+          // Сейчас Cancel на форме добавления приводит к тому, что отрисовываются еще 5 событий
+        }
       });
 
     render(this._container, currentView.getElement(), renderPosition);

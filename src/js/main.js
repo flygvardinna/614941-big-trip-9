@@ -19,14 +19,13 @@ const filter = new Filter(filterOptions);
 render(tripControls, filter.getElement(), Position.BEFOREEND);
 
 const statistics = new Statistics();
-render(tripEvents, statistics.getElement(), Position.AFTEREND);
 
 const eventMocks = new Array(EVENT_COUNT)
                 .fill(``)
                 .map(getEvent);
 
-// console.log(eventsSorted);
-// TODO: Put events sorting to controller also
+// console.log(eventMocks);
+// TODO: Put events sorting to controller also - ГОТОВО
 
 const tripController = new TripController(tripEvents, eventMocks);
 tripController.init();
@@ -49,7 +48,9 @@ menu.getElement().addEventListener(`click`, (evt) => {
       break;
     case `Stats`:
       tripController.hide();
+      render(tripEvents, statistics.getElement(), Position.AFTEREND);
       statistics.getElement().classList.remove(`visually-hidden`);
+      statistics.renderCharts(tripController._events);
       break;
   }
   // здесь еще нужно переключать класс trip-tabs__btn--active

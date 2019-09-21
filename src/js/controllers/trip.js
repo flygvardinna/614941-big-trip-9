@@ -24,6 +24,7 @@ export class TripController {
   init() {
     const tripInfo = document.querySelector(`.trip-info`);
     const tripCost = tripInfo.querySelector(`.trip-info__cost-value`);
+    const filter = document.querySelector(`.trip-filters`);
 
     const tripDetails = new TripDetails(this._events);
     render(tripInfo, tripDetails.getElement(), Position.AFTERBEGIN);
@@ -39,6 +40,8 @@ export class TripController {
 
     this._sort.getElement()
     .addEventListener(`click`, (evt) => this._onSortItemClick(evt));
+
+    filter.addEventListener(`click`, (evt) => this._onFilterClick(evt));
   }
 
   hide() {
@@ -204,6 +207,38 @@ export class TripController {
         this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = `Day`;
         this._renderDays(this._events);
         break;
+    }
+  }
+
+  _onFilterClick(evt) {
+    evt.preventDefault();
+    const dateToday = Date.now();
+
+    if (evt.target.tagName !== `INPUT`) {
+      return;
+    }
+
+    switch (evt.target.value) {
+      case `future`:
+        const futureEvents = [];
+        this._events.map((event) => {
+          if (event.dateStart > dateToday) {
+            futureEvents.push(event);
+          }
+        });
+        this._renderDays(futureEvents);
+        break;
+      case `past`:
+        const pastEvents = [];
+        this._events.map((event) => {
+          if (event.dateEnd < dateToday) {
+            pastEvents.push(event);
+          }
+        });
+        this._renderDays(pastEvents);
+        break;
+      case `everything`:
+        this._renderDays(this._events);
     }
   }
 }

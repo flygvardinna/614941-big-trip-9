@@ -1,7 +1,8 @@
 import moment from '../../node_modules/moment/src/moment';
 
-// const typesOfTransport = new Set([`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`]);
 const typesOfPlace = new Set([`check-in`, `sightseeing`, `restaurant`]);
+
+export const typesOfTransport = new Set([`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`]);
 
 export const getPlaceholder = (type) => {
   return typesOfPlace.has(type) ? `in` : `to`;
@@ -66,4 +67,19 @@ export const capitalize = (string) => {
 
 export const countEventDuration = (dateStart, dateEnd) => {
   return moment.duration(moment(dateEnd).diff(moment(dateStart)));
+};
+
+export const renderEventDuration = (duration) => {
+  const days = duration.days();
+  const hours = duration.hours();
+  const minutes = duration.minutes();
+  let durationToRender;
+  if (days) {
+    durationToRender = `${days}D`;
+  }
+  if (hours) {
+    durationToRender = durationToRender + ` ${hours}H`;
+  }
+  durationToRender = durationToRender + ` ${minutes}M`;
+  return durationToRender;
 };

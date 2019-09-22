@@ -1,11 +1,16 @@
 import {Position, render} from './utils';
 import {getEvent, menuTabs, filterOptions} from './data';
+import {API} from './api';
 import {Menu} from './components/menu';
 import {Filter} from './components/filter';
 import {Statistics} from './components/statistics';
 import {TripController} from './controllers/trip';
 
-const EVENT_COUNT = 6;
+// const EVENT_COUNT = 6;
+const AUTHORIZATION = `Basic 484894743987438`;
+const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
+
+const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
 const tripControls = document.querySelector(`.trip-controls`);
 const tripMenuTitle = tripControls.querySelector(`h2`);
@@ -20,19 +25,31 @@ render(tripControls, filter.getElement(), Position.BEFOREEND);
 
 const statistics = new Statistics();
 
-const eventMocks = new Array(EVENT_COUNT)
+/* const eventMocks = new Array(EVENT_COUNT)
                 .fill(``)
-                .map(getEvent);
+                .map(getEvent); */
 
 // console.log(eventMocks);
 // TODO: Put events sorting to controller also - ГОТОВО
 
-const tripController = new TripController(tripEvents, eventMocks);
-tripController.init();
+/* const tripController = new TripController(tripEvents, eventMocks);
+tripController.init(); */
 // TODO: Make offers of event and eventForm be the same
 
 // стоимость путешествия и инфо о путешествии должны переехать в trip controller тоже потому что они будут пересчитываться
 // после изменения данных
+
+let availableDestinations = [];
+api.getDestinations().then((destinations) => {
+  console.log(destinations);
+  availableDestinations = destinations;
+});
+
+api.getEvents().then((events) => {
+  console.log(events);
+  const tripController = new TripController(tripEvents, events, availableDestinations);
+  tripController.init();
+});
 
 menu.getElement().addEventListener(`click`, (evt) => {
   evt.preventDefault();

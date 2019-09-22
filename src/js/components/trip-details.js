@@ -4,7 +4,7 @@ import moment from '../../../node_modules/moment/src/moment';
 const getTripTitle = (eventsList) => {
   let tripRoute = [];
   eventsList.forEach((event) => {
-    tripRoute.push(event.destination);
+    tripRoute.push(event.destination.name);
   });
   if (tripRoute.length > 3) {
     let tripTitle = [];

@@ -5,13 +5,14 @@ import {EventEdit} from '../components/event-edit';
 import flatpickr from 'flatpickr';
 
 export class PointController {
-  constructor(container, data, mode, onChangeView, onDataChange) {
+  constructor(container, data, destinations, mode, onChangeView, onDataChange) {
     this._container = container;
     this._data = data;
+    this._destinations = destinations;
     this._onChangeView = onChangeView;
     this._onDataChange = onDataChange;
     this._eventView = new Event(this._data);
-    this._eventEdit = new EventEdit(mode, this._data);
+    this._eventEdit = new EventEdit(mode, this._data, this._destinations);
 
     this.init(mode);
   }
@@ -35,15 +36,14 @@ export class PointController {
       // dateFormat: `Y-m-d H:i`,
       dateFormat: `U`,
       defaultDate: this._data.dateStart,
-      minDate: `today`,
+      // minDate: `today`,
       enableTime: true,
       // time_24hr: true,
       onChange(selectedDates, dateStr) {
         minDateEnd = dateStr; // как переопределить дату для второго пикера? пока не получилось
       }
       // в ТЗ указан другой формат, не как в макетах, такой "d.m.Y H:i"
-      // Дата окончания не может быть меньше даты начала события.
-      // Наверное при смене даты, время не должно автоматически обнуляться тоже
+      // Дата окончания не может быть меньше даты начала события. У меня пока при изменения даты начала это не работает
     });
 
     flatpickr(this._eventEdit.getElement().querySelector(`#event-end-time-1`), {

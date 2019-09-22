@@ -73,7 +73,7 @@ export const renderEventDuration = (duration) => {
   const days = duration.days();
   const hours = duration.hours();
   const minutes = duration.minutes();
-  let durationToRender;
+  let durationToRender = ``;
   if (days) {
     durationToRender = `${days}D`;
   }

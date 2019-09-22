@@ -7,14 +7,14 @@ import moment from '../../../node_modules/moment/src/moment';
 const createOffersList = (offersList) => {
   let selectedOffers = [];
   offersList.forEach((offer) => {
-    selectedOffers.push(offer.selected ? getOfferTemplate(offer) : ``);
+    selectedOffers.push(offer.accepted ? getOfferTemplate(offer) : ``);
   });
   return selectedOffers.join(``);
 };
 
 const getOfferTemplate = (offer) => {
   return `<li class="event__offer">
-    <span class="event__offer-title">${offer.name}</span>
+    <span class="event__offer-title">${offer.title}</span>
     &plus;
     &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
    </li>`;
@@ -31,16 +31,17 @@ const getOffersTemplate = (offersToRender) => {
 };
 
 export class Event extends AbstractComponent {
-  constructor({type, destination, dateStart, dateEnd, price, offers}) {
+  constructor({id, type, destination, dateStart, dateEnd, price, offers}) {
     super();
+    this._id = id;
     this._type = type;
     this._placeholder = getPlaceholder(type);
-    this._destination = destination;
+    this._destination = destination.name;
     this._dateStart = dateStart;
     this._dateEnd = dateEnd;
     this._duration = renderEventDuration(countEventDuration(this._dateStart, this._dateEnd));
     this._price = price;
-    this._offers = offers();
+    this._offers = offers;
   }
 
   getTemplate() {
@@ -53,9 +54,9 @@ export class Event extends AbstractComponent {
 
       <div class="event__schedule">
         <p class="event__time">
-          <time class="event__start-time" datetime="${moment(this._dateStart).toISOString()}">${moment(this._dateStart).format(`HH:mm`)}</time>
+          <time class="event__start-time" datetime="${this._dateStart}">${moment(this._dateStart).format(`HH:mm`)}</time>
           &mdash;
-          <time class="event__end-time" datetime="${moment(this._dateEnd).toISOString()}">${moment(this._dateEnd).format(`HH:mm`)}</time>
+          <time class="event__end-time" datetime="${this._dateEnd}">${moment(this._dateEnd).format(`HH:mm`)}</time>
         </p>
         <p class="event__duration">${this._duration}</p>
       </div>

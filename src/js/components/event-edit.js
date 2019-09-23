@@ -40,14 +40,14 @@ const getAvailableOffersTemplate = (offersToRender) => {
   return ``;
 };
 
-const getDestinationTemplate = (eventDescription, eventPictures) => {
+const getDestinationTemplate = (eventDestination) => {
   return `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${eventDescription}</p>
+    <p class="event__destination-description">${eventDestination.description}</p>
 
     <div class="event__photos-container">
       <div class="event__photos-tape">
-        ${renderPictures(eventPictures)}
+        ${renderPictures(eventDestination.pictures)}
       </div>
     </div>
   </section>`;
@@ -60,16 +60,17 @@ const createDestinationsList = (destinationsList) => {
 };
 
 export class EventEdit extends AbstractComponent {
-  constructor(mode, {id, type, destination, dateStart, dateEnd, price, offers, isFavorite}, destinationsList) {
+  constructor(mode, {id, type, destination, dateStart, dateEnd, price, offers, isFavorite}, destinationsList, offersList) {
     super();
     this._mode = mode;
     this._id = id;
     this._type = type;
     this._placeholder = getPlaceholder(type);
-    this._destination = destination.name;
-    this._description = destination.description;
-    this._pictures = destination.pictures;
+    this._destination = destination;
+    // this._description = destination.description;
+    // this._pictures = destination.pictures;
     this._destinationsList = destinationsList;
+    this._offersList = offersList;
     this._dateStart = dateStart;
     this._dateEnd = dateEnd;
     this._price = price;
@@ -155,7 +156,7 @@ export class EventEdit extends AbstractComponent {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${capitalize(this._type)} ${this._placeholder}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._destination}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
               ${createDestinationsList(this._destinationsList)}
             </datalist>
@@ -201,7 +202,7 @@ export class EventEdit extends AbstractComponent {
 
           ${getAvailableOffersTemplate(this._offers)}
 
-          ${this._description ? getDestinationTemplate(this._description, this._pictures) : ``}
+          ${this._destination.description ? getDestinationTemplate(this._destination) : ``}
 
         </section>
       </form>`.trim();
@@ -314,7 +315,7 @@ export class EventEdit extends AbstractComponent {
 
           ${getAvailableOffersTemplate(this._offers)}
 
-          ${this._description ? getDestinationTemplate(this._description, this._pictures) : ``}
+          ${this._destination.description ? getDestinationTemplate(this._destination) : ``}
 
         </section>
       </form>`;
@@ -330,14 +331,24 @@ export class EventEdit extends AbstractComponent {
     element.querySelector(`.event__type-icon`).setAttribute(`src`, `img/icons/${type}.png`);
     element.querySelector(`.event__type-output`).innerHTML = `${capitalize(type)} ${getPlaceholder(type)}`;
     unrender(element.querySelector(`.event__section--offers`));
-    const newOffers = getAvailableOffersTemplate(this._offers);
-    if (newOffers) {
-      render(element.querySelector(`.event__details`), createElement(newOffers), Position.AFTERBEGIN);
+    for (const offer of this._offersList) {
+      if (offer.type === type) {
+        const newOffers = getAvailableOffersTemplate(offer.offers);
+        if (newOffers) {
+          render(element.querySelector(`.event__details`), createElement(newOffers), Position.AFTERBEGIN);
+        }
+      }
     }
+    // сейчас нельзя отметить опцию как выбранную, всегда отмечается первая, поправь
   }
 
-  _onDestinationChange(element) {
+  _onDestinationChange(element, destination) {
     // фотки тоже должны обновляться
-    element.querySelector(`.event__destination-description`).innerHTML = `${this._description}`;
+    for (const destination of this._destinationsList) {
+      if (destination.name === destination) {
+        let description = element.querySelector(`.event__destination-description`).innerHTML;
+        destination.description ? description = `${destination.description}` : description = ``;
+      }
+    }
   }
 }

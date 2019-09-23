@@ -1,5 +1,6 @@
 import {ModelEvent} from './models/model-event';
 import {ModelDestination} from './models/model-destination';
+import {ModelOffer} from './models/model-offer';
 
 const Method = {
   GET: `GET`,
@@ -62,6 +63,12 @@ export class API {
     return this._load({url: `destinations`})
       .then(toJSON)
       .then(ModelDestination.parseDestinations);
+  }
+
+  getOffers() {
+    return this._load({url: `offers`})
+      .then(toJSON)
+      .then(ModelOffer.parseOffers);
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {

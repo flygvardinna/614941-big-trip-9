@@ -45,9 +45,15 @@ api.getDestinations().then((destinations) => {
   availableDestinations = destinations;
 });
 
+let availableOffers = [];
+api.getOffers().then((offers) => {
+  console.log(offers);
+  availableOffers = offers;
+});
+
 api.getEvents().then((events) => {
   console.log(events);
-  const tripController = new TripController(tripEvents, events, availableDestinations);
+  const tripController = new TripController(tripEvents, events, availableDestinations, availableOffers);
   tripController.init();
 });
 

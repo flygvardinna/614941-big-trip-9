@@ -5,14 +5,15 @@ import {EventEdit} from '../components/event-edit';
 import flatpickr from 'flatpickr';
 
 export class PointController {
-  constructor(container, data, destinations, mode, onChangeView, onDataChange) {
+  constructor(container, data, destinations, offers, mode, onChangeView, onDataChange) {
     this._container = container;
     this._data = data;
     this._destinations = destinations;
+    this._offers = offers;
     this._onChangeView = onChangeView;
     this._onDataChange = onDataChange;
     this._eventView = new Event(this._data);
-    this._eventEdit = new EventEdit(mode, this._data, this._destinations);
+    this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
 
     this.init(mode);
   }
@@ -158,12 +159,13 @@ export class PointController {
     Array.from(this._eventEdit.getElement().querySelectorAll(`.event__type-input`)).forEach((option) => {
       option.addEventListener(`click`, (evt) => {
         this._eventEdit._onEventTypeChange(this._eventEdit.getElement(), evt.target.getAttribute(`value`));
+        // проверь, правильно ли написан обработчик, точно ли тут нужен evt
       });
     });
 
     this._eventEdit.getElement()
-      .querySelector(`.event__input--destination`) // возможно, надо отслеживать изменение не input а тега datalist
-      .addEventListener(`change`, () => this._eventEdit._onDestinationChange(this._eventEdit.getElement()));
+      .querySelector(`.event__input--destination`)
+      .addEventListener(`change`, (evt) => this._eventEdit._onDestinationChange(this._eventEdit.getElement(), evt.target.getAttribute(`value`)));
 
     this._eventEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {

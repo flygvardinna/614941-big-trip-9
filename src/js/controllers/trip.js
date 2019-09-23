@@ -8,11 +8,12 @@ import {TripDetails} from '../components/trip-details';
 const PointControllerMode = Mode;
 
 export class TripController {
-  constructor(container, events, destinations) {
+  constructor(container, events, destinations, offers) {
     this._container = container;
     // this._events = events;
     this._events = this._sortByStartDate(events);
     this._destinations = destinations;
+    this._offers = offers;
     this._sort = new Sort();
     this._eventsList = new EventsList();
     // this._addingEvent = null;
@@ -107,14 +108,14 @@ export class TripController {
         const eventDayStart = new Date(eventMock.dateStart).toString().slice(4, 10);
         if (day === eventDayStart) {
           const eventsContainer = dayElement.querySelector(`.trip-events__list`);
-          this._renderEvent(eventsContainer, eventMock, this._destinations);
+          this._renderEvent(eventsContainer, eventMock, this._destinations, this._offers);
         }
       });
     });
   }
 
-  _renderEvent(container, event, destinations) {
-    const pointController = new PointController(container, event, destinations, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
+  _renderEvent(container, event, destinations, offers) {
+    const pointController = new PointController(container, event, destinations, offers, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 

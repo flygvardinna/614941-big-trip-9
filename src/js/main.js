@@ -54,8 +54,24 @@ api.getOffers().then((offers) => {
 api.getEvents().then((events) => {
   console.log(events);
   const tripController = new TripController(tripEvents, events, availableDestinations, availableOffers);
+  // ТУТ НАДО ПЕРЕПИСАТЬ КОНТРОЛЛЕР ТАК, ЧТОБЫ ОН НЕ ПРИНИМАЛ EVENTS А ОНИ ПЕРЕДАВАЛИСЬ, КАК В ДЕМКЕ, ЧЕРЕЗ МЕТОД SHOW
+  // иногда с сервера приходят пустые destinations и offers тогда код не работает нормально
+  // надо проверять, и, если пустые, не давать вызвать контроллер
   tripController.init();
 });
+
+const onDataChange = (actionType, update) => {
+  switch(actionType) {
+    case `delete`:
+      api.deleteEvent({
+        id: update.id
+      })
+        .then(() => api.getEvents())
+        .then((events) => tripController.show(events));
+        // нужно написать метод show у tripController и сделать так, чтобы именно он отрисовывал ивенты
+      break;
+  }
+}
 
 menu.getElement().addEventListener(`click`, (evt) => {
   evt.preventDefault();

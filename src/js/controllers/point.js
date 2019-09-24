@@ -165,7 +165,10 @@ export class PointController {
 
     this._eventEdit.getElement()
       .querySelector(`.event__input--destination`)
-      .addEventListener(`change`, (evt) => this._eventEdit._onDestinationChange(this._eventEdit.getElement(), evt.target.getAttribute(`value`)));
+      .addEventListener(`change`, (evt) => {
+        // let value = evt.target.value;
+        this._eventEdit._onDestinationChange(this._eventEdit.getElement(), evt.target.value);
+      });
 
     this._eventEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {

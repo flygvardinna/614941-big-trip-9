@@ -11,7 +11,8 @@ export class TripController {
   constructor(container, events, destinations, offers) {
     this._container = container;
     // this._events = events;
-    this._events = this._sortByStartDate(events);
+    this._events = events;
+    // возможно, сортировку стоит делать ниже, там где идет отрисовка точек
     this._destinations = destinations;
     this._offers = offers;
     this._sort = new Sort();
@@ -36,7 +37,7 @@ export class TripController {
 
     render(this._container, this._sort.getElement(), Position.BEFOREEND);
     render(this._container, this._eventsList.getElement(), Position.BEFOREEND);
-    this._renderDays(this._events);
+    // this._renderDays(this._events); // убрать это отсюда?
 
     // this._events.forEach((eventMock) => this._renderEvent(eventMock));
 
@@ -50,7 +51,11 @@ export class TripController {
     this._container.classList.add(`trip-events--hidden`);
   }
 
-  show() {
+  show(events) {
+    if (events !== this._events) {
+      this._renderEvents(events);
+    }
+
     this._container.classList.remove(`trip-events--hidden`);
   }
 
@@ -87,6 +92,12 @@ export class TripController {
     // Новая карточка должна сразу отображаться в режиме редактирования и не закрываться по ESC (у меня это так и работает)
     // только у меня убирается обработчик эскейпа даже в том случае если он не был навешан (если форма добавления)
     // это можно поправить
+  }
+
+  _renderEvents(events) {
+    this._events = this._sortByStartDate(events);
+
+    this._renderDays(this._events);
   }
 
   _renderDays(eventsArray) {
@@ -144,41 +155,29 @@ export class TripController {
     this._subscriptions.forEach((subscription) => subscription());
   }
 
-  _onDataChange(newData, oldData) {
-    const index = this._events.findIndex((event) => event === oldData);
-    // this._events = this._sortByStartDate(this._events); это не работает, потому что у измененного ивента в
-    // dateStart записывается строка вида 2019-09-20 03:52 а у остальных - количество миллисекунд
-    // НУЖНО ИСПРАВИТЬ, ИНАЧЕ НЕ БУДЕТ СОРТИРОВАТЬСЯ
-    // ИТОГОВЫЕ ДАННЫЕ БУДУТ ПРИХОДИТЬ В ТАКОМ ЖЕ ФОРМАТЕ
-    // ВИДИМО ДЛЯ СОРТИРОВКИ ИХ ТОЖЕ ПРИДЕТСЯ ПЕРЕВОДИТЬ В МИЛЛИСЕКУНДЫ
-
-    // для новой точки это должно работать так же, как для старой.
-    // но есть проблема в том, что в массиве ивентов нет записи для старой даты (точки с дефолтными значениями)
-    // и получается индекс -1
-
-    if (newData === null && oldData === null) {
-      this._addingEvent = null;
+  /*_onDataChange(actionType, update) {
+    switch(actionType) {
+      case `delete`:
+        api.deleteEvent({
+          id: update.id
+        })
+          .then(() => api.getEvents())
+          .then((events) => {
+            this._events = this._sortByStartDate(events);
+            this._renderDays(this._events);
+          });
+        break;
     }
 
-    if (newData === null) {
-      this._events = [...this._events.slice(0, index), ...this._events.slice(index + 1)];
-      // проблема такая, что у новой карточки получается индекс -1 и она не отрисовывается
-    } else if (oldData === null) {
-      this._addingEvent = null;
-      this._events = [newData, ...this._events];
-    } else {
-      this._events[index] = newData;
-    }
-
-    this._events = this._sortByStartDate(this._events);
-    this._renderDays(this._events);
+    // this._events = this._sortByStartDate(this._events);
+    // this._renderDays(this._events);
 
     // При изменении дат (после кнопки save) должны перерендериваться duration (готово),
     // список дней (инфа о днях) - готово - и шапка с датами маршрута
     // TO DO После сохранения точка маршрута располагается в списке точек маршрута в порядке определенном
     // текущей сортировкой (по умолчанию, по длительности или по стоимости).
     // сейчас проблема такая, что если выбрана сортировка не по дням, то после изменения снова рендерятся дни
-  }
+  }*/
 
   _onSortItemClick(evt) {
     if (evt.target.tagName !== `LABEL`) {
@@ -197,11 +196,11 @@ export class TripController {
       case `time-down`:
         const sortedByTimeDownEvents = this._events.slice().sort((a, b) => countEventDuration(b.dateStart, b.dateEnd) - countEventDuration(a.dateStart, a.dateEnd));
         // сейчас события по дням автоматически отсортированы по длительности, так как все заканчиваются в одни и те же день и время
-        sortedByTimeDownEvents.forEach((eventMock) => this._renderEvent(eventsContainer, eventMock));
+        sortedByTimeDownEvents.forEach((event) => this._renderEvent(eventsContainer, event, this._destinations, this._offers));
         break;
       case `price-down`:
         const sortedByPriceDownEvents = this._events.slice().sort((a, b) => b.price - a.price);
-        sortedByPriceDownEvents.forEach((eventMock) => this._renderEvent(eventsContainer, eventMock));
+        sortedByPriceDownEvents.forEach((event) => this._renderEvent(eventsContainer, event, this._destinations, this._offers));
         break;
       case `default`:
         // render(this._container, this._tripDays.getElement(), Position.BEFOREEND);

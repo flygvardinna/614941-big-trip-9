@@ -53,9 +53,9 @@ const getDestinationTemplate = (eventDestination) => {
   </section>`;
 };
 
-const createDestinationsList = (destinationsList) => {
+const createDestinationsList = (availableDestinations) => {
   let destinations = [];
-  destinationsList.forEach((destination) => destinations.push(`<option value="${destination.name}"></option>`));
+  availableDestinations.forEach((destination) => destinations.push(`<option value="${destination.name}"></option>`));
   return destinations.join(``);
 };
 
@@ -342,12 +342,17 @@ export class EventEdit extends AbstractComponent {
     // сейчас нельзя отметить опцию как выбранную, всегда отмечается первая, поправь
   }
 
-  _onDestinationChange(element, destination) {
+  _onDestinationChange(element, destinationValue) {
     // фотки тоже должны обновляться
-    for (const destination of this._destinationsList) {
-      if (destination.name === destination) {
-        let description = element.querySelector(`.event__destination-description`).innerHTML;
-        destination.description ? description = `${destination.description}` : description = ``;
+    for (let destination of this._destinationsList) {
+      if (destination.name === destinationValue) {
+        element.querySelector(`.event__destination-description`).innerHTML = ``;
+        if (destination.description || destination.pictures) {
+          unrender(element.querySelector(`.event__section--destination`));
+          const newDestination = getDestinationTemplate(destination);
+          render(element.querySelector(`.event__details`), createElement(newDestination), Position.BEFOREEND);
+        }
+        return;
       }
     }
   }

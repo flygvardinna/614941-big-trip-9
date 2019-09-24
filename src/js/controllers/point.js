@@ -5,13 +5,13 @@ import {EventEdit} from '../components/event-edit';
 import flatpickr from 'flatpickr';
 
 export class PointController {
-  constructor(container, data, destinations, offers, mode, onChangeView, onDataChange) {
+  constructor(container, data, destinations, offers, mode, onChangeView/*, onDataChange*/) {
     this._container = container;
     this._data = data;
     this._destinations = destinations;
     this._offers = offers;
     this._onChangeView = onChangeView;
-    this._onDataChange = onDataChange;
+    //this._onDataChange = onDataChange;
     this._eventView = new Event(this._data);
     this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
 

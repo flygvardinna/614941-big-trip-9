@@ -8,11 +8,9 @@ import {TripDetails} from '../components/trip-details';
 const PointControllerMode = Mode;
 
 export class TripController {
-  constructor(container, events, destinations, offers) {
+  constructor(container, destinations, offers) {
     this._container = container;
-    // this._events = events;
-    this._events = events;
-    // возможно, сортировку стоит делать ниже, там где идет отрисовка точек
+    this._events = [];
     this._destinations = destinations;
     this._offers = offers;
     this._sort = new Sort();
@@ -21,7 +19,7 @@ export class TripController {
 
     this._subscriptions = [];
     this._onChangeView = this._onChangeView.bind(this);
-    this._onDataChange = this._onDataChange.bind(this);
+    // this._onDataChange = this._onDataChange.bind(this);
   }
 
   init() {
@@ -126,7 +124,7 @@ export class TripController {
   }
 
   _renderEvent(container, event, destinations, offers) {
-    const pointController = new PointController(container, event, destinations, offers, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
+    const pointController = new PointController(container, event, destinations, offers, PointControllerMode.DEFAULT, this._onChangeView, /*this._onDataChange*/);
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 

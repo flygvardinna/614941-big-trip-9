@@ -14,7 +14,7 @@ const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
 const tripControls = document.querySelector(`.trip-controls`);
 const tripMenuTitle = tripControls.querySelector(`h2`);
-const tripEvents = document.querySelector(`.trip-events`);
+const eventsContainer = document.querySelector(`.trip-events`);
 const addNewEventButton = document.querySelector(`.trip-main__event-add-btn`);
 
 const menu = new Menu(menuTabs);
@@ -51,27 +51,12 @@ api.getOffers().then((offers) => {
   availableOffers = offers;
 });
 
-api.getEvents().then((events) => {
-  console.log(events);
-  const tripController = new TripController(tripEvents, events, availableDestinations, availableOffers);
-  // ТУТ НАДО ПЕРЕПИСАТЬ КОНТРОЛЛЕР ТАК, ЧТОБЫ ОН НЕ ПРИНИМАЛ EVENTS А ОНИ ПЕРЕДАВАЛИСЬ, КАК В ДЕМКЕ, ЧЕРЕЗ МЕТОД SHOW
-  // иногда с сервера приходят пустые destinations и offers тогда код не работает нормально
-  // надо проверять, и, если пустые, не давать вызвать контроллер
-  tripController.init();
-});
+const tripController = new TripController(eventsContainer, availableDestinations, availableOffers);
 
-const onDataChange = (actionType, update) => {
-  switch(actionType) {
-    case `delete`:
-      api.deleteEvent({
-        id: update.id
-      })
-        .then(() => api.getEvents())
-        .then((events) => tripController.show(events));
-        // нужно написать метод show у tripController и сделать так, чтобы именно он отрисовывал ивенты
-      break;
-  }
-}
+api.getEvents().then((events) => tripController.show(events));
+// ТУТ НАДО ПЕРЕПИСАТЬ КОНТРОЛЛЕР ТАК, ЧТОБЫ ОН НЕ ПРИНИМАЛ EVENTS А ОНИ ПЕРЕДАВАЛИСЬ, КАК В ДЕМКЕ, ЧЕРЕЗ МЕТОД SHOW
+// иногда с сервера приходят пустые destinations и offers тогда код не работает нормально
+// надо проверять, и, если пустые, не давать вызвать контроллер
 
 menu.getElement().addEventListener(`click`, (evt) => {
   evt.preventDefault();
@@ -84,10 +69,11 @@ menu.getElement().addEventListener(`click`, (evt) => {
     case `Table`:
       statistics.getElement().classList.add(`visually-hidden`);
       tripController.show();
+      // тут передавать задачи
       break;
     case `Stats`:
       tripController.hide();
-      render(tripEvents, statistics.getElement(), Position.AFTEREND);
+      render(eventsContainer, statistics.getElement(), Position.AFTEREND);
       statistics.getElement().classList.remove(`visually-hidden`);
       statistics.renderCharts(tripController._events);
       break;
@@ -104,3 +90,22 @@ addNewEventButton.addEventListener(`click`, () => {
   // для нового ивента нужно будет реализовать загрузку списка опций после выбора дестинейшн.
   // Сейчас этого в разметке новой точки нет. И описание тоже должно подгружаться, наверное
 });
+
+export const onDataChange = (actionType, update) => {
+  switch(actionType) {
+    case `update`:
+      api.updateEvent({
+        id: update.id,
+        data: update.toRAW()
+      }).then((events) => tripController.show(events));
+      break;
+    case `delete`:
+      api.deleteEvent({
+        id: update.id
+      })
+        .then(() => api.getEvents())
+        .then((events) => tripController.show(events));
+        // нужно написать метод show у tripController и сделать так, чтобы именно он отрисовывал ивенты
+      break;
+  }
+}

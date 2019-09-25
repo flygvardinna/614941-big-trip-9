@@ -5,13 +5,13 @@ import {EventEdit} from '../components/event-edit';
 import flatpickr from 'flatpickr';
 
 export class PointController {
-  constructor(container, data, destinations, offers, mode, onChangeView/*, onDataChange*/) {
+  constructor(container, data, destinations, offers, mode, onChangeView, onDataChange) {
     this._container = container;
     this._data = data;
     this._destinations = destinations;
     this._offers = offers;
     this._onChangeView = onChangeView;
-    //this._onDataChange = onDataChange;
+    this._onDataChange = onDataChange;
     this._eventView = new Event(this._data);
     this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
 
@@ -132,7 +132,8 @@ export class PointController {
           // и в шаблоне опции нужно менять name, id итд при вставке опций
         };
 
-        this._onDataChange(entry, mode === Mode.DEFAULT ? this._data : null);
+        //ПЕРЕПИСАТЬ this._onDataChange(entry, mode === Mode.DEFAULT ? this._data : null);
+        this._onDataChange(`update`, entry, mode === Mode.DEFAULT ? this._data : null);
         // может можно было не городить поиск лейбла с типом итд, а брать entry.type итд
         // TO DO После сохранения точка маршрута располагается в списке точек маршрута в порядке определенном
         // текущей сортировкой (по умолчанию, по длительности или по стоимости).
@@ -172,7 +173,7 @@ export class PointController {
 
     this._eventEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {
-        this._onDataChange(null, this._data);
+        this._onDataChange(`delete`, this._data);
 
         if (mode === Mode.ADDING) {
           unrender(this._eventEdit.getElement());

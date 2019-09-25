@@ -51,10 +51,28 @@ api.getOffers().then((offers) => {
   availableOffers = offers;
 });
 
-const tripController = new TripController(eventsContainer, availableDestinations, availableOffers);
+const onDataChange = (actionType, update) => {
+  switch(actionType) {
+    case `update`:
+      api.updateEvent({
+        id: update.id,
+        data: update.toRAW()
+      }).then((events) => tripController.show(events));
+      break;
+    case `delete`:
+      api.deleteEvent({
+        id: update.id
+      })
+        .then(() => api.getEvents())
+        .then((events) => tripController.show(events));
+        // нужно написать метод show у tripController и сделать так, чтобы именно он отрисовывал ивенты
+      break;
+  }
+}
+
+const tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
 
 api.getEvents().then((events) => tripController.show(events));
-// ТУТ НАДО ПЕРЕПИСАТЬ КОНТРОЛЛЕР ТАК, ЧТОБЫ ОН НЕ ПРИНИМАЛ EVENTS А ОНИ ПЕРЕДАВАЛИСЬ, КАК В ДЕМКЕ, ЧЕРЕЗ МЕТОД SHOW
 // иногда с сервера приходят пустые destinations и offers тогда код не работает нормально
 // надо проверять, и, если пустые, не давать вызвать контроллер
 
@@ -68,8 +86,9 @@ menu.getElement().addEventListener(`click`, (evt) => {
   switch (evt.target.innerHTML) {
     case `Table`:
       statistics.getElement().classList.add(`visually-hidden`);
-      tripController.show();
-      // тут передавать задачи
+      tripController._container.classList.remove(`trip-events--hidden`);
+      //tripController.show(eventsList);
+      // возможно, тут не надо отрисовывать по новой, а просто убирать хидден с того, что было, старый вариант функции show
       break;
     case `Stats`:
       tripController.hide();
@@ -90,22 +109,3 @@ addNewEventButton.addEventListener(`click`, () => {
   // для нового ивента нужно будет реализовать загрузку списка опций после выбора дестинейшн.
   // Сейчас этого в разметке новой точки нет. И описание тоже должно подгружаться, наверное
 });
-
-export const onDataChange = (actionType, update) => {
-  switch(actionType) {
-    case `update`:
-      api.updateEvent({
-        id: update.id,
-        data: update.toRAW()
-      }).then((events) => tripController.show(events));
-      break;
-    case `delete`:
-      api.deleteEvent({
-        id: update.id
-      })
-        .then(() => api.getEvents())
-        .then((events) => tripController.show(events));
-        // нужно написать метод show у tripController и сделать так, чтобы именно он отрисовывал ивенты
-      break;
-  }
-}

@@ -8,8 +8,9 @@ import {TripDetails} from '../components/trip-details';
 const PointControllerMode = Mode;
 
 export class TripController {
-  constructor(container, destinations, offers) {
+  constructor(container, onDataChange, destinations, offers) {
     this._container = container;
+    this._onDataChange = onDataChange;
     this._events = [];
     this._destinations = destinations;
     this._offers = offers;
@@ -20,29 +21,8 @@ export class TripController {
     this._subscriptions = [];
     this._onChangeView = this._onChangeView.bind(this);
     // this._onDataChange = this._onDataChange.bind(this);
-  }
 
-  init() {
-    const tripInfo = document.querySelector(`.trip-info`);
-    const tripCost = tripInfo.querySelector(`.trip-info__cost-value`);
-    const filter = document.querySelector(`.trip-filters`);
-
-    const tripDetails = new TripDetails(this._events);
-    render(tripInfo, tripDetails.getElement(), Position.AFTERBEGIN);
-    // TODO: fix getTripDetails function, dateEnd isn't correct sometimes
-    tripCost.innerHTML = this._countTripCost(this._events);
-    // ? вынести это в отдельные функции чтобы вызывать их после изменения порядка событий и стоимости?
-
-    render(this._container, this._sort.getElement(), Position.BEFOREEND);
-    render(this._container, this._eventsList.getElement(), Position.BEFOREEND);
-    // this._renderDays(this._events); // убрать это отсюда?
-
-    // this._events.forEach((eventMock) => this._renderEvent(eventMock));
-
-    this._sort.getElement()
-    .addEventListener(`click`, (evt) => this._onSortItemClick(evt));
-
-    filter.addEventListener(`click`, (evt) => this._onFilterClick(evt));
+    this._init();
   }
 
   hide() {
@@ -57,7 +37,7 @@ export class TripController {
     this._container.classList.remove(`trip-events--hidden`);
   }
 
-  addEvent() {
+  addEvent() { // тоже сделать приватным?
     if (this._addingEvent) {
       return;
     }
@@ -79,7 +59,7 @@ export class TripController {
     this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, PointControllerMode.ADDING,
         this._onChangeView, (...args) => {
           this._addingEvent = null;
-          this._onDataChange(...args);
+          this._onDataChange(`create`, event); // пока не будет работать, придумай, как записаь event правильно
         });
     // this._events.push(defaultEvent);
     // const newEventForm = new EventAdd();
@@ -92,10 +72,34 @@ export class TripController {
     // это можно поправить
   }
 
+  _init() {
+
+    const filter = document.querySelector(`.trip-filters`);
+
+    render(this._container, this._sort.getElement(), Position.BEFOREEND);
+    render(this._container, this._eventsList.getElement(), Position.BEFOREEND);
+    // this._renderDays(this._events); // убрать это отсюда?
+
+    // this._events.forEach((eventMock) => this._renderEvent(eventMock));
+
+    this._sort.getElement()
+    .addEventListener(`click`, (evt) => this._onSortItemClick(evt));
+
+    filter.addEventListener(`click`, (evt) => this._onFilterClick(evt));
+  }
+
   _renderEvents(events) {
     this._events = this._sortByStartDate(events);
 
     this._renderDays(this._events);
+
+    const tripInfo = document.querySelector(`.trip-info`);
+    const tripCost = tripInfo.querySelector(`.trip-info__cost-value`);
+    const tripDetails = new TripDetails(this._events);
+    render(tripInfo, tripDetails.getElement(), Position.AFTERBEGIN);
+    // TODO: fix getTripDetails function, dateEnd isn't correct sometimes
+    tripCost.innerHTML = this._countTripCost(this._events);
+    // ? вынести это в отдельные функции чтобы вызывать их после изменения порядка событий и стоимости?
   }
 
   _renderDays(eventsArray) {
@@ -104,8 +108,8 @@ export class TripController {
     this._eventsList.getElement().innerHTML = ``;
 
     let days = new Set();
-    eventsArray.forEach((eventMock) => {
-      const date = new Date(eventMock.dateStart).toString().slice(4, 10);
+    eventsArray.forEach((event) => {
+      const date = new Date(event.dateStart).toString().slice(4, 10);
       if (!days.has(date)) {
         days.add(date);
       }
@@ -113,18 +117,18 @@ export class TripController {
     Array.from(days).forEach((day, index) => {
       const dayElement = new Day(day, index + 1).getElement();
       render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
-      eventsArray.forEach((eventMock) => {
-        const eventDayStart = new Date(eventMock.dateStart).toString().slice(4, 10);
+      eventsArray.forEach((event) => {
+        const eventDayStart = event.dateStart.toString().slice(4, 10);
         if (day === eventDayStart) {
           const eventsContainer = dayElement.querySelector(`.trip-events__list`);
-          this._renderEvent(eventsContainer, eventMock, this._destinations, this._offers);
+          this._renderEvent(eventsContainer, event, this._destinations, this._offers);
         }
       });
     });
   }
 
   _renderEvent(container, event, destinations, offers) {
-    const pointController = new PointController(container, event, destinations, offers, PointControllerMode.DEFAULT, this._onChangeView, /*this._onDataChange*/);
+    const pointController = new PointController(container, event, destinations, offers, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 

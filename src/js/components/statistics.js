@@ -55,6 +55,7 @@ export class Statistics extends AbstractComponent {
             // barThickness: 10,
             // maxBarThickness: 8,
             // minBarLength: 2,
+            minBarLength: 400,
             gridLines: {
               display: false,
               drawBorder: false
@@ -65,9 +66,9 @@ export class Statistics extends AbstractComponent {
           }],
           yAxes: [{
             barPercentage: 1.0,
-            categoryPercentage: 1.0,
+            categoryPercentage: 1.0,  // если событий мало, то расстояние между полосками все равно будет гигантским
+            barThickness: 50,
             maxBarThickness: 50,
-            minBarLength: 60, // не работает
             gridLines: {
               display: false,
               drawBorder: false

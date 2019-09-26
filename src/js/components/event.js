@@ -3,13 +3,17 @@ import {getPlaceholder, capitalize, countEventDuration, renderEventDuration} fro
 import moment from '../../../node_modules/moment/src/moment';
 
 // TODO: fix warning in console about moment.js
+const OFFERS_COUNT = 3;
 
 const createOffersList = (offersList) => {
   let selectedOffers = [];
   offersList.forEach((offer) => {
-    selectedOffers.push(offer.accepted ? getOfferTemplate(offer) : ``);
+    if (selectedOffers.length < OFFERS_COUNT) {
+      selectedOffers.push(offer.accepted ? getOfferTemplate(offer) : ``);
+    }
   });
   return selectedOffers.join(``);
+  // убрать магические значения везде
 };
 
 const getOfferTemplate = (offer) => {

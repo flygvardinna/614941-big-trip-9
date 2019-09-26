@@ -54,6 +54,6 @@ export const getEvent = () => ({
   // добавится свойство isFavorite: true/false
 });
 
-export const menuTabs = [`Table`, `Stats`];
+export const menuTabs = [`Table`, `Stats`]; // нужны ли табы и фильтр в таком виде? Перенести в main хотя бы
 
 export const filterOptions = [`everything`, `future`, `past`];

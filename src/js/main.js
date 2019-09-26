@@ -7,7 +7,7 @@ import {Statistics} from './components/statistics';
 import {TripController} from './controllers/trip';
 
 // const EVENT_COUNT = 6;
-const AUTHORIZATION = `Basic 484894743987438`;
+const AUTHORIZATION = `Basic 484894743984444`;
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
@@ -72,7 +72,10 @@ const onDataChange = (actionType, update) => {
 
 const tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
 
-api.getEvents().then((events) => tripController.show(events));
+api.getEvents().then((events) => {
+  console.log(events);
+  tripController.show(events);
+});
 // иногда с сервера приходят пустые destinations и offers тогда код не работает нормально
 // надо проверять, и, если пустые, не давать вызвать контроллер
 
@@ -87,6 +90,8 @@ menu.getElement().addEventListener(`click`, (evt) => {
     case `Table`:
       statistics.getElement().classList.add(`visually-hidden`);
       tripController._container.classList.remove(`trip-events--hidden`);
+      menu.querySelector(`.trip-tabs__btn--active`).classList.remove(`trip-tabs__btn--active`);
+      evt.target.classList.toggle(`.trip-tabs__btn--active`);
       //tripController.show(eventsList);
       // возможно, тут не надо отрисовывать по новой, а просто убирать хидден с того, что было, старый вариант функции show
       break;
@@ -95,6 +100,9 @@ menu.getElement().addEventListener(`click`, (evt) => {
       render(eventsContainer, statistics.getElement(), Position.AFTEREND);
       statistics.getElement().classList.remove(`visually-hidden`);
       statistics.renderCharts(tripController._events);
+      menu.querySelector(`.trip-tabs__btn--active`).classList.remove(`trip-tabs__btn--active`);
+      evt.target.classList.toggle(`.trip-tabs__btn--active`);
+      // вынести эти 2 строки в функцию, потому что повторяется? Может, фильтры не надо вставлять из data
       break;
   }
   // здесь еще нужно переключать класс trip-tabs__btn--active

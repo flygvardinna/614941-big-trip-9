@@ -1,4 +1,4 @@
-import {Position, Mode, render, countEventDuration} from '../utils';
+import {Position, Mode, render, unrender, countEventDuration} from '../utils';
 import {PointController} from './point';
 import {Sort} from '../components/sort';
 import {EventsList} from '../components/events-list';
@@ -16,11 +16,14 @@ export class TripController {
     this._offers = offers;
     this._sort = new Sort();
     this._eventsList = new EventsList();
-    // this._addingEvent = null;
+    // this._addingEvent = null; // или расскомментить это? используется для создания ивента
 
     this._subscriptions = [];
     this._onChangeView = this._onChangeView.bind(this);
     // this._onDataChange = this._onDataChange.bind(this);
+    this._info = document.querySelector(`.trip-info`);
+    this._cost = this._info.querySelector(`.trip-info__cost-value`);
+    this._details = false;
 
     this._init();
   }
@@ -56,6 +59,7 @@ export class TripController {
       },
       pictures: []
     };
+
     this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, PointControllerMode.ADDING,
         this._onChangeView, (...args) => {
           this._addingEvent = null;
@@ -92,14 +96,14 @@ export class TripController {
     this._events = this._sortByStartDate(events);
 
     this._renderDays(this._events);
-
-    const tripInfo = document.querySelector(`.trip-info`);
-    const tripCost = tripInfo.querySelector(`.trip-info__cost-value`);
-    const tripDetails = new TripDetails(this._events);
-    render(tripInfo, tripDetails.getElement(), Position.AFTERBEGIN);
-    // TODO: fix getTripDetails function, dateEnd isn't correct sometimes
-    tripCost.innerHTML = this._countTripCost(this._events);
-    // ? вынести это в отдельные функции чтобы вызывать их после изменения порядка событий и стоимости?
+    if (this._details) {
+      unrender(this._details.getElement());
+    }
+    this._details = new TripDetails(this._events);
+    render(this._info, this._details.getElement(), Position.AFTERBEGIN);
+    this._cost.innerHTML = this._countTripCost(this._events);
+    // ? вынести это в отдельные функции чтобы вызывать их после изменения порядка событий и стоимости? (после onDataChange)
+    // или просто каждый раз вызываем renderEvents?
   }
 
   _renderDays(eventsArray) {
@@ -147,10 +151,15 @@ export class TripController {
   _countTripCost(eventsToSum) {
     let cost = 0;
     for (const event of eventsToSum) {
-      cost = cost + event.price;
+      let offersPrice = 0;
+      for (const offer of event.offers) {
+        if (offer.accepted) {
+          offersPrice = offersPrice + offer.price;
+        }
+      }
+      cost = cost + event.price + offersPrice;
     }
     return Math.floor(cost);
-    // TODO: count offers price also
   }
 
   _onChangeView() {
@@ -213,34 +222,34 @@ export class TripController {
     }
   }
 
-  _onFilterClick(evt) {
+  _onFilterClick(evt) { // фильтры не работают на вкладке статитстика, это ок?
     evt.preventDefault();
-    const dateToday = Date.now();
+    const dateToday = new Date();
 
-    if (evt.target.tagName !== `INPUT`) {
+    if (evt.target.tagName !== `LABEL`) {
       return;
     }
 
-    switch (evt.target.value) {
-      case `future`:
+    switch (evt.target.innerHTML) {
+      case `Future`:
         const futureEvents = [];
         this._events.map((event) => {
-          if (event.dateStart > dateToday) {
+          if (new Date(event.dateStart) > dateToday) {
             futureEvents.push(event);
           }
         });
         this._renderDays(futureEvents);
         break;
-      case `past`:
+      case `Past`:
         const pastEvents = [];
         this._events.map((event) => {
-          if (event.dateEnd < dateToday) {
+          if (new Date(event.dateEnd) < dateToday) {
             pastEvents.push(event);
           }
         });
         this._renderDays(pastEvents);
         break;
-      case `everything`:
+      case `Everything`:
         this._renderDays(this._events);
     }
   }

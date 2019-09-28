@@ -125,14 +125,14 @@ export class TripController {
         const eventDayStart = event.dateStart.toString().slice(4, 10);
         if (day === eventDayStart) {
           const eventsContainer = dayElement.querySelector(`.trip-events__list`);
-          this._renderEvent(eventsContainer, event, this._destinations, this._offers);
+          this._renderEvent(eventsContainer, event);
         }
       });
     });
   }
 
-  _renderEvent(container, event, destinations, offers) {
-    const pointController = new PointController(container, event, destinations, offers, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
+  _renderEvent(container, event) {
+    const pointController = new PointController(container, event, this._destinations, this._offers, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 

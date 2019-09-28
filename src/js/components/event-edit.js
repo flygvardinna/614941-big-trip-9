@@ -326,9 +326,6 @@ export class EventEdit extends AbstractComponent {
 
   // Вынести в контроллер, в компоненте быть наверное не должно?
   _onEventTypeChange(element, type) {
-    // ГОТОВО при клике на иконку в выпадающем списке должен быть отмечен как checked именно текущий элемент, а не flight
-    // А ЭТО ЕЩЕ НЕТ проверка, если type уже был checked то ничего не должно происходить
-
     element.querySelector(`.event__type-icon`).setAttribute(`src`, `img/icons/${type}.png`);
     element.querySelector(`.event__type-output`).innerHTML = `${capitalize(type)} ${getPlaceholder(type)}`;
     unrender(element.querySelector(`.event__section--offers`));

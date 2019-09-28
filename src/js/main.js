@@ -70,10 +70,9 @@ const onDataChange = (actionType, update) => {
   }
 }
 
-const tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
-
 api.getEvents().then((events) => {
   console.log(events);
+  const tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
   tripController.show(events);
 });
 // иногда с сервера приходят пустые destinations и offers тогда код не работает нормально

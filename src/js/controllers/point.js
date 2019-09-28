@@ -158,9 +158,12 @@ export class PointController {
     }
 
     Array.from(this._eventEdit.getElement().querySelectorAll(`.event__type-input`)).forEach((option) => {
-      option.addEventListener(`click`, (evt) => {
-        this._eventEdit._onEventTypeChange(this._eventEdit.getElement(), evt.target.getAttribute(`value`));
-        // проверь, правильно ли написан обработчик, точно ли тут нужен evt
+      option.addEventListener(`click`, () => {
+        if (this._data.type !== option.value) {
+          this._data.type = option.value;
+          option.closest(`.event__type-wrapper`).querySelector(`.event__type-toggle`).checked = false;
+          this._eventEdit._onEventTypeChange(this._eventEdit.getElement(), option.value);
+        }
       });
     });
 
@@ -184,6 +187,7 @@ export class PointController {
       });
 
     render(this._container, currentView.getElement(), renderPosition);
+    // сделай функцию, чтобы опции в форме можно было отщелкнуть и сделать не селектед
   }
 
   setDefaultView() {

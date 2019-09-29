@@ -77,13 +77,4 @@ export class Event extends AbstractComponent {
     </div>
     </li>`.trim();
   }
-
-  update(data) {
-    this._type = data.type;
-    this._destination = data.destination.name;
-    this._dateStart = data.dateStart;
-    this._dateEnd = data.dateEnd;
-    this._price = data.price;
-    this._offers = data.offers;
-  }
 }

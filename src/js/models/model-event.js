@@ -3,7 +3,7 @@ export class ModelEvent {
     this.id = data[`id`];
     this.type = data[`type`];
     this.destination = data[`destination`];
-    this.dateStart = new Date(data[`date_from`]);
+    this.dateStart = new Date(data[`date_from`]); // нужно ли тут new Date
     this.dateEnd = new Date(data[`date_to`]);
     this.price = data[`base_price`];
     this.offers = data[`offers`] || [];
@@ -20,14 +20,14 @@ export class ModelEvent {
 
   toRAW() {
     return {
-        'id': this.id,
-        'type': this.type,
-        'destination': this.destination,
-        'date_from': this.dateStart,
-        'date_to': this.dateEnd,
-        'base_price': this.price,
-        'offers`': this.offers,
-        'is_favorite': this.isFavorite,
-    }
+      id: this.id,
+      type: this.type,
+      destination: this.destination,
+      date_from: this.dateStart,
+      date_to: this.dateEnd,
+      base_price: this.price,
+      offers: this.offers,
+      is_favorite: this.isFavorite,
+    };
   }
-};
+}

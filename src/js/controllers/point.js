@@ -1,7 +1,6 @@
-import {Position, Mode, Key, render, unrender, shuffleArray} from '../utils';
+import {Position, Mode, Key, render, unrender} from '../utils';
 import {Event} from '../components/event';
 import {EventEdit} from '../components/event-edit';
-// import {EventAdd} from '../components/event-add';
 import flatpickr from 'flatpickr';
 
 export class PointController {
@@ -14,6 +13,8 @@ export class PointController {
     this._onDataChange = onDataChange;
     this._eventView = new Event(this._data);
     this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
+    // возможно тут должны быть onEditButtonClick и onSubmitButtonClick
+    // this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
 
     this.init(mode);
   }
@@ -35,7 +36,8 @@ export class PointController {
       allowInput: true,
       altFormat: `d/m/y H:i`,
       // dateFormat: `Y-m-d H:i`,
-      dateFormat: `U`,
+      // dateFormat: `U`, // выводились в value милисекунды
+      dateFormat: `Z`,
       defaultDate: this._data.dateStart,
       // minDate: `today`,
       enableTime: true,
@@ -52,12 +54,59 @@ export class PointController {
       allowInput: true,
       altFormat: `d/m/y H:i`,
       // dateFormat: `Y-m-d H:i`,
-      dateFormat: `U`,
+      dateFormat: `Z`,
+      // dateFormat: `d/m/y H:i`,
       defaultDate: this._data.dateEnd,
       minDate: minDateEnd,
       enableTime: true,
       // time_24hr: true
     });
+
+    const onSubmitButtonClick = (evt) => {
+      evt.preventDefault();
+
+      const form = this._eventEdit.getElement();
+      const formData = new FormData(form);
+      let picturesArray = [];
+      Array.from(form.querySelectorAll(`.event__photo`)).forEach((picture) => picturesArray.push({
+        src: picture.getAttribute(`src`),
+        description: picture.getAttribute(`alt`)
+      }));
+      let offersArray = [];
+      Array.from(form.querySelectorAll(`.event__offer-selector`)).forEach((offer) => offersArray.push({
+        title: offer.querySelector(`.event__offer-title`).innerHTML,
+        price: parseInt(offer.querySelector(`.event__offer-price`).innerHTML, 10),
+        accepted: offer.querySelector(`.event__offer-checkbox`).checked
+      }));
+
+      this._data.type = formData.get(`event-type`); // нужно ли передавать id?
+      this._data.destination = {
+        name: formData.get(`event-destination`),
+        description: form.querySelector(`.event__destination-description`).innerHTML,
+        pictures: picturesArray
+      };
+      this._data.dateStart = new Date(formData.get(`event-start-time`));
+      this._data.dateEnd = new Date(formData.get(`event-end-time`));
+      this._data.price = parseInt(formData.get(`event-price`), 10);
+      this._data.offers = offersArray;
+      this._data.isFavorite = form.querySelector(`.event__favorite-checkbox`).checked;
+
+      // сейчас при изменении опции (выбранная) не отрисовывается в списке ивентов (не в форме)
+
+      // может можно было не городить поиск лейбла с типом итд, а брать entry.type итд
+      // TO DO После сохранения точка маршрута располагается в списке точек маршрута в порядке определенном
+      // текущей сортировкой (по умолчанию, по длительности или по стоимости). НЕ РАБОТАЕТ СЕЙЧАС
+      // сейчас проблема такая, что если выбрана сортировка не по дням, то после изменения снова рендерятся дни
+
+      this._onDataChange(`update`, this._data);
+
+      document.removeEventListener(`keydown`, onEscKeyDown);
+
+      if (mode === Mode.ADDING) {
+        unrender(this._eventEdit.getElement());
+        document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
+      }
+    };
 
     const onEscKeyDown = (evt) => {
       if (evt.key === Key.ESCAPE || evt.key === Key.ESCAPE_IE) {
@@ -83,67 +132,31 @@ export class PointController {
 
     checkSelectedType(this._data.type);
 
+    const updateIfOfferAccepted = () => {
+      const offers = Array.from(this._eventEdit.getElement().querySelectorAll(`.event__offer-checkbox`));
+      offers.forEach((offer) => {
+        offer.addEventListener(`click`, () => {
+          // нужно вызывать пересчитывание стоимости путешествия после сохранения данных? Или само посчитается?
+          if (offer.checked === true) {
+            offer.setAttribute(`checked`, `checked`);
+          } else {
+            offer.setAttribute(`checked`, false);
+          }
+        });
+      });
+    };
+
+    updateIfOfferAccepted();
+
+    this._eventEdit.getElement()
+      .addEventListener(`submit`, onSubmitButtonClick);
+
     this._eventView.getElement()
       .querySelector(`.event__rollup-btn`)
       .addEventListener(`click`, () => {
         this._onChangeView();
         this._container.replaceChild(this._eventEdit.getElement(), this._eventView.getElement());
         document.addEventListener(`keydown`, onEscKeyDown);
-      });
-
-    this._eventEdit.getElement()
-      .addEventListener(`submit`, (evt) => {
-        evt.preventDefault();
-
-        const form = this._eventEdit.getElement();
-        const formData = new FormData(form);
-        let picturesArray = [];
-        Array.from(form.querySelectorAll(`.event__photo`)).forEach((picture) => picturesArray.push(picture.getAttribute(`src`)));
-        const entry = {
-          type: formData.get(`event-type`),
-          destination: formData.get(`event-destination`),
-          dateStart: formData.get(`event-start-time`) * 1000,
-          dateEnd: formData.get(`event-end-time`) * 1000,
-          price: parseInt(formData.get(`event-price`), 10),
-          offers() {
-            let offersList = [
-              {name: `Add luggage`,
-                price: 10,
-                selected: Boolean(Math.round(Math.random()))},
-              {name: `Switch to comfort class`,
-                price: 150,
-                selected: Boolean(Math.round(Math.random()))},
-              {name: `Add meal`,
-                price: 2,
-                selected: Boolean(Math.round(Math.random()))},
-              {name: `Choose seats`,
-                price: 9,
-                selected: Boolean(Math.round(Math.random()))},
-            ];
-            const offersCount = Math.floor(Math.random() * 3);
-            return shuffleArray(offersList).slice(0, offersCount);
-          },
-          description() {
-            return form.querySelector(`.event__destination-description`).innerHTML;
-          },
-          pictures: picturesArray
-          // мне нужно собирать объект с полным списком опций и информацией о том, какие отмечены, а какие нет
-          // видимо, нужно хранить id опций и инфу чекнуты или нет, а цена привязана к id
-          // и в шаблоне опции нужно менять name, id итд при вставке опций
-        };
-
-        //ПЕРЕПИСАТЬ this._onDataChange(entry, mode === Mode.DEFAULT ? this._data : null);
-        this._onDataChange(`update`, entry, mode === Mode.DEFAULT ? this._data : null);
-        // может можно было не городить поиск лейбла с типом итд, а брать entry.type итд
-        // TO DO После сохранения точка маршрута располагается в списке точек маршрута в порядке определенном
-        // текущей сортировкой (по умолчанию, по длительности или по стоимости).
-
-        document.removeEventListener(`keydown`, onEscKeyDown);
-
-        if (mode === Mode.ADDING) {
-          unrender(form);
-          document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
-        }
       });
 
     if (mode === Mode.DEFAULT) {
@@ -187,7 +200,6 @@ export class PointController {
       });
 
     render(this._container, currentView.getElement(), renderPosition);
-    // сделай функцию, чтобы опции в форме можно было отщелкнуть и сделать не селектед
   }
 
   setDefaultView() {

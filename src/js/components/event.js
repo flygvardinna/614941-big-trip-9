@@ -35,17 +35,17 @@ const getOffersTemplate = (offersToRender) => {
 };
 
 export class Event extends AbstractComponent {
-  constructor({id, type, destination, dateStart, dateEnd, price, offers}) {
+  constructor(data) {
     super();
-    this._id = id;
-    this._type = type;
-    this._placeholder = getPlaceholder(type);
-    this._destination = destination.name;
-    this._dateStart = dateStart;
-    this._dateEnd = dateEnd;
+    this._id = data.id;
+    this._type = data.type;
+    this._placeholder = getPlaceholder(data.type);
+    this._destination = data.destination.name;
+    this._dateStart = data.dateStart;
+    this._dateEnd = data.dateEnd;
     this._duration = renderEventDuration(countEventDuration(this._dateStart, this._dateEnd));
-    this._price = price;
-    this._offers = offers;
+    this._price = data.price;
+    this._offers = data.offers;
   }
 
   getTemplate() {
@@ -76,5 +76,14 @@ export class Event extends AbstractComponent {
       </button>
     </div>
     </li>`.trim();
+  }
+
+  update(data) {
+    this._type = data.type;
+    this._destination = data.destination.name;
+    this._dateStart = data.dateStart;
+    this._dateEnd = data.dateEnd;
+    this._price = data.price;
+    this._offers = data.offers;
   }
 }

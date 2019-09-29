@@ -1,14 +1,15 @@
 import {Position, render} from './utils';
-import {getEvent, menuTabs, filterOptions} from './data';
 import {API} from './api';
 import {Menu} from './components/menu';
 import {Filter} from './components/filter';
 import {Statistics} from './components/statistics';
 import {TripController} from './controllers/trip';
 
-// const EVENT_COUNT = 6;
 const AUTHORIZATION = `Basic 484894743984444`;
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
+
+export const menuTabs = [`Table`, `Stats`];
+export const filterOptions = [`everything`, `future`, `past`];
 
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
@@ -25,11 +26,6 @@ render(tripControls, filter.getElement(), Position.BEFOREEND);
 
 const statistics = new Statistics();
 
-/* const eventMocks = new Array(EVENT_COUNT)
-                .fill(``)
-                .map(getEvent); */
-
-// console.log(eventMocks);
 // TODO: Put events sorting to controller also - ГОТОВО
 
 /* const tripController = new TripController(tripEvents, eventMocks);
@@ -41,23 +37,36 @@ tripController.init(); */
 
 let availableDestinations = [];
 api.getDestinations().then((destinations) => {
-  console.log(destinations);
+  // console.log(destinations);
   availableDestinations = destinations;
 });
 
 let availableOffers = [];
 api.getOffers().then((offers) => {
-  console.log(offers);
+  // console.log(offers);
   availableOffers = offers;
 });
 
-const onDataChange = (actionType, update) => {
-  switch(actionType) {
+let tripController;
+let eventsList;
+
+export const onDataChange = (actionType, update) => {
+  switch (actionType) {
     case `update`:
       api.updateEvent({
         id: update.id,
         data: update.toRAW()
-      }).then((events) => tripController.show(events));
+      }).then((updatedEvent) => {
+        // console.log(updatedEvent); // поменять название event на point везде, чтоб не было путаницы, или так уже оставим?
+        for (let event of eventsList) {
+          if (updatedEvent.id === event.id) { // может быть это не надо, мы ведь уже изменили элемент, без копирования массива?
+            event = updatedEvent;
+            // console.log(eventsList);
+          }
+        }
+        tripController.show(eventsList); // карточка исчезает - удаляется, но после обновления стараницы все ок
+        // какая-то путаница с айдишниками
+      });
       break;
     case `delete`:
       api.deleteEvent({
@@ -65,15 +74,15 @@ const onDataChange = (actionType, update) => {
       })
         .then(() => api.getEvents())
         .then((events) => tripController.show(events));
-        // нужно написать метод show у tripController и сделать так, чтобы именно он отрисовывал ивенты
       break;
   }
-}
+};
 
 api.getEvents().then((events) => {
-  console.log(events);
-  const tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
-  tripController.show(events);
+  // console.log(events);
+  eventsList = events.slice(); // чтобы не преобразовывать исходный массив? надо ли это?
+  tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
+  tripController.show(eventsList);
 });
 // иногда с сервера приходят пустые destinations и offers тогда код не работает нормально
 // надо проверять, и, если пустые, не давать вызвать контроллер
@@ -91,7 +100,7 @@ menu.getElement().addEventListener(`click`, (evt) => {
       tripController._container.classList.remove(`trip-events--hidden`);
       menu.querySelector(`.trip-tabs__btn--active`).classList.remove(`trip-tabs__btn--active`);
       evt.target.classList.toggle(`.trip-tabs__btn--active`);
-      //tripController.show(eventsList);
+      // tripController.show(eventsList);
       // возможно, тут не надо отрисовывать по новой, а просто убирать хидден с того, что было, старый вариант функции show
       break;
     case `Stats`:
@@ -111,8 +120,4 @@ menu.getElement().addEventListener(`click`, (evt) => {
 addNewEventButton.addEventListener(`click`, () => {
   tripController.addEvent();
   addNewEventButton.setAttribute(`disabled`, `disabled`);
-  // кажется, мне не нужен отдельный компонент event-add, должна быть все та же форма редактирования,
-  // только без звездочки избранного и там кнопка Cancel вместо Delete
-  // для нового ивента нужно будет реализовать загрузку списка опций после выбора дестинейшн.
-  // Сейчас этого в разметке новой точки нет. И описание тоже должно подгружаться, наверное
 });

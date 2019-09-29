@@ -10,16 +10,16 @@ const renderPictures = (picturesToRender) => {
   return picturesFeed.join(``);
 };
 
-const createOffersList = (offersList) => {
+const createOffersList = (offersList, type) => {
   let selectedOffers = [];
-  offersList.forEach((offer) => selectedOffers.push(getOfferTemplate(offer)));
+  offersList.forEach((offer, index) => selectedOffers.push(getOfferTemplate(offer, index + 1, type)));
   return selectedOffers.join(``);
 };
 
-const getOfferTemplate = (offer) => {
+const getOfferTemplate = (offer, index, type) => {
   return `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${offer.accepted ? `checked` : ``}>
-    <label class="event__offer-label" for="event-offer-luggage-1">
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${type}-${index}" type="checkbox" name="event-offer-${type}" ${offer.accepted ? `checked` : ``}>
+    <label class="event__offer-label" for="event-offer-${type}-${index}">
       <span class="event__offer-title">${offer.title}</span>
       &plus;
       &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
@@ -27,13 +27,13 @@ const getOfferTemplate = (offer) => {
   </div>`;
 };
 
-const getAvailableOffersTemplate = (offersToRender) => {
+const getAvailableOffersTemplate = (offersToRender, eventType) => {
   if (offersToRender.length > 0) {
     return `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
-      ${createOffersList(offersToRender)}
+      ${createOffersList(offersToRender, eventType)}
       </div>
     </section>`;
   }
@@ -60,24 +60,23 @@ const createDestinationsList = (availableDestinations) => {
 };
 
 export class EventEdit extends AbstractComponent {
-  constructor(mode, {id, type, destination, dateStart, dateEnd, price, offers, isFavorite}, destinationsList, offersList) {
+  constructor(mode, data, destinationsList, offersList) {
     super();
     this._mode = mode;
-    this._id = id;
-    this._type = type;
-    this._placeholder = getPlaceholder(type);
-    this._destination = destination;
-    // this._description = destination.description;
-    // this._pictures = destination.pictures;
+    this._id = data.id;
+    this._type = data.type;
+    this._placeholder = getPlaceholder(data.type);
+    this._destination = data.destination;
+    this._dateStart = data.dateStart;
+    this._dateEnd = data.dateEnd;
+    this._price = data.price;
+    this._offers = data.offers;
+    this._isFavorite = data.isFavorite;
     this._destinationsList = destinationsList;
     this._offersList = offersList;
-    this._dateStart = dateStart;
-    this._dateEnd = dateEnd;
-    this._price = price;
-    this._offers = offers;
-    this._isFavorite = isFavorite;
 
     this._onEventTypeChange = this._onEventTypeChange.bind(this);
+    this._onDestinationChange = this._onDestinationChange.bind(this);
   }
 
   getTemplate() {
@@ -200,7 +199,7 @@ export class EventEdit extends AbstractComponent {
 
         <section class="event__details">
 
-          ${getAvailableOffersTemplate(this._offers)}
+          ${getAvailableOffersTemplate(this._offers, this._type)}
 
           ${this._destination.description ? getDestinationTemplate(this._destination) : ``}
 
@@ -322,8 +321,6 @@ export class EventEdit extends AbstractComponent {
     }
   }
 
-   // Сейчас по клику на чекнутую опцию ее нельзя расчекать НАДО ИСПРАВИТЬ
-
   // Вынести в контроллер, в компоненте быть наверное не должно?
   _onEventTypeChange(element, type) {
     element.querySelector(`.event__type-icon`).setAttribute(`src`, `img/icons/${type}.png`);
@@ -337,11 +334,9 @@ export class EventEdit extends AbstractComponent {
         }
       }
     }
-    // сейчас нельзя отметить опцию как выбранную, всегда отмечается первая, поправь
   }
 
-  _onDestinationChange(element, destinationValue) {
-    // фотки тоже должны обновляться
+  _onDestinationChange(element, destinationValue) { // запретить пользовательский ввод, сейчас можно ввести херню и пропустит
     for (let destination of this._destinationsList) {
       if (destination.name === destinationValue) {
         element.querySelector(`.event__destination-description`).innerHTML = ``;

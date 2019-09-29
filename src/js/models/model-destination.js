@@ -12,4 +12,4 @@ export class ModelDestination {
   static parseDestinations(data) {
     return data.map(ModelDestination.parseDestination);
   }
-};
+}

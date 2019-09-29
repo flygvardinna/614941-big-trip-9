@@ -60,10 +60,10 @@ export class TripController {
       pictures: []
     };
 
-    this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, PointControllerMode.ADDING,
-        this._onChangeView, (...args) => {
+    this._addingEvent = new PointController(this._sort.getElement(), this._destination, this._offers, defaultEvent, PointControllerMode.ADDING,
+        this._onChangeView, () => {
           this._addingEvent = null;
-          this._onDataChange(`create`, event); // пока не будет работать, придумай, как записаь event правильно
+          this._onDataChange(`create`, event); // пока не будет работать, придумай, как записать event правильно
         });
     // this._events.push(defaultEvent);
     // const newEventForm = new EventAdd();
@@ -122,11 +122,12 @@ export class TripController {
       const dayElement = new Day(day, index + 1).getElement();
       render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
       eventsArray.forEach((event) => {
-        const eventDayStart = event.dateStart.toString().slice(4, 10);
+        const eventDayStart = event.dateStart.toString().slice(4, 10); // здесь можно не отрезать, а сделать momentom как у дня
         if (day === eventDayStart) {
           const eventsContainer = dayElement.querySelector(`.trip-events__list`);
           this._renderEvent(eventsContainer, event);
         }
+        // везде привести в порядок форматирование дат? сейчас у меня у дня в таблице дата в iso string
       });
     });
   }
@@ -166,30 +167,6 @@ export class TripController {
     this._subscriptions.forEach((subscription) => subscription());
   }
 
-  /*_onDataChange(actionType, update) {
-    switch(actionType) {
-      case `delete`:
-        api.deleteEvent({
-          id: update.id
-        })
-          .then(() => api.getEvents())
-          .then((events) => {
-            this._events = this._sortByStartDate(events);
-            this._renderDays(this._events);
-          });
-        break;
-    }
-
-    // this._events = this._sortByStartDate(this._events);
-    // this._renderDays(this._events);
-
-    // При изменении дат (после кнопки save) должны перерендериваться duration (готово),
-    // список дней (инфа о днях) - готово - и шапка с датами маршрута
-    // TO DO После сохранения точка маршрута располагается в списке точек маршрута в порядке определенном
-    // текущей сортировкой (по умолчанию, по длительности или по стоимости).
-    // сейчас проблема такая, что если выбрана сортировка не по дням, то после изменения снова рендерятся дни
-  }*/
-
   _onSortItemClick(evt) {
     if (evt.target.tagName !== `LABEL`) {
       return;
@@ -206,7 +183,6 @@ export class TripController {
     switch (evt.target.dataset.sortType) {
       case `time-down`:
         const sortedByTimeDownEvents = this._events.slice().sort((a, b) => countEventDuration(b.dateStart, b.dateEnd) - countEventDuration(a.dateStart, a.dateEnd));
-        // сейчас события по дням автоматически отсортированы по длительности, так как все заканчиваются в одни и те же день и время
         sortedByTimeDownEvents.forEach((event) => this._renderEvent(eventsContainer, event, this._destinations, this._offers));
         break;
       case `price-down`:
@@ -219,6 +195,7 @@ export class TripController {
         this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = `Day`;
         this._renderDays(this._events);
         break;
+        // проблема с сортировкой, после изменения ивента снова отрисовываются дни, а не та сортировка, какая была
     }
   }
 

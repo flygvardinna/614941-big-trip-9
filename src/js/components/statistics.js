@@ -66,7 +66,7 @@ export class Statistics extends AbstractComponent {
           }],
           yAxes: [{
             barPercentage: 1.0,
-            categoryPercentage: 1.0,  // если событий мало, то расстояние между полосками все равно будет гигантским
+            categoryPercentage: 1.0, // если событий мало, то расстояние между полосками все равно будет гигантским
             barThickness: 50,
             maxBarThickness: 50,
             gridLines: {

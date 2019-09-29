@@ -6,69 +6,77 @@ import 'flatpickr/dist/themes/light.css';
 
 const renderPictures = (picturesToRender) => {
   let picturesFeed = [];
-  picturesToRender.forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture}" alt="Event photo">`));
+  picturesToRender.forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`));
   return picturesFeed.join(``);
-  // здесь нужно вставлять описание картинки в альт, будет приходить с сервера
 };
 
-const createOffersList = (offersList) => {
+const createOffersList = (offersList, type) => {
   let selectedOffers = [];
-  offersList.forEach((offer) => selectedOffers.push(getOfferTemplate(offer)));
+  offersList.forEach((offer, index) => selectedOffers.push(getOfferTemplate(offer, index + 1, type)));
   return selectedOffers.join(``);
 };
 
-const getOfferTemplate = (offer) => {
+const getOfferTemplate = (offer, index, type) => {
   return `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${offer.selected ? `checked` : ``}>
-    <label class="event__offer-label" for="event-offer-luggage-1">
-      <span class="event__offer-title">${offer.name}</span>
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${type}-${index}" type="checkbox" name="event-offer-${type}" ${offer.accepted ? `checked` : ``}>
+    <label class="event__offer-label" for="event-offer-${type}-${index}">
+      <span class="event__offer-title">${offer.title}</span>
       &plus;
       &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
     </label>
   </div>`;
 };
 
-const getAvailableOffersTemplate = (offersToRender) => {
+const getAvailableOffersTemplate = (offersToRender, eventType) => {
   if (offersToRender.length > 0) {
     return `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
-      ${createOffersList(offersToRender)}
+      ${createOffersList(offersToRender, eventType)}
       </div>
     </section>`;
   }
   return ``;
 };
 
-const getDestinationTemplate = (eventDescription, eventPictures) => {
+const getDestinationTemplate = (eventDestination) => {
   return `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${eventDescription}</p>
+    <p class="event__destination-description">${eventDestination.description}</p>
 
     <div class="event__photos-container">
       <div class="event__photos-tape">
-        ${renderPictures(eventPictures)}
+        ${renderPictures(eventDestination.pictures)}
       </div>
     </div>
   </section>`;
 };
 
+const createDestinationsList = (availableDestinations) => {
+  let destinations = [];
+  availableDestinations.forEach((destination) => destinations.push(`<option value="${destination.name}"></option>`));
+  return destinations.join(``);
+};
+
 export class EventEdit extends AbstractComponent {
-  constructor(mode, {type, destination, dateStart, dateEnd, price, offers, description, pictures}) {
+  constructor(mode, data, destinationsList, offersList) {
     super();
     this._mode = mode;
-    this._type = type;
-    this._placeholder = getPlaceholder(type);
-    this._destination = destination;
-    this._dateStart = dateStart;
-    this._dateEnd = dateEnd;
-    this._price = price;
-    this._offers = offers;
-    this._description = description;
-    this._pictures = pictures;
+    this._id = data.id;
+    this._type = data.type;
+    this._placeholder = getPlaceholder(data.type);
+    this._destination = data.destination;
+    this._dateStart = data.dateStart;
+    this._dateEnd = data.dateEnd;
+    this._price = data.price;
+    this._offers = data.offers;
+    this._isFavorite = data.isFavorite;
+    this._destinationsList = destinationsList;
+    this._offersList = offersList;
 
     this._onEventTypeChange = this._onEventTypeChange.bind(this);
+    this._onDestinationChange = this._onDestinationChange.bind(this);
   }
 
   getTemplate() {
@@ -147,11 +155,9 @@ export class EventEdit extends AbstractComponent {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${capitalize(this._type)} ${this._placeholder}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._destination}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
-              <option value="Amsterdam"></option>
-              <option value="Geneva"></option>
-              <option value="Chamonix"></option>
+              ${createDestinationsList(this._destinationsList)}
             </datalist>
           </div>
 
@@ -178,7 +184,7 @@ export class EventEdit extends AbstractComponent {
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
           <button class="event__reset-btn" type="reset">Delete</button>
 
-          <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" checked>
+          <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${this._isFavorite ? `checked` : ``}>
           <label class="event__favorite-btn" for="event-favorite-1">
             <span class="visually-hidden">Add to favorite</span>
             <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -193,9 +199,9 @@ export class EventEdit extends AbstractComponent {
 
         <section class="event__details">
 
-          ${getAvailableOffersTemplate(this._offers())}
+          ${getAvailableOffersTemplate(this._offers, this._type)}
 
-          ${this._description ? getDestinationTemplate(this._description(), this._pictures) : ``}
+          ${this._destination.description ? getDestinationTemplate(this._destination) : ``}
 
         </section>
       </form>`.trim();
@@ -276,10 +282,7 @@ export class EventEdit extends AbstractComponent {
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="" list="destination-list-1">
             <datalist id="destination-list-1">
-              <option value="Amsterdam"></option>
-              <option value="Geneva"></option>
-              <option value="Chamonix"></option>
-              <option value="Saint Petersburg"></option>
+              ${createDestinationsList(this._destinationsList)}
             </datalist>
           </div>
 
@@ -309,30 +312,41 @@ export class EventEdit extends AbstractComponent {
 
         <section class="event__details">
 
-          ${getAvailableOffersTemplate(this._offers())}
+          ${getAvailableOffersTemplate(this._offers)}
 
-          ${this._description ? getDestinationTemplate(this._description(), this._pictures) : ``}
+          ${this._destination.description ? getDestinationTemplate(this._destination) : ``}
 
         </section>
       </form>`;
     }
   }
 
+  // Вынести в контроллер, в компоненте быть наверное не должно?
   _onEventTypeChange(element, type) {
-    // ГОТОВО при клике на иконку в выпадающем списке должен быть отмечен как checked именно текущий элемент, а не flight
-    // А ЭТО ЕЩЕ НЕТ проверка, если type уже был checked то ничего не должно происходить
-
     element.querySelector(`.event__type-icon`).setAttribute(`src`, `img/icons/${type}.png`);
     element.querySelector(`.event__type-output`).innerHTML = `${capitalize(type)} ${getPlaceholder(type)}`;
     unrender(element.querySelector(`.event__section--offers`));
-    const newOffers = getAvailableOffersTemplate(this._offers());
-    if (newOffers) {
-      render(element.querySelector(`.event__details`), createElement(newOffers), Position.AFTERBEGIN);
+    for (const offer of this._offersList) {
+      if (offer.type === type) {
+        const newOffers = getAvailableOffersTemplate(offer.offers);
+        if (newOffers) {
+          render(element.querySelector(`.event__details`), createElement(newOffers), Position.AFTERBEGIN);
+        }
+      }
     }
   }
 
-  _onDestinationChange(element) {
-    // фотки тоже должны обновляться
-    element.querySelector(`.event__destination-description`).innerHTML = `${this._description()}`;
+  _onDestinationChange(element, destinationValue) { // запретить пользовательский ввод, сейчас можно ввести херню и пропустит
+    for (let destination of this._destinationsList) {
+      if (destination.name === destinationValue) {
+        element.querySelector(`.event__destination-description`).innerHTML = ``;
+        if (destination.description || destination.pictures) {
+          unrender(element.querySelector(`.event__section--destination`));
+          const newDestination = getDestinationTemplate(destination);
+          render(element.querySelector(`.event__details`), createElement(newDestination), Position.BEFOREEND);
+        }
+        return;
+      }
+    }
   }
 }

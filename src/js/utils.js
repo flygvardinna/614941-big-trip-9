@@ -30,7 +30,7 @@ export const createElement = (template) => {
   return newElement.firstChild;
 };
 
-export const render = (container, element, place) => {
+export const render = (container, element, place) => { // перенести в AbstractComponent?
   switch (place) {
     case Position.AFTERBEGIN:
       container.prepend(element);
@@ -44,21 +44,13 @@ export const render = (container, element, place) => {
   }
 };
 
-export const unrender = (element) => {
+export const unrender = (element) => { // удалить или перенести в AbstractComponent? метод используется и не только у компонентов
   if (element) {
     element.remove();
     // element.removeElement();
     // задание 4.1 Не забудьте после удаления элемента из DOM удалить ссылку на него
     // с помощью метода класса removeElement, который мы описали в пятом пункте.
   }
-};
-
-export const shuffleArray = (array) => {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
 };
 
 export const capitalize = (string) => {
@@ -73,7 +65,7 @@ export const renderEventDuration = (duration) => {
   const days = duration.days();
   const hours = duration.hours();
   const minutes = duration.minutes();
-  let durationToRender;
+  let durationToRender = ``;
   if (days) {
     durationToRender = `${days}D`;
   }

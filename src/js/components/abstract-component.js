@@ -17,13 +17,16 @@ export class AbstractComponent {
     return this._element;
   }
 
-  removeElement() {
+  getTemplate() {
+    throw new Error(`Abstract method not implemented: getTemplate`);
+  }
+
+  removeElement() { // нужно ли это? сейчас нигде не используется
     if (this._element) {
+      this._element.remove();
       this._element = null;
     }
   }
 
-  getTemplate() {
-    throw new Error(`Abstract method not implemented: getTemplate`);
-  }
+  update() {}
 }

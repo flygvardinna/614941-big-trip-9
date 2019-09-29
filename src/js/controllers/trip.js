@@ -1,4 +1,4 @@
-import {Position, Mode, render, countEventDuration} from '../utils';
+import {Position, Mode, render, unrender, countEventDuration} from '../utils';
 import {PointController} from './point';
 import {Sort} from '../components/sort';
 import {EventsList} from '../components/events-list';
@@ -8,51 +8,39 @@ import {TripDetails} from '../components/trip-details';
 const PointControllerMode = Mode;
 
 export class TripController {
-  constructor(container, events) {
+  constructor(container, onDataChange, destinations, offers) {
     this._container = container;
-    // this._events = events;
-    this._events = this._sortByStartDate(events);
+    this._onDataChange = onDataChange;
+    this._events = [];
+    this._destinations = destinations;
+    this._offers = offers;
     this._sort = new Sort();
     this._eventsList = new EventsList();
-    // this._addingEvent = null;
+    // this._addingEvent = null; // или расскомментить это? используется для создания ивента
 
     this._subscriptions = [];
     this._onChangeView = this._onChangeView.bind(this);
-    this._onDataChange = this._onDataChange.bind(this);
-  }
+    // this._onDataChange = this._onDataChange.bind(this);
+    this._info = document.querySelector(`.trip-info`);
+    this._cost = this._info.querySelector(`.trip-info__cost-value`);
+    this._details = false;
 
-  init() {
-    const tripInfo = document.querySelector(`.trip-info`);
-    const tripCost = tripInfo.querySelector(`.trip-info__cost-value`);
-    const filter = document.querySelector(`.trip-filters`);
-
-    const tripDetails = new TripDetails(this._events);
-    render(tripInfo, tripDetails.getElement(), Position.AFTERBEGIN);
-    // TODO: fix getTripDetails function, dateEnd isn't correct sometimes
-    tripCost.innerHTML = this._countTripCost(this._events);
-    // ? вынести это в отдельные функции чтобы вызывать их после изменения порядка событий и стоимости?
-
-    render(this._container, this._sort.getElement(), Position.BEFOREEND);
-    render(this._container, this._eventsList.getElement(), Position.BEFOREEND);
-    this._renderDays(this._events);
-
-    // this._events.forEach((eventMock) => this._renderEvent(eventMock));
-
-    this._sort.getElement()
-    .addEventListener(`click`, (evt) => this._onSortItemClick(evt));
-
-    filter.addEventListener(`click`, (evt) => this._onFilterClick(evt));
+    this._init();
   }
 
   hide() {
     this._container.classList.add(`trip-events--hidden`);
   }
 
-  show() {
+  show(events) {
+    if (events !== this._events) {
+      this._renderEvents(events);
+    }
+
     this._container.classList.remove(`trip-events--hidden`);
   }
 
-  addEvent() {
+  addEvent() { // тоже сделать приватным?
     if (this._addingEvent) {
       return;
     }
@@ -71,10 +59,11 @@ export class TripController {
       },
       pictures: []
     };
-    this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, PointControllerMode.ADDING,
-        this._onChangeView, (...args) => {
+
+    this._addingEvent = new PointController(this._sort.getElement(), this._destination, this._offers, defaultEvent, PointControllerMode.ADDING,
+        this._onChangeView, () => {
           this._addingEvent = null;
-          this._onDataChange(...args);
+          this._onDataChange(`create`, event); // пока не будет работать, придумай, как записать event правильно
         });
     // this._events.push(defaultEvent);
     // const newEventForm = new EventAdd();
@@ -87,14 +76,44 @@ export class TripController {
     // это можно поправить
   }
 
+  _init() {
+
+    const filter = document.querySelector(`.trip-filters`);
+
+    render(this._container, this._sort.getElement(), Position.BEFOREEND);
+    render(this._container, this._eventsList.getElement(), Position.BEFOREEND);
+    // this._renderDays(this._events); // убрать это отсюда?
+
+    // this._events.forEach((eventMock) => this._renderEvent(eventMock));
+
+    this._sort.getElement()
+    .addEventListener(`click`, (evt) => this._onSortItemClick(evt));
+
+    filter.addEventListener(`click`, (evt) => this._onFilterClick(evt));
+  }
+
+  _renderEvents(events) {
+    this._events = this._sortByStartDate(events);
+
+    this._renderDays(this._events);
+    if (this._details) {
+      unrender(this._details.getElement());
+    }
+    this._details = new TripDetails(this._events);
+    render(this._info, this._details.getElement(), Position.AFTERBEGIN);
+    this._cost.innerHTML = this._countTripCost(this._events);
+    // ? вынести это в отдельные функции чтобы вызывать их после изменения порядка событий и стоимости? (после onDataChange)
+    // или просто каждый раз вызываем renderEvents?
+  }
+
   _renderDays(eventsArray) {
     // unrender(this._eventsList.getElement()); // зачем это?
     // this._eventsList.removeElement(); // зачем это?
     this._eventsList.getElement().innerHTML = ``;
 
     let days = new Set();
-    eventsArray.forEach((eventMock) => {
-      const date = new Date(eventMock.dateStart).toString().slice(4, 10);
+    eventsArray.forEach((event) => {
+      const date = new Date(event.dateStart).toString().slice(4, 10);
       if (!days.has(date)) {
         days.add(date);
       }
@@ -102,18 +121,19 @@ export class TripController {
     Array.from(days).forEach((day, index) => {
       const dayElement = new Day(day, index + 1).getElement();
       render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
-      eventsArray.forEach((eventMock) => {
-        const eventDayStart = new Date(eventMock.dateStart).toString().slice(4, 10);
+      eventsArray.forEach((event) => {
+        const eventDayStart = event.dateStart.toString().slice(4, 10); // здесь можно не отрезать, а сделать momentom как у дня
         if (day === eventDayStart) {
           const eventsContainer = dayElement.querySelector(`.trip-events__list`);
-          this._renderEvent(eventsContainer, eventMock);
+          this._renderEvent(eventsContainer, event);
         }
+        // везде привести в порядок форматирование дат? сейчас у меня у дня в таблице дата в iso string
       });
     });
   }
 
   _renderEvent(container, event) {
-    const pointController = new PointController(container, event, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
+    const pointController = new PointController(container, event, this._destinations, this._offers, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 
@@ -132,50 +152,19 @@ export class TripController {
   _countTripCost(eventsToSum) {
     let cost = 0;
     for (const event of eventsToSum) {
-      cost = cost + event.price;
+      let offersPrice = 0;
+      for (const offer of event.offers) {
+        if (offer.accepted) {
+          offersPrice = offersPrice + offer.price;
+        }
+      }
+      cost = cost + event.price + offersPrice;
     }
     return Math.floor(cost);
-    // TODO: count offers price also
   }
 
   _onChangeView() {
     this._subscriptions.forEach((subscription) => subscription());
-  }
-
-  _onDataChange(newData, oldData) {
-    const index = this._events.findIndex((event) => event === oldData);
-    // this._events = this._sortByStartDate(this._events); это не работает, потому что у измененного ивента в
-    // dateStart записывается строка вида 2019-09-20 03:52 а у остальных - количество миллисекунд
-    // НУЖНО ИСПРАВИТЬ, ИНАЧЕ НЕ БУДЕТ СОРТИРОВАТЬСЯ
-    // ИТОГОВЫЕ ДАННЫЕ БУДУТ ПРИХОДИТЬ В ТАКОМ ЖЕ ФОРМАТЕ
-    // ВИДИМО ДЛЯ СОРТИРОВКИ ИХ ТОЖЕ ПРИДЕТСЯ ПЕРЕВОДИТЬ В МИЛЛИСЕКУНДЫ
-
-    // для новой точки это должно работать так же, как для старой.
-    // но есть проблема в том, что в массиве ивентов нет записи для старой даты (точки с дефолтными значениями)
-    // и получается индекс -1
-
-    if (newData === null && oldData === null) {
-      this._addingEvent = null;
-    }
-
-    if (newData === null) {
-      this._events = [...this._events.slice(0, index), ...this._events.slice(index + 1)];
-      // проблема такая, что у новой карточки получается индекс -1 и она не отрисовывается
-    } else if (oldData === null) {
-      this._addingEvent = null;
-      this._events = [newData, ...this._events];
-    } else {
-      this._events[index] = newData;
-    }
-
-    this._events = this._sortByStartDate(this._events);
-    this._renderDays(this._events);
-
-    // При изменении дат (после кнопки save) должны перерендериваться duration (готово),
-    // список дней (инфа о днях) - готово - и шапка с датами маршрута
-    // TO DO После сохранения точка маршрута располагается в списке точек маршрута в порядке определенном
-    // текущей сортировкой (по умолчанию, по длительности или по стоимости).
-    // сейчас проблема такая, что если выбрана сортировка не по дням, то после изменения снова рендерятся дни
   }
 
   _onSortItemClick(evt) {
@@ -194,12 +183,11 @@ export class TripController {
     switch (evt.target.dataset.sortType) {
       case `time-down`:
         const sortedByTimeDownEvents = this._events.slice().sort((a, b) => countEventDuration(b.dateStart, b.dateEnd) - countEventDuration(a.dateStart, a.dateEnd));
-        // сейчас события по дням автоматически отсортированы по длительности, так как все заканчиваются в одни и те же день и время
-        sortedByTimeDownEvents.forEach((eventMock) => this._renderEvent(eventsContainer, eventMock));
+        sortedByTimeDownEvents.forEach((event) => this._renderEvent(eventsContainer, event, this._destinations, this._offers));
         break;
       case `price-down`:
         const sortedByPriceDownEvents = this._events.slice().sort((a, b) => b.price - a.price);
-        sortedByPriceDownEvents.forEach((eventMock) => this._renderEvent(eventsContainer, eventMock));
+        sortedByPriceDownEvents.forEach((event) => this._renderEvent(eventsContainer, event, this._destinations, this._offers));
         break;
       case `default`:
         // render(this._container, this._tripDays.getElement(), Position.BEFOREEND);
@@ -207,37 +195,38 @@ export class TripController {
         this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = `Day`;
         this._renderDays(this._events);
         break;
+        // проблема с сортировкой, после изменения ивента снова отрисовываются дни, а не та сортировка, какая была
     }
   }
 
-  _onFilterClick(evt) {
+  _onFilterClick(evt) { // фильтры не работают на вкладке статитстика, это ок?
     evt.preventDefault();
-    const dateToday = Date.now();
+    const dateToday = new Date();
 
-    if (evt.target.tagName !== `INPUT`) {
+    if (evt.target.tagName !== `LABEL`) {
       return;
     }
 
-    switch (evt.target.value) {
-      case `future`:
+    switch (evt.target.innerHTML) {
+      case `Future`:
         const futureEvents = [];
         this._events.map((event) => {
-          if (event.dateStart > dateToday) {
+          if (new Date(event.dateStart) > dateToday) {
             futureEvents.push(event);
           }
         });
         this._renderDays(futureEvents);
         break;
-      case `past`:
+      case `Past`:
         const pastEvents = [];
         this._events.map((event) => {
-          if (event.dateEnd < dateToday) {
+          if (new Date(event.dateEnd) < dateToday) {
             pastEvents.push(event);
           }
         });
         this._renderDays(pastEvents);
         break;
-      case `everything`:
+      case `Everything`:
         this._renderDays(this._events);
     }
   }

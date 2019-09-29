@@ -18,7 +18,7 @@ export class ModelEvent {
     return data.map(ModelEvent.parseEvent);
   }
 
-  toRAW() {
+  /*toRAW() {
     return {
       id: this.id,
       type: this.type,
@@ -29,5 +29,5 @@ export class ModelEvent {
       offers: this.offers,
       is_favorite: this.isFavorite,
     };
-  }
+  }*/
 }

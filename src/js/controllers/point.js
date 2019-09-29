@@ -13,13 +13,14 @@ export class PointController {
     this._onDataChange = onDataChange;
     this._eventView = new Event(this._data);
     this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
+    this._mode = mode; // ниже замени просто mode на this._mode если надо
     // возможно тут должны быть onEditButtonClick и onSubmitButtonClick
     // this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
 
     this.init(mode);
   }
 
-  init(mode) {
+  init(mode) { // метод init слишком длинный, вынести все лишнее наружу? не получится, можно вынести в отдельные методы только
     let currentView = this._eventView;
     let renderPosition = Position.BEFOREEND;
 
@@ -64,16 +65,19 @@ export class PointController {
 
     const onSubmitButtonClick = (evt) => {
       evt.preventDefault();
+      // нельзя пользоваться переменной event!!
 
       const form = this._eventEdit.getElement();
+      form.querySelector(`.event__save-btn`).textContent = `Saving....`; //мб везде использовать textContent вместо innerHTML?
+      this.toggleFormBlock(form, true); // возможно, не будет работать из-за this
+
       const formData = new FormData(form);
-      let picturesArray = [];
-      Array.from(form.querySelectorAll(`.event__photo`)).forEach((picture) => picturesArray.push({
+      const picturesArray = Array.from(form.querySelectorAll(`.event__photo`)).map((picture) => ({
         src: picture.getAttribute(`src`),
         description: picture.getAttribute(`alt`)
       }));
-      let offersArray = [];
-      Array.from(form.querySelectorAll(`.event__offer-selector`)).forEach((offer) => offersArray.push({
+
+      const offersArray = Array.from(form.querySelectorAll(`.event__offer-selector`)).map((offer) => ({
         title: offer.querySelector(`.event__offer-title`).innerHTML,
         price: parseInt(offer.querySelector(`.event__offer-price`).innerHTML, 10),
         accepted: offer.querySelector(`.event__offer-checkbox`).checked
@@ -89,7 +93,21 @@ export class PointController {
       this._data.dateEnd = new Date(formData.get(`event-end-time`));
       this._data.price = parseInt(formData.get(`event-price`), 10);
       this._data.offers = offersArray;
-      this._data.isFavorite = form.querySelector(`.event__favorite-checkbox`).checked;
+      if (mode === Mode.DEFAULT) {
+        this._data.isFavorite = form.querySelector(`.event__favorite-checkbox`).checked;
+      }
+      this._data.toRAW = () => {
+        return {
+          id: this._data.id,
+          type: this._data.type,
+          destination: this._data.destination,
+          date_from: this._data.dateStart,
+          date_to: this._data.dateEnd,
+          base_price: this._data.price,
+          offers: this._data.offers,
+          is_favorite: this._data.isFavorite,
+        };
+      }
 
       // сейчас при изменении опции (выбранная) не отрисовывается в списке ивентов (не в форме)
 
@@ -98,7 +116,11 @@ export class PointController {
       // текущей сортировкой (по умолчанию, по длительности или по стоимости). НЕ РАБОТАЕТ СЕЙЧАС
       // сейчас проблема такая, что если выбрана сортировка не по дням, то после изменения снова рендерятся дни
 
-      this._onDataChange(`update`, this._data);
+      if (mode === Mode.DEFAULT) {
+        this._onDataChange(`update`, this._data, this.onError); // или this.onError() ?
+      } else {
+        this._onDataChange(`create`, this._data, this.onError);
+      }
 
       document.removeEventListener(`keydown`, onEscKeyDown);
 
@@ -159,7 +181,7 @@ export class PointController {
         document.addEventListener(`keydown`, onEscKeyDown);
       });
 
-    if (mode === Mode.DEFAULT) {
+    if (mode === Mode.DEFAULT) { // зачем это условие? а что в не дефолтном режиме?
       // нужно закрывать форму создания точки, если открываем форму другой точки
       // через onChangeView?
       this._eventEdit.getElement()
@@ -190,6 +212,8 @@ export class PointController {
     this._eventEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {
         this._onDataChange(`delete`, this._data);
+        // сейчас при удалении точки у нее сначала пропадают даты, потом удаляется
+        // Так не должно наверное быть, поправь
 
         if (mode === Mode.ADDING) {
           unrender(this._eventEdit.getElement());
@@ -202,9 +226,38 @@ export class PointController {
     render(this._container, currentView.getElement(), renderPosition);
   }
 
+  toggleFormBlock(form, value) {
+    form.querySelector(`.event__type-toggle`).disabled = value;
+    form.querySelector(`.event__save-btn`).disabled = value;
+    form.querySelector(`.event__reset-btn`).disabled = value;
+    Array.from(form.querySelectorAll(`.event__input`)).map((input) => input.disabled = value);
+    // можно просто дизейблить все инпуты, но это наверное нарушает Д21 Изменения применяются точечно, неочевидно
+    Array.from(form.querySelectorAll(`.event__offer-checkbox`)).map((offer) => offer.disabled = value);
+    if (this._mode === Mode.DEFAULT) {
+      form.querySelector(`.event__favorite-checkbox`).disabled = value;
+      form.querySelector(`.event__rollup-btn`).disabled = value;
+    }
+  }
+
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    this._eventEdit.getElement().style.animation = `shake ${ANIMATION_TIMEOUT / 1000}s`;
+
+    setTimeout(() => {
+      this._eventEdit.getElement().style.animation = ``
+    }, ANIMATION_TIMEOUT);
+  }
+
   setDefaultView() {
     if (this._container.contains(this._eventEdit.getElement())) {
       this._container.replaceChild(this._eventView.getElement(), this._eventEdit.getElement());
     }
+  }
+
+  onError() {
+    this._eventEdit.getElement().querySelector(`.event__save-btn`).textContent = `Save`;
+    this.toggleFormBlock(this._eventEdit.getElement(), false);
+    this._eventEdit.getElement().style = `border: 3px red solid`;
+    this.shake();
   }
 }

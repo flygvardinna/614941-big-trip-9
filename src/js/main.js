@@ -8,20 +8,21 @@ import {TripController} from './controllers/trip';
 const AUTHORIZATION = `Basic 484894743984444`;
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 
-export const menuTabs = [`Table`, `Stats`];
-export const filterOptions = [`everything`, `future`, `past`];
+const MENU_TABS = [`Table`, `Stats`];
+const FILTER_OPTIONS = [`everything`, `future`, `past`];
 
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
 const tripControls = document.querySelector(`.trip-controls`);
 const tripMenuTitle = tripControls.querySelector(`h2`);
 const eventsContainer = document.querySelector(`.trip-events`);
-const addNewEventButton = document.querySelector(`.trip-main__event-add-btn`);
+const addNewEventButton = document.querySelector(`.trip-main__event-add-btn`); // это остается в main так как кнопка работает
+// пока объекта tripController еще вобщще нет на странице
 
-const menu = new Menu(menuTabs);
+const menu = new Menu(MENU_TABS);
 render(tripMenuTitle, menu.getElement(), Position.AFTEREND);
 
-const filter = new Filter(filterOptions);
+const filter = new Filter(FILTER_OPTIONS);
 render(tripControls, filter.getElement(), Position.BEFOREEND);
 
 const statistics = new Statistics();
@@ -47,10 +48,13 @@ api.getOffers().then((offers) => {
   availableOffers = offers;
 });
 
+// можно destinations и offers объединить в один метод и подставлять нужный url
+
 let tripController;
 let eventsList;
 
-export const onDataChange = (actionType, update) => {
+const onDataChange = (actionType, update, onError) => {
+  console.log(onError);
   switch (actionType) {
     case `update`:
       api.updateEvent({
@@ -62,10 +66,22 @@ export const onDataChange = (actionType, update) => {
           if (updatedEvent.id === event.id) { // может быть это не надо, мы ведь уже изменили элемент, без копирования массива?
             event = updatedEvent;
             // console.log(eventsList);
+            // Во-вторых, внутри нашей функции мы больше не пезаписываем моки, а взаимодействуем с сервером.
           }
         }
         tripController.show(eventsList); // карточка исчезает - удаляется, но после обновления стараницы все ок
         // какая-то путаница с айдишниками
+      })
+      .catch(() => onError());
+      break;
+    case `create`:
+      api.createEvent({
+        event: update.toRAW()
+      }).then((newEvent) => {
+        console.log(newEvent); // поменять название event на point везде, чтоб не было путаницы, или так уже оставим?
+        eventsList.push(newEvent);
+        tripController.show(eventsList);
+        // какая-то путаница с айдишниками (проверь, что все ок)
       });
       break;
     case `delete`:
@@ -79,9 +95,10 @@ export const onDataChange = (actionType, update) => {
 };
 
 api.getEvents().then((events) => {
-  // console.log(events);
+  console.log(events);
   eventsList = events.slice(); // чтобы не преобразовывать исходный массив? надо ли это?
-  tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
+  tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers); // сюда можно передавать
+  // ивенты, просто тогда метод show должен вызываться без аргументов и брать ивенты из конструктора tripController
   tripController.show(eventsList);
 });
 // иногда с сервера приходят пустые destinations и offers тогда код не работает нормально
@@ -102,6 +119,7 @@ menu.getElement().addEventListener(`click`, (evt) => {
       evt.target.classList.toggle(`.trip-tabs__btn--active`);
       // tripController.show(eventsList);
       // возможно, тут не надо отрисовывать по новой, а просто убирать хидден с того, что было, старый вариант функции show
+      // тут ошибка с переключением табов
       break;
     case `Stats`:
       tripController.hide();
@@ -111,6 +129,8 @@ menu.getElement().addEventListener(`click`, (evt) => {
       menu.querySelector(`.trip-tabs__btn--active`).classList.remove(`trip-tabs__btn--active`);
       evt.target.classList.toggle(`.trip-tabs__btn--active`);
       // вынести эти 2 строки в функцию, потому что повторяется? Может, фильтры не надо вставлять из data
+      // реши вопрос, что происходит, если при клике на новый ивент открыта статитстика
+      // пусть в этом случае переключается вкладка на таблицу
       break;
   }
   // здесь еще нужно переключать класс trip-tabs__btn--active
@@ -120,4 +140,5 @@ menu.getElement().addEventListener(`click`, (evt) => {
 addNewEventButton.addEventListener(`click`, () => {
   tripController.addEvent();
   addNewEventButton.setAttribute(`disabled`, `disabled`);
+  // отработай сценарий если событий пока нет
 });

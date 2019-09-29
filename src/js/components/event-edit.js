@@ -57,6 +57,7 @@ const createDestinationsList = (availableDestinations) => {
   let destinations = [];
   availableDestinations.forEach((destination) => destinations.push(`<option value="${destination.name}"></option>`));
   return destinations.join(``);
+  // мб поменять все подобные конструкции на map?
 };
 
 export class EventEdit extends AbstractComponent {
@@ -197,7 +198,7 @@ export class EventEdit extends AbstractComponent {
           </button>
         </header>
 
-        <section class="event__details">
+        <section class="event__details ${this._offers ? `` : `visually-hidden`}${this._destination.description ? `` : `visually-hidden`}">
 
           ${getAvailableOffersTemplate(this._offers, this._type)}
 
@@ -310,7 +311,7 @@ export class EventEdit extends AbstractComponent {
           <button class="event__reset-btn" type="reset">Cancel</button>
         </header>
 
-        <section class="event__details">
+        <section class="event__details ${this._offers ? `` : `visually-hidden`}${this._destination.description ? `` : `visually-hidden`}">
 
           ${getAvailableOffersTemplate(this._offers)}
 
@@ -325,7 +326,13 @@ export class EventEdit extends AbstractComponent {
   _onEventTypeChange(element, type) {
     element.querySelector(`.event__type-icon`).setAttribute(`src`, `img/icons/${type}.png`);
     element.querySelector(`.event__type-output`).innerHTML = `${capitalize(type)} ${getPlaceholder(type)}`;
-    unrender(element.querySelector(`.event__section--offers`));
+    const eventDetails = element.querySelector(`.event__details`);
+    const offersRendered = eventDetails.querySelector(`.event__section--offers`);
+    if (offersRendered) {
+      unrender(offersRendered);
+    } else {
+      eventDetails.classList.remove(`visually-hidden`);
+    }
     for (const offer of this._offersList) {
       if (offer.type === type) {
         const newOffers = getAvailableOffersTemplate(offer.offers);
@@ -339,13 +346,24 @@ export class EventEdit extends AbstractComponent {
   _onDestinationChange(element, destinationValue) { // запретить пользовательский ввод, сейчас можно ввести херню и пропустит
     for (let destination of this._destinationsList) {
       if (destination.name === destinationValue) {
-        element.querySelector(`.event__destination-description`).innerHTML = ``;
+        const eventDetails = element.querySelector(`.event__details`);
+        const destinationRendered = eventDetails.querySelector(`.event__section--destination`);
+        if (destinationRendered) {
+          unrender(destinationRendered);
+        } else {
+          eventDetails.classList.remove(`visually-hidden`);
+        }
         if (destination.description || destination.pictures) {
-          unrender(element.querySelector(`.event__section--destination`));
           const newDestination = getDestinationTemplate(destination);
-          render(element.querySelector(`.event__details`), createElement(newDestination), Position.BEFOREEND);
+          render(eventDetails, createElement(newDestination), Position.BEFOREEND);
         }
         return;
+        // получаются разные описания и фотки если выбираем тот же город, что уже есть в списке
+        // это нормально, потому что в объекте и списке городов приходят разные значения
+        // что делать в ситуации, когда город выбрали, а на смену типа не кликали и опций по умолчанию нет?
+        // наверное в итоговую форму редакирования должны подгружаться опции, соответствующие типу?
+        // или в какой-то момент надо все-таки показывать опции, чтоб можно было их почекать?
+        // или забей
       }
     }
   }

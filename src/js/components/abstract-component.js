@@ -27,6 +27,4 @@ export class AbstractComponent {
       this._element = null;
     }
   }
-
-  update() {}
 }

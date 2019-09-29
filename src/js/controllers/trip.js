@@ -16,7 +16,7 @@ export class TripController {
     this._offers = offers;
     this._sort = new Sort();
     this._eventsList = new EventsList();
-    // this._addingEvent = null; // или расскомментить это? используется для создания ивента
+    this._addingEvent = null;
 
     this._subscriptions = [];
     this._onChangeView = this._onChangeView.bind(this);
@@ -47,37 +47,34 @@ export class TripController {
 
     const defaultEvent = {
       type: `sightseeing`,
-      destination: ``,
+      destination: {
+        name: ``,
+        description: ``,
+        pictures: []
+      },
       dateStart: Date.now(),
       dateEnd: Date.now(),
-      price: ``,
-      offers() {
-        return [];
-      },
-      description() {
-        return ``;
-      },
-      pictures: []
+      price: 0,
+      offers: [],
+      isFavorite: false
     };
 
-    this._addingEvent = new PointController(this._sort.getElement(), this._destination, this._offers, defaultEvent, PointControllerMode.ADDING,
-        this._onChangeView, () => {
+    this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, this._destinations, this._offers, PointControllerMode.ADDING,
+        this._onChangeView, (...args) => {
           this._addingEvent = null;
-          this._onDataChange(`create`, event); // пока не будет работать, придумай, как записать event правильно
+          this._onDataChange(...args);
+          // нужно закрывать форму создания точки, если открываем форму другой точки
         });
-    // this._events.push(defaultEvent);
-    // const newEventForm = new EventAdd();
-    // render(this._sort.getElement(), newEventForm.getElement(), Position.AFTEREND);
-    // когда форму закрываем кнопка add New Event должна снова стать активной
-    // форма ведет себя так же, как форма редактирования, то есть у нее должны быть те же функции по изменению данных
     // Из демки, в ТЗ ничего не указано, наверное, тоже так:
     // Новая карточка должна сразу отображаться в режиме редактирования и не закрываться по ESC (у меня это так и работает)
     // только у меня убирается обработчик эскейпа даже в том случае если он не был навешан (если форма добавления)
     // это можно поправить
+    this._addingEvent._onChangeView();
+    // ТЗ Одновременно может быть открыта только одна форма редактирования для одной точки маршрута.
+    // Непонятно, если открыта форма создания новой точки и мы ждем на раскрытие другой точки, должна ли скрываться форма создания
   }
 
   _init() {
-
     const filter = document.querySelector(`.trip-filters`);
 
     render(this._container, this._sort.getElement(), Position.BEFOREEND);

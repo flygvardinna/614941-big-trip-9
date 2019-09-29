@@ -2,10 +2,7 @@ import {AbstractComponent} from './abstract-component';
 import moment from '../../../node_modules/moment/src/moment';
 
 const getTripTitle = (eventsList) => {
-  let tripRoute = [];
-  eventsList.forEach((event) => {
-    tripRoute.push(event.destination.name);
-  });
+  let tripRoute = Array.from(eventsList).map((event) => event.destination.name);
   if (tripRoute.length > 3) {
     let tripTitle = [];
     tripTitle.push(tripRoute.shift(), tripRoute.pop());

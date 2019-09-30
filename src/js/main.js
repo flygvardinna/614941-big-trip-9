@@ -38,13 +38,13 @@ tripController.init(); */
 
 let availableDestinations = [];
 api.getDestinations().then((destinations) => {
-  // console.log(destinations);
+  console.log(destinations);
   availableDestinations = destinations;
 });
 
 let availableOffers = [];
 api.getOffers().then((offers) => {
-  // console.log(offers);
+  console.log(offers);
   availableOffers = offers;
 });
 
@@ -53,8 +53,7 @@ api.getOffers().then((offers) => {
 let tripController;
 let eventsList;
 
-const onDataChange = (actionType, update) => {
-  //console.log(onError);
+const onDataChange = (actionType, update, onError) => {
   switch (actionType) {
     case `update`:
       api.updateEvent({
@@ -71,8 +70,7 @@ const onDataChange = (actionType, update) => {
         }
         tripController.show(eventsList); // карточка исчезает - удаляется, но после обновления стараницы все ок
         // какая-то путаница с айдишниками
-      });
-      // .catch(() => onError());
+      }).catch(() => onError());
       break;
     case `create`:
       api.createEvent({
@@ -82,14 +80,15 @@ const onDataChange = (actionType, update) => {
         eventsList.push(newEvent);
         tripController.show(eventsList);
         // какая-то путаница с айдишниками (проверь, что все ок)
-      });
+      }).catch(() => onError());
       break;
     case `delete`:
       api.deleteEvent({
         id: update.id
       })
         .then(() => api.getEvents())
-        .then((events) => tripController.show(events));
+        .then((events) => tripController.show(events))
+        .catch(() => onError());
       break;
   }
 };

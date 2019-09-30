@@ -68,9 +68,6 @@ export class PointController {
       // нельзя пользоваться переменной event!!
 
       const form = this._eventEdit.getElement();
-      //form.querySelector(`.event__save-btn`).textContent = `Saving....`; //мб везде использовать textContent вместо innerHTML?
-      //this.toggleFormBlock(form, true); // возможно, не будет работать из-за this
-
       const formData = new FormData(form);
       const picturesArray = Array.from(form.querySelectorAll(`.event__photo`)).map((picture) => ({
         src: picture.getAttribute(`src`),
@@ -87,6 +84,7 @@ export class PointController {
       this._data.destination = {
         name: formData.get(`event-destination`),
         description: form.querySelector(`.event__destination-description`).innerHTML,
+        // добавить таймаут чтобы успело подгрузиться описание
         pictures: picturesArray
       };
       this._data.dateStart = new Date(formData.get(`event-start-time`));
@@ -109,6 +107,8 @@ export class PointController {
         };
       }
 
+      this.toggleFormBlock(form, `save`, true);
+
       // сейчас при изменении опции (выбранная) не отрисовывается в списке ивентов (не в форме)
 
       // может можно было не городить поиск лейбла с типом итд, а брать entry.type итд
@@ -117,16 +117,20 @@ export class PointController {
       // сейчас проблема такая, что если выбрана сортировка не по дням, то после изменения снова рендерятся дни
 
       if (mode === Mode.DEFAULT) {
-        this._onDataChange(`update`, this._data); // или this.onError() ?
+        this._onDataChange(`update`, this._data, this.onError.bind(this, `save`));
       } else {
-        this._onDataChange(`create`, this._data);
+        this._onDataChange(`create`, this._data, this.onError.bind(this, `save`));
+        // ПРИ СОЗДАНИИ НЕ НРАВИТСЯ, ЧТО СНАЧАЛА ЗАКРЫВАЕТСЯ ФОРМА, БУДЕТО НИЧЕГО НЕ ПРОИЗОШЛО
+        // ПОТОМ ДОБАВЛЯЕТСЯ НОВОЕ СОБЫТИЕ, МБ ДЕЛЭЙ?
       }
 
-      document.removeEventListener(`keydown`, onEscKeyDown);
+      document.removeEventListener(`keydown`, onEscKeyDown); // ТОЖЕ ДОЛЖНО УБИРАТЬСЯ ТОЛЬКО ПРИ УСПЕХЕ?
 
-      if (mode === Mode.ADDING) {
+      if (mode === Mode.ADDING) { // ДОЛЖНО СРАБАТЫВАТЬ ТОЛЬКО ПРИ УСПЕХЕ!
+        // куда убрать? вынеси в функцию и вызывай через tripController.renderEvents() ? ПОДУМАЙ
         unrender(this._eventEdit.getElement());
         document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
+        // ПРОБЛЕМА - ЕСЛИ ПРИ СОЗДАНИИ ИВЕНТА ОШИБКА, ТО ФОРМА ИСЧЕЗАЕТ И НЕ СРАБАТЫВАЕТ НОРМАЛЬНО ON ERROR
       }
     };
 
@@ -211,7 +215,8 @@ export class PointController {
 
     this._eventEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {
-        this._onDataChange(`delete`, this._data);
+        this.toggleFormBlock(this._eventEdit.getElement(), `delete`, true);
+        this._onDataChange(`delete`, this._data, this.onError.bind(this, `delete`));
         // сейчас при удалении точки у нее сначала пропадают даты, потом удаляется
         // Так не должно наверное быть, поправь
 
@@ -226,7 +231,13 @@ export class PointController {
     render(this._container, currentView.getElement(), renderPosition);
   }
 
-  toggleFormBlock(form, value) {
+  toggleFormBlock(form, button, value) {
+    if (button === `save`) {
+      form.querySelector(`.event__save-btn`).textContent = value ? `Saving...` : `Save`;
+    } else {
+      form.querySelector(`.event__reset-btn`).textContent = value ? `Deleting...` : `Delete`;
+      //мб везде использовать textContent вместо innerHTML?
+    }
     form.querySelector(`.event__type-toggle`).disabled = value;
     form.querySelector(`.event__save-btn`).disabled = value;
     form.querySelector(`.event__reset-btn`).disabled = value;
@@ -254,9 +265,8 @@ export class PointController {
     }
   }
 
-  onError() {
-    this._eventEdit.getElement().querySelector(`.event__save-btn`).textContent = `Save`;
-    this.toggleFormBlock(this._eventEdit.getElement(), false);
+  onError(string) {
+    this.toggleFormBlock(this._eventEdit.getElement(), string, false);
     this._eventEdit.getElement().style = `border: 3px red solid`;
     this.shake();
   }

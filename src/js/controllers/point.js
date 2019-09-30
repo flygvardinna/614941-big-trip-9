@@ -68,8 +68,8 @@ export class PointController {
       // нельзя пользоваться переменной event!!
 
       const form = this._eventEdit.getElement();
-      form.querySelector(`.event__save-btn`).textContent = `Saving....`; //мб везде использовать textContent вместо innerHTML?
-      this.toggleFormBlock(form, true); // возможно, не будет работать из-за this
+      //form.querySelector(`.event__save-btn`).textContent = `Saving....`; //мб везде использовать textContent вместо innerHTML?
+      //this.toggleFormBlock(form, true); // возможно, не будет работать из-за this
 
       const formData = new FormData(form);
       const picturesArray = Array.from(form.querySelectorAll(`.event__photo`)).map((picture) => ({
@@ -117,9 +117,9 @@ export class PointController {
       // сейчас проблема такая, что если выбрана сортировка не по дням, то после изменения снова рендерятся дни
 
       if (mode === Mode.DEFAULT) {
-        this._onDataChange(`update`, this._data, this.onError); // или this.onError() ?
+        this._onDataChange(`update`, this._data); // или this.onError() ?
       } else {
-        this._onDataChange(`create`, this._data, this.onError);
+        this._onDataChange(`create`, this._data);
       }
 
       document.removeEventListener(`keydown`, onEscKeyDown);
@@ -181,7 +181,7 @@ export class PointController {
         document.addEventListener(`keydown`, onEscKeyDown);
       });
 
-    if (mode === Mode.DEFAULT) { // зачем это условие? а что в не дефолтном режиме?
+    if (mode === Mode.DEFAULT) { // зачем это условие? а что в не дефолтном режиме? не в дефолтном у формы нет галочки
       // нужно закрывать форму создания точки, если открываем форму другой точки
       // через onChangeView?
       this._eventEdit.getElement()

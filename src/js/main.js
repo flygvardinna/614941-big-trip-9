@@ -53,8 +53,8 @@ api.getOffers().then((offers) => {
 let tripController;
 let eventsList;
 
-const onDataChange = (actionType, update, onError) => {
-  console.log(onError);
+const onDataChange = (actionType, update) => {
+  //console.log(onError);
   switch (actionType) {
     case `update`:
       api.updateEvent({
@@ -71,8 +71,8 @@ const onDataChange = (actionType, update, onError) => {
         }
         tripController.show(eventsList); // карточка исчезает - удаляется, но после обновления стараницы все ок
         // какая-то путаница с айдишниками
-      })
-      .catch(() => onError());
+      });
+      // .catch(() => onError());
       break;
     case `create`:
       api.createEvent({

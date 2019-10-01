@@ -53,7 +53,7 @@ api.getOffers().then((offers) => {
 let tripController;
 let eventsList;
 
-const onDataChange = (actionType, update, onError) => {
+const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
   switch (actionType) {
     case `update`:
       api.updateEvent({
@@ -77,6 +77,7 @@ const onDataChange = (actionType, update, onError) => {
         event: update.toRAW()
       }).then((newEvent) => {
         console.log(newEvent); // поменять название event на point везде, чтоб не было путаницы, или так уже оставим?
+        onSuccessEventCreate();
         eventsList.push(newEvent);
         tripController.show(eventsList);
         // какая-то путаница с айдишниками (проверь, что все ок)
@@ -87,7 +88,9 @@ const onDataChange = (actionType, update, onError) => {
         id: update.id
       })
         .then(() => api.getEvents())
-        .then((events) => tripController.show(events))
+        .then((events) => {
+          tripController.show(events);
+        })
         .catch(() => onError());
       break;
   }

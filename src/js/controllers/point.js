@@ -119,19 +119,12 @@ export class PointController {
       if (mode === Mode.DEFAULT) {
         this._onDataChange(`update`, this._data, this.onError.bind(this, `save`));
       } else {
-        this._onDataChange(`create`, this._data, this.onError.bind(this, `save`));
+        this._onDataChange(`create`, this._data, this.onError.bind(this, `save`), this.onSuccesEventCreate.bind(this));
         // ПРИ СОЗДАНИИ НЕ НРАВИТСЯ, ЧТО СНАЧАЛА ЗАКРЫВАЕТСЯ ФОРМА, БУДЕТО НИЧЕГО НЕ ПРОИЗОШЛО
         // ПОТОМ ДОБАВЛЯЕТСЯ НОВОЕ СОБЫТИЕ, МБ ДЕЛЭЙ?
       }
 
       document.removeEventListener(`keydown`, onEscKeyDown); // ТОЖЕ ДОЛЖНО УБИРАТЬСЯ ТОЛЬКО ПРИ УСПЕХЕ?
-
-      if (mode === Mode.ADDING) { // ДОЛЖНО СРАБАТЫВАТЬ ТОЛЬКО ПРИ УСПЕХЕ!
-        // куда убрать? вынеси в функцию и вызывай через tripController.renderEvents() ? ПОДУМАЙ
-        unrender(this._eventEdit.getElement());
-        document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
-        // ПРОБЛЕМА - ЕСЛИ ПРИ СОЗДАНИИ ИВЕНТА ОШИБКА, ТО ФОРМА ИСЧЕЗАЕТ И НЕ СРАБАТЫВАЕТ НОРМАЛЬНО ON ERROR
-      }
     };
 
     const onEscKeyDown = (evt) => {
@@ -269,5 +262,14 @@ export class PointController {
     this.toggleFormBlock(this._eventEdit.getElement(), string, false);
     this._eventEdit.getElement().style = `border: 3px red solid`;
     this.shake();
+  }
+
+  onSuccesEventCreate() {
+    unrender(this._eventEdit.getElement());
+    document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
+    //if (mode === Mode.ADDING) { // ДОЛЖНО СРАБАТЫВАТЬ ТОЛЬКО ПРИ УСПЕХЕ!
+      // куда убрать? вынеси в функцию и вызывай через tripController.renderEvents() ? ПОДУМАЙ
+      // ПРОБЛЕМА - ЕСЛИ ПРИ СОЗДАНИИ ИВЕНТА ОШИБКА, ТО ФОРМА ИСЧЕЗАЕТ И НЕ СРАБАТЫВАЕТ НОРМАЛЬНО ON ERROR
+    //}
   }
 }

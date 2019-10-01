@@ -57,7 +57,7 @@ export class API {
     return this._load({url: `points/${id}`, method: Method.DELETE});
   }
 
-  getDestinations() {
+  getDestinations(url) {
     return this._load({url: `destinations`})
       .then(toJSON)
   }

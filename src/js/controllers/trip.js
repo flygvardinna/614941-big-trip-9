@@ -1,9 +1,10 @@
-import {Position, Mode, render, unrender, countEventDuration} from '../utils';
+import {Position, Mode, createElement, render, unrender, countEventDuration} from '../utils';
 import {PointController} from './point';
 import {Sort} from '../components/sort';
 import {EventsList} from '../components/events-list';
 import {Day} from '../components/day';
 import {TripDetails} from '../components/trip-details';
+import {Message} from '../components/message';
 
 const PointControllerMode = Mode;
 
@@ -33,6 +34,11 @@ export class TripController {
   }
 
   show(events) {
+    if (!events.length) {
+      this.showNoEventsMessage();
+      return;
+    }
+
     if (events !== this._events) {
       this._renderEvents(events);
     }
@@ -59,7 +65,8 @@ export class TripController {
       isFavorite: false
     };
 
-    this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, this._destinations, this._offers, PointControllerMode.ADDING,
+    const container = this._events.length ? this._sort.getElement() : this._container.querySelector(`h2`);
+    this._addingEvent = new PointController(container, defaultEvent, this._destinations, this._offers, PointControllerMode.ADDING,
         this._onChangeView, (...args) => {
           this._addingEvent = null;
           this._onDataChange(...args);
@@ -72,6 +79,15 @@ export class TripController {
     this._addingEvent._onChangeView();
     // ТЗ Одновременно может быть открыта только одна форма редактирования для одной точки маршрута.
     // Непонятно, если открыта форма создания новой точки и мы ждем на раскрытие другой точки, должна ли скрываться форма создания
+  }
+
+  showNoEventsMessage() {
+    if (this._details) {
+      unrender(this._details.getElement());
+    }
+    unrender(this._sort.getElement());
+    const message = new Message(`no-events`);
+    render(this._eventsList.getElement(), message.getElement(), Position.BEFOREEND);
   }
 
   _init() {
@@ -199,6 +215,15 @@ export class TripController {
   _onFilterClick(evt) { // фильтры не работают на вкладке статитстика, это ок?
     evt.preventDefault();
     const dateToday = new Date();
+    /*const filters = Array.from(document.querySelectorAll(`.trip-filters__filter-input`));
+    let filterChecked;
+
+    for (const filter of filters) {
+      if (filter.checked) {
+        filterChecked = filter.value;
+        console.log(filterChecked);
+      }
+    } ДОДЕЛАЙ */
 
     if (evt.target.tagName !== `LABEL`) {
       return;

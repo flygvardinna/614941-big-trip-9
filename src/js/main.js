@@ -1,11 +1,13 @@
-import {Position, render} from './utils';
+import {Position, render, unrender} from './utils';
 import {API} from './api';
 import {Menu} from './components/menu';
 import {Filter} from './components/filter';
 import {Statistics} from './components/statistics';
+import {TripDetails} from './components/trip-details';
+import {Message} from './components/message';
 import {TripController} from './controllers/trip';
 
-const AUTHORIZATION = `Basic 484894743984444`;
+const AUTHORIZATION = `Basic 48487566477777766`; // перед отправкой на проверку обнови код для сервера
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 
 const MENU_TABS = [`Table`, `Stats`];
@@ -16,8 +18,7 @@ const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 const tripControls = document.querySelector(`.trip-controls`);
 const tripMenuTitle = tripControls.querySelector(`h2`);
 const eventsContainer = document.querySelector(`.trip-events`);
-const addNewEventButton = document.querySelector(`.trip-main__event-add-btn`); // это остается в main так как кнопка работает
-// пока объекта tripController еще вобщще нет на странице
+const addNewEventButton = document.querySelector(`.trip-main__event-add-btn`);
 
 const menu = new Menu(MENU_TABS);
 render(tripMenuTitle, menu.getElement(), Position.AFTEREND);
@@ -28,13 +29,6 @@ render(tripControls, filter.getElement(), Position.BEFOREEND);
 const statistics = new Statistics();
 
 // TODO: Put events sorting to controller also - ГОТОВО
-
-/* const tripController = new TripController(tripEvents, eventMocks);
-tripController.init(); */
-// TODO: Make offers of event and eventForm be the same
-
-// стоимость путешествия и инфо о путешествии должны переехать в trip controller тоже потому что они будут пересчитываться
-// после изменения данных
 
 let availableDestinations = [];
 api.getDestinations().then((destinations) => {
@@ -50,8 +44,12 @@ api.getOffers().then((offers) => {
 
 // можно destinations и offers объединить в один метод и подставлять нужный url
 
-let tripController;
-let eventsList;
+let eventsList = [];
+
+// Loading...
+
+//const loadingMessage = new TripDetails(eventsList);
+//render(document.querySelector(`.trip-info`), loadingMessage.getElement(), Position.AFTERBEGIN);
 
 const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
   switch (actionType) {
@@ -76,9 +74,8 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
       api.createEvent({
         event: update.toRAW()
       }).then((newEvent) => {
-        console.log(newEvent); // поменять название event на point везде, чтоб не было путаницы, или так уже оставим?
         onSuccessEventCreate();
-        eventsList.push(newEvent);
+        eventsList.push(newEvent); // поменять название event на point везде, чтоб не было путаницы, или так уже оставим?
         tripController.show(eventsList);
         // какая-то путаница с айдишниками (проверь, что все ок)
       }).catch(() => onError());
@@ -92,9 +89,20 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
           tripController.show(events);
         })
         .catch(() => onError());
+        // ПРОБЛЕМА: НЕ УДАЛЯЕТ ПОСЛЕДНИЙ ИВЕНТ
+        // НА САМОМ ДЕЛЕ УДАЛЯЕТ, НО ФОРМА ПОДВИСАЕТ
+        // ПОСЛЕ ОБНОВЛЕНИЯ СТРАНИЦЫ ИВЕНТА УЖЕ НЕТ
+        // ПОТОМУ ЧТО было успешно удалено, после этого events = undefined
+        // ВЫЗЫВАЕТСЯ OnError, потом еще раз delete приходит ответ events = 0 и вызывается showEvents
+        // ЕЩЕ ПОСЛЕ УДАЛЕНИЯ ВСЕХ ИВЕНТОВ OffersList = [] потому что tripController undefined поэтому у новых ивентов нельзя добавить офферс
       break;
   }
 };
+
+let tripController;
+
+const loadingMessage = new Message(`load`);
+render(eventsContainer, loadingMessage.getElement(), Position.BEFOREEND);
 
 api.getEvents().then((events) => {
   console.log(events);
@@ -102,6 +110,7 @@ api.getEvents().then((events) => {
   tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers); // сюда можно передавать
   // ивенты, просто тогда метод show должен вызываться без аргументов и брать ивенты из конструктора tripController
   tripController.show(eventsList);
+  unrender(loadingMessage.getElement());
 });
 // иногда с сервера приходят пустые destinations и offers тогда код не работает нормально
 // надо проверять, и, если пустые, не давать вызвать контроллер
@@ -142,5 +151,4 @@ menu.getElement().addEventListener(`click`, (evt) => {
 addNewEventButton.addEventListener(`click`, () => {
   tripController.addEvent();
   addNewEventButton.setAttribute(`disabled`, `disabled`);
-  // отработай сценарий если событий пока нет
 });

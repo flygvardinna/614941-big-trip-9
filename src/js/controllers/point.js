@@ -14,6 +14,7 @@ export class PointController {
     this._eventView = new Event(this._data);
     this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
     this._mode = mode; // ниже замени просто mode на this._mode если надо
+    this
     // возможно тут должны быть onEditButtonClick и onSubmitButtonClick
     // this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
 
@@ -23,6 +24,7 @@ export class PointController {
   init(mode) { // метод init слишком длинный, вынести все лишнее наружу? не получится, можно вынести в отдельные методы только
     let currentView = this._eventView;
     let renderPosition = Position.BEFOREEND;
+    const noEventsMessage = document.querySelector(`.no-events-message`); //перенести в tripController?
 
     if (mode === Mode.ADDING) {
       // this._eventEdit = new EventAdd(this._data);
@@ -30,19 +32,15 @@ export class PointController {
       renderPosition = Position.AFTEREND;
     }
 
-    // нужно подключить флетпикер и для новой формы добавления
     let minDateEnd = this._data.dateStart;
     flatpickr(this._eventEdit.getElement().querySelector(`#event-start-time-1`), {
       altInput: true,
       allowInput: true,
       altFormat: `d/m/y H:i`,
-      // dateFormat: `Y-m-d H:i`,
-      // dateFormat: `U`, // выводились в value милисекунды
       dateFormat: `Z`,
       defaultDate: this._data.dateStart,
-      // minDate: `today`,
       enableTime: true,
-      // time_24hr: true,
+      'time_24hr': true,
       onChange(selectedDates, dateStr) {
         minDateEnd = dateStr; // как переопределить дату для второго пикера? пока не получилось
       }
@@ -54,18 +52,15 @@ export class PointController {
       altInput: true,
       allowInput: true,
       altFormat: `d/m/y H:i`,
-      // dateFormat: `Y-m-d H:i`,
       dateFormat: `Z`,
-      // dateFormat: `d/m/y H:i`,
       defaultDate: this._data.dateEnd,
       minDate: minDateEnd,
       enableTime: true,
-      // time_24hr: true
+      'time_24hr': true
     });
 
     const onSubmitButtonClick = (evt) => {
       evt.preventDefault();
-      // нельзя пользоваться переменной event!!
 
       const form = this._eventEdit.getElement();
       const formData = new FormData(form);
@@ -84,7 +79,7 @@ export class PointController {
       this._data.destination = {
         name: formData.get(`event-destination`),
         description: form.querySelector(`.event__destination-description`).innerHTML,
-        // добавить таймаут чтобы успело подгрузиться описание
+        // добавить таймаут чтобы успело подгрузиться описание!
         pictures: picturesArray
       };
       this._data.dateStart = new Date(formData.get(`event-start-time`));
@@ -120,8 +115,6 @@ export class PointController {
         this._onDataChange(`update`, this._data, this.onError.bind(this, `save`));
       } else {
         this._onDataChange(`create`, this._data, this.onError.bind(this, `save`), this.onSuccesEventCreate.bind(this));
-        // ПРИ СОЗДАНИИ НЕ НРАВИТСЯ, ЧТО СНАЧАЛА ЗАКРЫВАЕТСЯ ФОРМА, БУДЕТО НИЧЕГО НЕ ПРОИЗОШЛО
-        // ПОТОМ ДОБАВЛЯЕТСЯ НОВОЕ СОБЫТИЕ, МБ ДЕЛЭЙ?
       }
 
       document.removeEventListener(`keydown`, onEscKeyDown); // ТОЖЕ ДОЛЖНО УБИРАТЬСЯ ТОЛЬКО ПРИ УСПЕХЕ?
@@ -155,7 +148,6 @@ export class PointController {
       const offers = Array.from(this._eventEdit.getElement().querySelectorAll(`.event__offer-checkbox`));
       offers.forEach((offer) => {
         offer.addEventListener(`click`, () => {
-          // нужно вызывать пересчитывание стоимости путешествия после сохранения данных? Или само посчитается?
           if (offer.checked === true) {
             offer.setAttribute(`checked`, `checked`);
           } else {
@@ -221,10 +213,18 @@ export class PointController {
         }
       });
 
+
+    if (noEventsMessage) {
+      unrender(noEventsMessage);
+    }
     render(this._container, currentView.getElement(), renderPosition);
   }
 
   toggleFormBlock(form, button, value) {
+    const style = this._eventEdit.getElement().getAttribute(`style`);
+    if (style) {
+      this._eventEdit.getElement().style = `border: none`;
+    }
     if (button === `save`) {
       form.querySelector(`.event__save-btn`).textContent = value ? `Saving...` : `Save`;
     } else {

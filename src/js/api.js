@@ -57,14 +57,14 @@ export class API {
     return this._load({url: `points/${id}`, method: Method.DELETE});
   }
 
-  getDestinations(url) {
+  getDestinations() {
     return this._load({url: `destinations`})
       .then(toJSON)
   }
 
   getOffers() {
     return this._load({url: `offers`})
-      .then(toJSON) // можно destinations и offers объединить в один метод и подставлять нужный url
+      .then(toJSON)
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {

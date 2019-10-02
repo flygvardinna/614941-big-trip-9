@@ -7,7 +7,7 @@ import {TripDetails} from './components/trip-details';
 import {Message} from './components/message';
 import {TripController} from './controllers/trip';
 
-const AUTHORIZATION = `Basic 48487333477777766`; // перед отправкой на проверку обнови код для сервера
+const AUTHORIZATION = `Basic 48487553663477777766`; // перед отправкой на проверку обнови код для сервера
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 
 const MENU_TABS = [`Table`, `Stats`];
@@ -31,25 +31,9 @@ const statistics = new Statistics();
 // TODO: Put events sorting to controller also - ГОТОВО
 
 let availableDestinations = [];
-api.getDestinations().then((destinations) => {
-  console.log(destinations);
-  availableDestinations = destinations;
-});
-
 let availableOffers = [];
-api.getOffers().then((offers) => {
-  console.log(offers);
-  availableOffers = offers;
-});
-
-// можно destinations и offers объединить в один метод и подставлять нужный url
-
 let eventsList = [];
-
-// Loading...
-
-//const loadingMessage = new TripDetails(eventsList);
-//render(document.querySelector(`.trip-info`), loadingMessage.getElement(), Position.AFTERBEGIN);
+let tripController;
 
 const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
   switch (actionType) {
@@ -99,21 +83,30 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
   }
 };
 
-let tripController;
+
 
 const loadingMessage = new Message(`load`);
 render(eventsContainer, loadingMessage.getElement(), Position.BEFOREEND);
 
-api.getEvents().then((events) => {
-  console.log(events);
-  eventsList = events.slice(); // чтобы не преобразовывать исходный массив? надо ли это?
-  tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers); // сюда можно передавать
-  // ивенты, просто тогда метод show должен вызываться без аргументов и брать ивенты из конструктора tripController
-  tripController.show(eventsList);
-  unrender(loadingMessage.getElement());
-});
-// иногда с сервера приходят пустые destinations и offers тогда код не работает нормально
-// надо проверять, и, если пустые, не давать вызвать контроллер
+api.getDestinations()
+  .then((destinations) => {
+    console.log(destinations);
+    availableDestinations = destinations;
+  })
+  .then(() => api.getOffers())
+  .then((offers) => {
+    console.log(offers);
+    availableOffers = offers;
+  })
+  .then(() => api.getEvents())
+  .then((events) => {
+    console.log(events);
+    unrender(loadingMessage.getElement());
+    eventsList = events.slice(); // чтобы не преобразовывать исходный массив? надо ли это?
+    tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers); // сюда можно передавать
+    // ивенты, просто тогда метод show должен вызываться без аргументов и брать ивенты из конструктора tripController
+    tripController.show(eventsList);
+  });
 
 menu.getElement().addEventListener(`click`, (evt) => {
   const activeTab = menu.getElement().querySelector(`.trip-tabs__btn--active`);

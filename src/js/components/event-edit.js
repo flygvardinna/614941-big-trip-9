@@ -322,7 +322,6 @@ export class EventEdit extends AbstractComponent {
     }
   }
 
-  // Вынести в контроллер, в компоненте быть наверное не должно?
   _onEventTypeChange(element, type) {
     element.querySelector(`.event__type-icon`).setAttribute(`src`, `img/icons/${type}.png`);
     element.querySelector(`.event__type-output`).innerHTML = `${capitalize(type)} ${getPlaceholder(type)}`;
@@ -343,9 +342,9 @@ export class EventEdit extends AbstractComponent {
     }
   }
 
-  _onDestinationChange(element, destinationValue) { // запретить пользовательский ввод, сейчас можно ввести херню и пропустит
+  _onDestinationChange(element, input) { // запретить пользовательский ввод, сейчас можно ввести херню и пропустит
     for (let destination of this._destinationsList) {
-      if (destination.name === destinationValue) {
+      if (destination.name === input.value) {
         const eventDetails = element.querySelector(`.event__details`);
         const destinationRendered = eventDetails.querySelector(`.event__section--destination`);
         if (destinationRendered) {
@@ -358,13 +357,8 @@ export class EventEdit extends AbstractComponent {
           render(eventDetails, createElement(newDestination), Position.BEFOREEND);
         }
         return;
-        // получаются разные описания и фотки если выбираем тот же город, что уже есть в списке
-        // это нормально, потому что в объекте и списке городов приходят разные значения
-        // что делать в ситуации, когда город выбрали, а на смену типа не кликали и опций по умолчанию нет?
-        // наверное в итоговую форму редакирования должны подгружаться опции, соответствующие типу?
-        // или в какой-то момент надо все-таки показывать опции, чтоб можно было их почекать?
-        // или забей
       }
     }
+    input.value = ``;
   }
 }

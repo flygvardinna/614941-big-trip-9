@@ -105,6 +105,8 @@ export class PointController {
       this.toggleFormBlock(form, `save`, true);
 
       // сейчас при изменении опции (выбранная) не отрисовывается в списке ивентов (не в форме)
+      // Отрисовывается при сохранении, без сохранения нет, это ок. Но если кликнуть и не сохранить, то она визуально остается
+      // голубой чекнутой
 
       // может можно было не городить поиск лейбла с типом итд, а брать entry.type итд
       // TO DO После сохранения точка маршрута располагается в списке точек маршрута в порядке определенном
@@ -195,7 +197,7 @@ export class PointController {
       .querySelector(`.event__input--destination`)
       .addEventListener(`change`, (evt) => {
         // let value = evt.target.value;
-        this._eventEdit._onDestinationChange(this._eventEdit.getElement(), evt.target.value);
+        this._eventEdit._onDestinationChange(this._eventEdit.getElement(), evt.target);
       });
 
     this._eventEdit.getElement().querySelector(`.event__reset-btn`)

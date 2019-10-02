@@ -15,6 +15,7 @@ export class TripController {
     this._destinations = destinations;
     this._offers = offers;
     this._sort = new Sort();
+    this._sortedBy = "default";
     this._eventsList = new EventsList();
     this._addingEvent = null;
 
@@ -100,14 +101,19 @@ export class TripController {
   }
 
   _renderEvents(events) {
-    this._events = this._sortByStartDate(events);
-
-    this._renderDays(this._events);
-    if (this._details) {
-      unrender(this._details.getElement());
+    if (this._sortedBy === "default") {
+      this._events = this._sortByStartDate(events);
+      this._renderDays(this._events);
+      if (this._details) {
+        unrender(this._details.getElement());
+      }
+      this._details = new TripDetails(this._events);
+      render(this._info, this._details.getElement(), Position.AFTERBEGIN);
+    } else {
+      this._events = events;
+      this._applySorting(this._sortedBy);
     }
-    this._details = new TripDetails(this._events);
-    render(this._info, this._details.getElement(), Position.AFTERBEGIN);
+
     this._cost.innerHTML = this._countTripCost(this._events);
     // ? вынести это в отдельные функции чтобы вызывать их после изменения порядка событий и стоимости? (после onDataChange)
     // или просто каждый раз вызываем renderEvents?
@@ -175,41 +181,52 @@ export class TripController {
   }
 
   _onSortItemClick(evt) {
-    if (evt.target.tagName !== `LABEL`) {
+    if (evt.target.tagName !== `LABEL` || evt.target.dataset.sortType === this._sortedBy) {
       return;
     }
 
-    //сортировка не должна применяться если кликнули по уже выбранному
+    this._sortedBy = evt.target.dataset.sortType;
+    this._applySorting(this._sortedBy);
 
+    //сортировка не должна применяться если кликнули по уже выбранному
+  }
+
+  _renderDayContainerForAllEvents() {
     // Maybe this code should be separated in function applySorting which is called only when time or price sorting applied
     this._eventsList.getElement().innerHTML = ``;
     this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = ``;
     const dayElement = new Day(``, ``).getElement();
     render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
     dayElement.querySelector(`.day__info`).innerHTML = ``;
-    const eventsContainer = dayElement.querySelector(`.trip-events__list`);
+    return dayElement.querySelector(`.trip-events__list`);
+  }
 
-    switch (evt.target.dataset.sortType) {
+  _applySorting(sorting) {
+    switch (sorting) {
       case `time-down`:
-        const sortedByTimeDownEvents = this._events.slice().sort((a, b) => countEventDuration(b.dateStart, b.dateEnd) - countEventDuration(a.dateStart, a.dateEnd));
-        sortedByTimeDownEvents.forEach((event) => this._renderEvent(eventsContainer, event, this._destinations, this._offers));
+        const container = this._renderDayContainerForAllEvents();
+        const sortedByTimeDownEvents = this._events.sort((a, b) => countEventDuration(b.dateStart, b.dateEnd) - countEventDuration(a.dateStart, a.dateEnd));
+        sortedByTimeDownEvents.forEach((event) => this._renderEvent(container, event, this._destinations, this._offers));
         break;
       case `price-down`:
-        const sortedByPriceDownEvents = this._events.slice().sort((a, b) => b.price - a.price);
+        const eventsContainer = this._renderDayContainerForAllEvents();
+        const sortedByPriceDownEvents = this._events.sort((a, b) => b.price - a.price);
         sortedByPriceDownEvents.forEach((event) => this._renderEvent(eventsContainer, event, this._destinations, this._offers));
         break;
       case `default`:
-        // render(this._container, this._tripDays.getElement(), Position.BEFOREEND);
-        // this._events.forEach((eventMock) => this._renderEvent(eventMock));
         this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = `Day`;
+        this._events = this._sortByStartDate(this._events);
         this._renderDays(this._events);
         break;
-        // проблема с сортировкой, после изменения ивента снова отрисовываются дни, а не та сортировка, какая была
     }
   }
 
-  _onFilterClick(evt) { // фильтры не работают на вкладке статитстика, это ок? ДИЗЕЙБЛИТЬ ИХ? А Можно так оставить, тогда при переключении на таблицы будет то, что выбрали
+  _onFilterClick(evt) {
     evt.preventDefault();
+
+    if (this._sortedBy !== "default") {
+      return;
+    }
 
     const activeFilter = document.querySelector(`.trip-filters__filter-input[checked]`);
     const target = evt.target.textContent.toLowerCase() ;

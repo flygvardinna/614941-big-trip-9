@@ -62,10 +62,15 @@ export const countEventDuration = (dateStart, dateEnd) => {
 };
 
 export const renderEventDuration = (duration) => {
+  const months = duration.months();
   const days = duration.days();
   const hours = duration.hours();
   const minutes = duration.minutes();
   let durationToRender = ``;
+  if (months) {
+    durationToRender = `More than a month`;
+    return durationToRender;
+  }
   if (days) {
     durationToRender = `${days}D`;
   }

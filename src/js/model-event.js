@@ -17,17 +17,4 @@ export class ModelEvent {
   static parseEvents(data) {
     return data.map(ModelEvent.parseEvent);
   }
-
-  /*toRAW() {
-    return {
-      id: this.id,
-      type: this.type,
-      destination: this.destination,
-      date_from: this.dateStart,
-      date_to: this.dateEnd,
-      base_price: this.price,
-      offers: this.offers,
-      is_favorite: this.isFavorite,
-    };
-  }*/
 }

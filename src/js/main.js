@@ -7,7 +7,7 @@ import {TripDetails} from './components/trip-details';
 import {Message} from './components/message';
 import {TripController} from './controllers/trip';
 
-const AUTHORIZATION = `Basic 476777787777766`; // перед отправкой на проверку обнови код для сервера
+const AUTHORIZATION = `Basic 48887887766`; // перед отправкой на проверку обнови код для сервера
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 
 const MENU_TABS = [`Table`, `Stats`];
@@ -61,8 +61,8 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
         onSuccessEventCreate();
         eventsList.push(newEvent); // поменять название event на point везде, чтоб не было путаницы, или так уже оставим?
         tripController.show(eventsList);
-        // какая-то путаница с айдишниками (проверь, что все ок)
       }).catch(() => onError());
+      // В случае ошибки при создании новой точки нет красной обводки
       break;
     case `delete`:
       api.deleteEvent({

@@ -1,10 +1,9 @@
-import {Position, Mode, createElement, render, unrender, countEventDuration} from '../utils';
+import {Position, Mode, render, unrender, countEventDuration} from '../utils';
 import {PointController} from './point';
 import {Sort} from '../components/sort';
 import {EventsList} from '../components/events-list';
 import {Day} from '../components/day';
 import {TripDetails} from '../components/trip-details';
-import {Message} from '../components/message';
 
 const PointControllerMode = Mode;
 
@@ -34,11 +33,6 @@ export class TripController {
   }
 
   show(events) {
-    if (!events.length) {
-      this.showNoEventsMessage();
-      return;
-    }
-
     if (events !== this._events) {
       this._renderEvents(events);
     }
@@ -65,8 +59,7 @@ export class TripController {
       isFavorite: false
     };
 
-    const container = this._events.length ? this._sort.getElement() : this._container.querySelector(`h2`);
-    this._addingEvent = new PointController(container, defaultEvent, this._destinations, this._offers, PointControllerMode.ADDING,
+    this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, this._destinations, this._offers, PointControllerMode.ADDING,
         this._onChangeView, (...args) => {
           this._addingEvent = null;
           this._onDataChange(...args);
@@ -81,13 +74,14 @@ export class TripController {
     // Непонятно, если открыта форма создания новой точки и мы ждем на раскрытие другой точки, должна ли скрываться форма создания
   }
 
-  showNoEventsMessage() {
-    if (this._details) {
-      unrender(this._details.getElement());
+  hideNewEventForm() {
+    if (mode === Mode.ADDING) { // ДОЛЖНО СРАБАТЫВАТЬ ТОЛЬКО ПРИ УСПЕХЕ!
+      // куда убрать? вынеси в функцию и вызывай через tripController.renderEvents() ? ПОДУМАЙ
+      unrender(this._eventEdit.getElement());
+      document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
+      // ПРОБЛЕМА - ЕСЛИ ПРИ СОЗДАНИИ ИВЕНТА ОШИБКА, ТО ФОРМА ИСЧЕЗАЕТ И НЕ СРАБАТЫВАЕТ НОРМАЛЬНО ON ERROR
     }
-    unrender(this._sort.getElement());
-    const message = new Message(`no-events`);
-    render(this._eventsList.getElement(), message.getElement(), Position.BEFOREEND);
+
   }
 
   _init() {
@@ -185,6 +179,8 @@ export class TripController {
       return;
     }
 
+    //сортировка не должна применяться если кликнули по уже выбранному
+
     // Maybe this code should be separated in function applySorting which is called only when time or price sorting applied
     this._eventsList.getElement().innerHTML = ``;
     this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = ``;
@@ -212,25 +208,22 @@ export class TripController {
     }
   }
 
-  _onFilterClick(evt) { // фильтры не работают на вкладке статитстика, это ок?
+  _onFilterClick(evt) { // фильтры не работают на вкладке статитстика, это ок? ДИЗЕЙБЛИТЬ ИХ? А Можно так оставить, тогда при переключении на таблицы будет то, что выбрали
     evt.preventDefault();
-    const dateToday = new Date();
-    /*const filters = Array.from(document.querySelectorAll(`.trip-filters__filter-input`));
-    let filterChecked;
 
-    for (const filter of filters) {
-      if (filter.checked) {
-        filterChecked = filter.value;
-        console.log(filterChecked);
-      }
-    } ДОДЕЛАЙ */
+    const activeFilter = document.querySelector(`.trip-filters__filter-input[checked]`);
+    const target = evt.target.textContent.toLowerCase() ;
 
-    if (evt.target.tagName !== `LABEL`) {
+    if (evt.target.tagName !== `LABEL` || target === activeFilter.value) {
       return;
     }
 
-    switch (evt.target.innerHTML) {
-      case `Future`:
+    const dateToday = new Date();
+    activeFilter.removeAttribute(`checked`);
+    evt.target.parentElement.querySelector(`.trip-filters__filter-input`).setAttribute(`checked`, `checked`);
+
+    switch (target) {
+      case `future`:
         const futureEvents = [];
         this._events.map((event) => {
           if (new Date(event.dateStart) > dateToday) {
@@ -239,7 +232,7 @@ export class TripController {
         });
         this._renderDays(futureEvents);
         break;
-      case `Past`:
+      case `past`:
         const pastEvents = [];
         this._events.map((event) => {
           if (new Date(event.dateEnd) < dateToday) {
@@ -248,7 +241,7 @@ export class TripController {
         });
         this._renderDays(pastEvents);
         break;
-      case `Everything`:
+      case `everything`:
         this._renderDays(this._events);
     }
   }

@@ -3,10 +3,11 @@ import {AbstractComponent} from './abstract-component';
 const createTabs = (menuTabs) => {
   let tabsToRender = [];
   menuTabs.forEach((tab) => {
-    tabsToRender.push(`<a class="trip-tabs__btn" href="#">${tab}</a>`);
+    tabsToRender.push(`<a class="trip-tabs__btn ${tab === `Table` ? `trip-tabs__btn--active` : ``}" href="#">${tab}</a>`);
   });
   return tabsToRender.join(``);
   // TODO: add class active for first item `trip-tabs__btn--active`;
+  // Или сделать чтоб первая вкладка по индексу была активной, а не по тексту table
 };
 
 export class Menu extends AbstractComponent {

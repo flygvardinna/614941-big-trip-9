@@ -116,36 +116,31 @@ api.getEvents().then((events) => {
 // надо проверять, и, если пустые, не давать вызвать контроллер
 
 menu.getElement().addEventListener(`click`, (evt) => {
-  evt.preventDefault();
+  const activeTab = menu.getElement().querySelector(`.trip-tabs__btn--active`);
 
-  if (evt.target.tagName !== `A`) {
+  if (evt.target.tagName !== `A` || evt.target === activeTab) {
     return;
   }
+
+  activeTab.classList.remove(`trip-tabs__btn--active`);
+  evt.target.classList.add(`trip-tabs__btn--active`);
 
   switch (evt.target.innerHTML) {
     case `Table`:
       statistics.getElement().classList.add(`visually-hidden`);
       tripController._container.classList.remove(`trip-events--hidden`);
-      menu.querySelector(`.trip-tabs__btn--active`).classList.remove(`trip-tabs__btn--active`);
-      evt.target.classList.toggle(`.trip-tabs__btn--active`);
-      // tripController.show(eventsList);
+      // tripController.show(eventsList); НЕ ОТРИСОВЫВАЮ ПОКА И ТАК
       // возможно, тут не надо отрисовывать по новой, а просто убирать хидден с того, что было, старый вариант функции show
-      // тут ошибка с переключением табов
       break;
     case `Stats`:
       tripController.hide();
       render(eventsContainer, statistics.getElement(), Position.AFTEREND);
       statistics.getElement().classList.remove(`visually-hidden`);
       statistics.renderCharts(tripController._events);
-      menu.querySelector(`.trip-tabs__btn--active`).classList.remove(`trip-tabs__btn--active`);
-      evt.target.classList.toggle(`.trip-tabs__btn--active`);
-      // вынести эти 2 строки в функцию, потому что повторяется? Может, фильтры не надо вставлять из data
       // реши вопрос, что происходит, если при клике на новый ивент открыта статитстика
       // пусть в этом случае переключается вкладка на таблицу
       break;
   }
-  // здесь еще нужно переключать класс trip-tabs__btn--active
-  // evt.target.classList.toggle(`trip-tabs__btn--active`);
 });
 
 addNewEventButton.addEventListener(`click`, () => {

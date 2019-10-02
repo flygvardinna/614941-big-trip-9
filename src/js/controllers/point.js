@@ -33,6 +33,7 @@ export class PointController {
     }
 
     let minDateEnd = this._data.dateStart;
+    const inputDateEnd = this._eventEdit.getElement().querySelector(`#event-end-time-1`);
     flatpickr(this._eventEdit.getElement().querySelector(`#event-start-time-1`), {
       altInput: true,
       allowInput: true,
@@ -41,8 +42,10 @@ export class PointController {
       defaultDate: this._data.dateStart,
       enableTime: true,
       'time_24hr': true,
-      onChange(selectedDates, dateStr) {
-        minDateEnd = dateStr; // как переопределить дату для второго пикера? пока не получилось
+      onChange(selectedDates, dateStr, inputDateEnd) {
+        inputDateEnd.value = dateStr;
+        inputDateEnd.minDate = dateStr; // как переопределить дату для второго пикера? пока не получилось ПОЧИТАЙ ЕЩЕ
+        inputDateEnd.defaultDate = dateStr;
       }
       // в ТЗ указан другой формат, не как в макетах, такой "d.m.Y H:i"
       // Дата окончания не может быть меньше даты начала события. У меня пока при изменения даты начала это не работает
@@ -61,6 +64,9 @@ export class PointController {
 
     const onSubmitButtonClick = (evt) => {
       evt.preventDefault();
+      // ПРОБЛЕМА
+      // если это пустая форма добавления, то возникает ошибка, что нет описания итд
+      // Разберись с этим, пустая точка на сервер не уходит в любом случае
 
       const form = this._eventEdit.getElement();
       const formData = new FormData(form);
@@ -220,6 +226,9 @@ export class PointController {
         }
       });
 
+    /*this._eventEdit.getElement().querySelector(`#event-start-time-1`).addEventListener(`change`, (evt) => {
+      evt.target.onChange();
+    });*/
 
     if (noEventsMessage) {
       unrender(noEventsMessage);

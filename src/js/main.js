@@ -7,7 +7,7 @@ import {TripDetails} from './components/trip-details';
 import {Message} from './components/message';
 import {TripController} from './controllers/trip';
 
-const AUTHORIZATION = `Basic 48487553663477777766`; // перед отправкой на проверку обнови код для сервера
+const AUTHORIZATION = `Basic 476777787777766`; // перед отправкой на проверку обнови код для сервера
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 
 const MENU_TABS = [`Table`, `Stats`];
@@ -70,15 +70,14 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
       })
         .then(() => api.getEvents())
         .then((events) => {
+          console.log(events);
           tripController.show(events);
+          if (events.length === 0) {
+            showNoEventsMessage();
+            // после удаления всех ивентов остается сортировка
+          }
         })
         .catch(() => onError());
-        // ПРОБЛЕМА: НЕ УДАЛЯЕТ ПОСЛЕДНИЙ ИВЕНТ
-        // НА САМОМ ДЕЛЕ УДАЛЯЕТ, НО ФОРМА ПОДВИСАЕТ
-        // ПОСЛЕ ОБНОВЛЕНИЯ СТРАНИЦЫ ИВЕНТА УЖЕ НЕТ
-        // ПОТОМУ ЧТО было успешно удалено, после этого events = undefined
-        // ВЫЗЫВАЕТСЯ OnError, потом еще раз delete приходит ответ events = 0 и вызывается showEvents
-        // ЕЩЕ ПОСЛЕ УДАЛЕНИЯ ВСЕХ ИВЕНТОВ OffersList = [] потому что tripController undefined поэтому у новых ивентов нельзя добавить офферс
       break;
   }
 };
@@ -87,6 +86,11 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
 
 const loadingMessage = new Message(`load`);
 render(eventsContainer, loadingMessage.getElement(), Position.BEFOREEND);
+
+const showNoEventsMessage = () => {
+  const noEventsMessage = new Message(`no-events`);
+  render(eventsContainer, noEventsMessage.getElement(), Position.BEFOREEND);
+}
 
 api.getDestinations()
   .then((destinations) => {
@@ -103,8 +107,10 @@ api.getDestinations()
     console.log(events);
     unrender(loadingMessage.getElement());
     eventsList = events.slice(); // чтобы не преобразовывать исходный массив? надо ли это?
-    tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers); // сюда можно передавать
-    // ивенты, просто тогда метод show должен вызываться без аргументов и брать ивенты из конструктора tripController
+    tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
+    if (events.length === 0) {
+      showNoEventsMessage();
+    }
     tripController.show(eventsList);
   });
 

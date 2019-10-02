@@ -311,13 +311,7 @@ export class EventEdit extends AbstractComponent {
           <button class="event__reset-btn" type="reset">Cancel</button>
         </header>
 
-        <section class="event__details ${this._offers ? `` : `visually-hidden`}${this._destination.description ? `` : `visually-hidden`}">
-
-          ${getAvailableOffersTemplate(this._offers)}
-
-          ${this._destination.description ? getDestinationTemplate(this._destination) : ``}
-
-        </section>
+        <section class="event__details visually-hidden"></section>
       </form>`;
     }
   }
@@ -342,7 +336,7 @@ export class EventEdit extends AbstractComponent {
     }
   }
 
-  _onDestinationChange(element, input) { // запретить пользовательский ввод, сейчас можно ввести херню и пропустит
+  _onDestinationChange(element, input) {
     for (let destination of this._destinationsList) {
       if (destination.name === input.value) {
         const eventDetails = element.querySelector(`.event__details`);

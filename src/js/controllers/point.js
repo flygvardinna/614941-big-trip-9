@@ -13,7 +13,7 @@ export class PointController {
     this._onDataChange = onDataChange;
     this._eventView = new Event(this._data);
     this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
-    this._mode = mode; // ниже замени просто mode на this._mode если надо
+    this._mode = mode; // ниже замени просто mode на this._mode если надо. Пусть будет везде одинаково
     this
     // возможно тут должны быть onEditButtonClick и onSubmitButtonClick
     // this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
@@ -27,13 +27,12 @@ export class PointController {
     const noEventsMessage = document.querySelector(`.no-events-message`); //перенести в tripController?
 
     if (mode === Mode.ADDING) {
-      // this._eventEdit = new EventAdd(this._data);
       currentView = this._eventEdit;
       renderPosition = Position.AFTEREND;
     }
 
     let minDateEnd = this._data.dateStart;
-    const inputDateEnd = this._eventEdit.getElement().querySelector(`#event-end-time-1`);
+    let inputDateEnd = this._eventEdit.getElement().querySelector(`#event-end-time-1`);
     flatpickr(this._eventEdit.getElement().querySelector(`#event-start-time-1`), {
       altInput: true,
       allowInput: true,
@@ -42,10 +41,13 @@ export class PointController {
       defaultDate: this._data.dateStart,
       enableTime: true,
       'time_24hr': true,
-      onChange(selectedDates, dateStr, inputDateEnd) {
-        inputDateEnd.value = dateStr;
-        inputDateEnd.minDate = dateStr; // как переопределить дату для второго пикера? пока не получилось ПОЧИТАЙ ЕЩЕ
-        inputDateEnd.defaultDate = dateStr;
+      onChange(selectedDates, dateStr) {
+        if (minDateEnd < dateStr) {
+          inputDateEnd.value = dateStr; // менять надо только в том случае, если дата стала больше, чем дата окончания!! ПОДУМАЙ
+        }
+        //minDateEnd = dateStr;
+        //inputDateEnd.minDate = dateStr; // как переопределить дату для второго пикера? пока не получилось ПОЧИТАЙ ЕЩЕ
+        //inputDateEnd.defaultDate = dateStr;
       }
       // в ТЗ указан другой формат, не как в макетах, такой "d.m.Y H:i"
       // Дата окончания не может быть меньше даты начала события. У меня пока при изменения даты начала это не работает
@@ -77,20 +79,20 @@ export class PointController {
 
       const offersArray = Array.from(form.querySelectorAll(`.event__offer-selector`)).map((offer) => ({
         title: offer.querySelector(`.event__offer-title`).innerHTML,
-        price: parseInt(offer.querySelector(`.event__offer-price`).innerHTML, 10),
+        price: Number(offer.querySelector(`.event__offer-price`).innerHTML),
         accepted: offer.querySelector(`.event__offer-checkbox`).checked
       }));
 
-      this._data.type = formData.get(`event-type`); // нужно ли передавать id?
+      this._data.type = formData.get(`event-type`);
       this._data.destination = {
         name: formData.get(`event-destination`),
         description: form.querySelector(`.event__destination-description`).innerHTML,
-        // добавить таймаут чтобы успело подгрузиться описание!
+        // добавить таймаут чтобы успело подгрузиться описание! Иначе ошибка Cannot read property 'innerHTML' of null
         pictures: picturesArray
       };
       this._data.dateStart = new Date(formData.get(`event-start-time`));
       this._data.dateEnd = new Date(formData.get(`event-end-time`));
-      this._data.price = parseInt(formData.get(`event-price`), 10);
+      this._data.price = Number(formData.get(`event-price`));
       this._data.offers = offersArray;
       if (mode === Mode.DEFAULT) {
         this._data.isFavorite = form.querySelector(`.event__favorite-checkbox`).checked;
@@ -122,7 +124,7 @@ export class PointController {
       if (mode === Mode.DEFAULT) {
         this._onDataChange(`update`, this._data, this.onError.bind(this, `save`));
       } else {
-        this._onDataChange(`create`, this._data, this.onError.bind(this, `save`), this.onSuccesEventCreate.bind(this));
+        this._onDataChange(`create`, this._data, this.onError.bind(this, `save`), this.onSuccesEventCreate.bind(this)); //убрать последнее?
       }
 
       document.removeEventListener(`keydown`, onEscKeyDown); // ТОЖЕ ДОЛЖНО УБИРАТЬСЯ ТОЛЬКО ПРИ УСПЕХЕ?
@@ -207,7 +209,6 @@ export class PointController {
     this._eventEdit.getElement()
       .querySelector(`.event__input--destination`)
       .addEventListener(`change`, (evt) => {
-        // let value = evt.target.value;
         this._eventEdit._onDestinationChange(this._eventEdit.getElement(), evt.target);
       });
 
@@ -215,20 +216,13 @@ export class PointController {
       .addEventListener(`click`, () => {
         this.toggleFormBlock(this._eventEdit.getElement(), `delete`, true);
         this._onDataChange(`delete`, this._data, this.onError.bind(this, `delete`));
-        // сейчас при удалении точки у нее сначала пропадают даты, потом удаляется
-        // Так не должно наверное быть, поправь
 
         if (mode === Mode.ADDING) {
           unrender(this._eventEdit.getElement());
           document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
-          // этот код дублируется выше, можно вынести в отдельную функцию Закрыть форму редактирования
-          // Сейчас Cancel на форме добавления приводит к тому, что отрисовываются еще 5 событий
+          // этот код дублируется внизу в onSuccesEventCreate, разберись. можно вынести в отдельную функцию Закрыть форму редактирования
         }
       });
-
-    /*this._eventEdit.getElement().querySelector(`#event-start-time-1`).addEventListener(`change`, (evt) => {
-      evt.target.onChange();
-    });*/
 
     if (noEventsMessage) {
       unrender(noEventsMessage);
@@ -245,13 +239,11 @@ export class PointController {
       form.querySelector(`.event__save-btn`).textContent = value ? `Saving...` : `Save`;
     } else {
       form.querySelector(`.event__reset-btn`).textContent = value ? `Deleting...` : `Delete`;
-      //мб везде использовать textContent вместо innerHTML?
     }
     form.querySelector(`.event__type-toggle`).disabled = value;
     form.querySelector(`.event__save-btn`).disabled = value;
     form.querySelector(`.event__reset-btn`).disabled = value;
     Array.from(form.querySelectorAll(`.event__input`)).map((input) => input.disabled = value);
-    // можно просто дизейблить все инпуты, но это наверное нарушает Д21 Изменения применяются точечно, неочевидно
     Array.from(form.querySelectorAll(`.event__offer-checkbox`)).map((offer) => offer.disabled = value);
     if (this._mode === Mode.DEFAULT) {
       form.querySelector(`.event__favorite-checkbox`).disabled = value;
@@ -283,9 +275,7 @@ export class PointController {
   onSuccesEventCreate() {
     unrender(this._eventEdit.getElement());
     document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
-    //if (mode === Mode.ADDING) { // ДОЛЖНО СРАБАТЫВАТЬ ТОЛЬКО ПРИ УСПЕХЕ!
-      // куда убрать? вынеси в функцию и вызывай через tripController.renderEvents() ? ПОДУМАЙ
-      // ПРОБЛЕМА - ЕСЛИ ПРИ СОЗДАНИИ ИВЕНТА ОШИБКА, ТО ФОРМА ИСЧЕЗАЕТ И НЕ СРАБАТЫВАЕТ НОРМАЛЬНО ON ERROR
-    //}
+    // код дублируется выше если делаем кансель на создании объекта, вынести в отдельную функцию?
+      // ПРОБЛЕМА - ЕСЛИ ПРИ СОЗДАНИИ ИВЕНТА ОШИБКА, ТО ФОРМА ИСЧЕЗАЕТ И НЕ СРАБАТЫВАЕТ НОРМАЛЬНО ON ERROR. НЕПОНЯТНО, ОСТАЛОСЬ ИЛИ НЕТ
   }
 }

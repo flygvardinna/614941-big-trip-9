@@ -4,6 +4,7 @@ import {Sort} from '../components/sort';
 import {EventsList} from '../components/events-list';
 import {Day} from '../components/day';
 import {TripDetails} from '../components/trip-details';
+import moment from '../../../node_modules/moment/src/moment';
 
 const PointControllerMode = Mode;
 
@@ -126,7 +127,7 @@ export class TripController {
 
     let days = new Set();
     eventsArray.forEach((event) => {
-      const date = new Date(event.dateStart).toString().slice(4, 10);
+      const date = moment(event.dateStart).format(`MMM DD`);
       if (!days.has(date)) {
         days.add(date);
       }
@@ -135,12 +136,11 @@ export class TripController {
       const dayElement = new Day(day, index + 1).getElement();
       render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
       eventsArray.forEach((event) => {
-        const eventDayStart = event.dateStart.toString().slice(4, 10); // здесь можно не отрезать, а сделать momentom как у дня
+        const eventDayStart = moment(event.dateStart).format(`MMM DD`);
         if (day === eventDayStart) {
           const eventsContainer = dayElement.querySelector(`.trip-events__list`);
           this._renderEvent(eventsContainer, event);
         }
-        // везде привести в порядок форматирование дат? сейчас у меня у дня в таблице дата в iso string
       });
     });
   }

@@ -61,28 +61,31 @@ export class PointController {
 
     const onSubmitButtonClick = (evt) => {
       evt.preventDefault();
-      // ПРОБЛЕМА
-      // если это пустая форма добавления, то возникает ошибка, что нет описания итд
-      // Разберись с этим, пустая точка на сервер не уходит в любом случае
 
       const form = this._eventEdit.getElement();
       const formData = new FormData(form);
+
       const picturesArray = Array.from(form.querySelectorAll(`.event__photo`)).map((picture) => ({
         src: picture.getAttribute(`src`),
         description: picture.getAttribute(`alt`)
       }));
 
       const offersArray = Array.from(form.querySelectorAll(`.event__offer-selector`)).map((offer) => ({
-        title: offer.querySelector(`.event__offer-title`).innerHTML,
-        price: Number(offer.querySelector(`.event__offer-price`).innerHTML),
+        title: offer.querySelector(`.event__offer-title`).textContent,
+        price: Number(offer.querySelector(`.event__offer-price`).textContent),
         accepted: offer.querySelector(`.event__offer-checkbox`).checked
+        // сломался выбор опций, нажимаешь save после изменения чекбоксов, не работает
       }));
+
+      let destinationDescription = ``;
+      if (form.querySelector(`.event__destination-description`)) {
+        destinationDescription = form.querySelector(`.event__destination-description`).textContent;
+      }
 
       this._data.type = formData.get(`event-type`);
       this._data.destination = {
         name: formData.get(`event-destination`),
-        description: form.querySelector(`.event__destination-description`).innerHTML,
-        // добавить таймаут чтобы успело подгрузиться описание! Иначе ошибка Cannot read property 'innerHTML' of null
+        description: destinationDescription,
         pictures: picturesArray
       };
       this._data.dateStart = new Date(formData.get(`event-start-time`));
@@ -111,11 +114,6 @@ export class PointController {
       // Отрисовывается при сохранении, без сохранения нет, это ок. Но если кликнуть и не сохранить, то она визуально остается
       // голубой чекнутой
 
-      // может можно было не городить поиск лейбла с типом итд, а брать entry.type итд
-      // TO DO После сохранения точка маршрута располагается в списке точек маршрута в порядке определенном
-      // текущей сортировкой (по умолчанию, по длительности или по стоимости). НЕ РАБОТАЕТ СЕЙЧАС
-      // сейчас проблема такая, что если выбрана сортировка не по дням, то после изменения снова рендерятся дни
-
       if (mode === Mode.DEFAULT) {
         this._onDataChange(`update`, this._data, this.onError.bind(this, `save`));
       } else {
@@ -127,12 +125,8 @@ export class PointController {
 
     const onEscKeyDown = (evt) => {
       if (evt.key === Key.ESCAPE || evt.key === Key.ESCAPE_IE) {
-        if (mode === Mode.DEFAULT) {
-          if (this._container.contains(this._eventEdit.getElement())) {
-            this._container.replaceChild(this._eventView.getElement(), this._eventEdit.getElement());
-          }
-        } else if (mode === Mode.ADDING) {
-          this._container.removeChild(currentView.getElement());
+        if (this._container.contains(this._eventEdit.getElement())) {
+          this._container.replaceChild(this._eventView.getElement(), this._eventEdit.getElement());
         }
         document.removeEventListener(`keydown`, onEscKeyDown);
       }
@@ -180,9 +174,7 @@ export class PointController {
       // обводка (это легко убрать) и данные будут изменены, хотя у eventView все будет в исходном виде
       // СЕРЬЕЗНЫЙ КОСЯК
 
-    if (mode === Mode.DEFAULT) { // зачем это условие? а что в не дефолтном режиме? не в дефолтном у формы нет галочки
-      // нужно закрывать форму создания точки, если открываем форму другой точки
-      // через onChangeView?
+    if (mode === Mode.DEFAULT) {
       this._eventEdit.getElement()
         .querySelector(`.event__rollup-btn`)
         .addEventListener(`click`, () => {

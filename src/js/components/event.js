@@ -1,4 +1,4 @@
-import {AbstractComponent} from './abstract-component';
+import AbstractComponent from './abstract-component';
 import {getPlaceholder, capitalize, countEventDuration, renderEventDuration} from '../utils';
 import moment from '../../../node_modules/moment/src/moment';
 
@@ -32,7 +32,7 @@ const getOffersTemplate = (offersToRender) => {
   return ``;
 };
 
-export class Event extends AbstractComponent {
+export default class Event extends AbstractComponent {
   constructor(data) {
     super();
     this._id = data.id;

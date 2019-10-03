@@ -1,14 +1,14 @@
+import PointController from './point';
+import Sort from '../components/sort';
+import EventsList from '../components/events-list';
+import Day from '../components/day';
+import TripDetails from '../components/trip-details';
 import {Position, Mode, render, unrender, countEventDuration} from '../utils';
-import {PointController} from './point';
-import {Sort} from '../components/sort';
-import {EventsList} from '../components/events-list';
-import {Day} from '../components/day';
-import {TripDetails} from '../components/trip-details';
 import moment from '../../../node_modules/moment/src/moment';
 
 const PointControllerMode = Mode;
 
-export class TripController {
+export default class TripController {
   constructor(container, onDataChange, destinations, offers) {
     this._container = container;
     this._onDataChange = onDataChange;
@@ -64,21 +64,8 @@ export class TripController {
         this._onChangeView, (...args) => {
           this._addingEvent = null;
           this._onDataChange(...args);
-          // нужно закрывать форму создания точки, если открываем форму другой точки
         });
     this._addingEvent._onChangeView();
-    // ТЗ Одновременно может быть открыта только одна форма редактирования для одной точки маршрута.
-    // Непонятно, если открыта форма создания новой точки и мы ждем на раскрытие другой точки, должна ли скрываться форма создания
-  }
-
-  hideNewEventForm() {
-    if (mode === Mode.ADDING) { // ДОЛЖНО СРАБАТЫВАТЬ ТОЛЬКО ПРИ УСПЕХЕ!
-      // куда убрать? вынеси в функцию и вызывай через tripController.renderEvents() ? ПОДУМАЙ
-      unrender(this._eventEdit.getElement());
-      document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
-      // ПРОБЛЕМА - ЕСЛИ ПРИ СОЗДАНИИ ИВЕНТА ОШИБКА, ТО ФОРМА ИСЧЕЗАЕТ И НЕ СРАБАТЫВАЕТ НОРМАЛЬНО ON ERROR
-    }
-
   }
 
   _init() {
@@ -86,12 +73,8 @@ export class TripController {
 
     render(this._container, this._sort.getElement(), Position.BEFOREEND);
     render(this._container, this._eventsList.getElement(), Position.BEFOREEND);
-    // this._renderDays(this._events); // убрать это отсюда?
 
-    // this._events.forEach((eventMock) => this._renderEvent(eventMock));
-
-    this._sort.getElement()
-    .addEventListener(`click`, (evt) => this._onSortItemClick(evt));
+    this._sort.getElement().addEventListener(`click`, (evt) => this._onSortItemClick(evt));
 
     filter.addEventListener(`click`, (evt) => this._onFilterClick(evt));
   }
@@ -178,12 +161,9 @@ export class TripController {
 
     this._sortedBy = evt.target.dataset.sortType;
     this._applySorting(this._sortedBy);
-
-    //сортировка не должна применяться если кликнули по уже выбранному
   }
 
   _renderDayContainerForAllEvents() {
-    // Maybe this code should be separated in function applySorting which is called only when time or price sorting applied
     this._eventsList.getElement().innerHTML = ``;
     this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = ``;
     const dayElement = new Day(``, ``).getElement();

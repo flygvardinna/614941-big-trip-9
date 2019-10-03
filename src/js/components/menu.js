@@ -1,4 +1,4 @@
-import {AbstractComponent} from './abstract-component';
+import AbstractComponent from './abstract-component';
 
 const createTabs = (menuTabs) => {
   let tabsToRender = [];
@@ -8,7 +8,7 @@ const createTabs = (menuTabs) => {
   return tabsToRender.join(``);
 };
 
-export class Menu extends AbstractComponent {
+export default class Menu extends AbstractComponent {
   constructor(tabs) {
     super();
     this._tabs = tabs;

@@ -1,9 +1,9 @@
-import {AbstractComponent} from './abstract-component';
+import AbstractComponent from './abstract-component';
 import {typesOfTransport, countEventDuration, renderEventDuration} from '../utils';
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-export class Statistics extends AbstractComponent {
+export default class Statistics extends AbstractComponent {
   constructor() {
     super();
     this._moneyCtx = this.getElement().querySelector(`.statistics__chart--money`);

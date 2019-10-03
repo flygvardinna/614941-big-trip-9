@@ -1,13 +1,13 @@
+import API from './api';
+import Menu from './components/menu';
+import Filter from './components/filter';
+import Statistics from './components/statistics';
+import TripDetails from './components/trip-details';
+import Message from './components/message';
+import TripController from './controllers/trip';
 import {Position, render, unrender} from './utils';
-import {API} from './api';
-import {Menu} from './components/menu';
-import {Filter} from './components/filter';
-import {Statistics} from './components/statistics';
-import {TripDetails} from './components/trip-details';
-import {Message} from './components/message';
-import {TripController} from './controllers/trip';
 
-const AUTHORIZATION = `Basic 48877997000797766`; // перед отправкой на проверку обнови код для сервера
+const AUTHORIZATION = `Basic 7997000797766`; // перед отправкой на проверку обнови код для сервера
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 
 const MENU_TABS = [`Table`, `Stats`];

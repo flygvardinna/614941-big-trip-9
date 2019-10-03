@@ -1,4 +1,4 @@
-import {AbstractComponent} from './abstract-component';
+import AbstractComponent from './abstract-component';
 import moment from '../../../node_modules/moment/src/moment';
 
 const getTripTitle = (eventsList) => {
@@ -19,7 +19,7 @@ const getTripDates = (eventsList) => {
   return tripDates.join(`&nbsp;—&nbsp;`);
 };
 
-export class TripDetails extends AbstractComponent {
+export default class TripDetails extends AbstractComponent {
   constructor(eventsList) {
     super();
     this._title = getTripTitle(eventsList);

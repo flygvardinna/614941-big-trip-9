@@ -1,4 +1,4 @@
-export class ModelEvent {
+export default class ModelEvent {
   constructor(data) {
     this.id = data[`id`];
     this.type = data[`type`];

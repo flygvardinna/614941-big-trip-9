@@ -1,9 +1,9 @@
+import Event from '../components/event';
+import EventEdit from '../components/event-edit';
 import {Position, Mode, Key, render, unrender} from '../utils';
-import {Event} from '../components/event';
-import {EventEdit} from '../components/event-edit';
 import flatpickr from 'flatpickr';
 
-export class PointController {
+export default class PointController {
   constructor(container, data, destinations, offers, mode, onChangeView, onDataChange) {
     this._container = container;
     this._data = data;

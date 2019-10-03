@@ -1,11 +1,11 @@
-import {AbstractComponent} from './abstract-component';
+import AbstractComponent from './abstract-component';
 
 const MESSAGES = {
   LOAD: `Loading...`,
   NO_EVENTS: `Click New Event to create your first point`,
 };
 
-export class Message extends AbstractComponent {
+export default class Message extends AbstractComponent {
   constructor(message) {
     super();
     this._message = message;

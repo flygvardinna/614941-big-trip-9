@@ -1,4 +1,4 @@
-import {AbstractComponent} from './abstract-component';
+import AbstractComponent from './abstract-component';
 import {Position, Mode, createElement, render, unrender, getPlaceholder, capitalize} from '../utils';
 import moment from '../../../node_modules/moment/src/moment';
 import 'flatpickr/dist/flatpickr.min.css';
@@ -60,7 +60,7 @@ const createDestinationsList = (availableDestinations) => {
   // мб поменять все подобные конструкции на map?
 };
 
-export class EventEdit extends AbstractComponent {
+export default class EventEdit extends AbstractComponent {
   constructor(mode, data, destinationsList, offersList) {
     super();
     this._mode = mode;

@@ -1,4 +1,4 @@
-import {AbstractComponent} from './abstract-component';
+import AbstractComponent from './abstract-component';
 import {capitalize} from '../utils';
 
 const createFilters = (eventFilters) => {
@@ -12,7 +12,7 @@ const createFilters = (eventFilters) => {
   return filtersToRender.join(``);
 };
 
-export class Filter extends AbstractComponent {
+export default class Filter extends AbstractComponent {
   constructor(filters) {
     super();
     this._filters = filters;

@@ -1,4 +1,4 @@
-import {ModelEvent} from './model-event';
+import ModelEvent from './model-event';
 
 const Method = {
   GET: `GET`,
@@ -19,7 +19,7 @@ const toJSON = (response) => {
   return response.json();
 };
 
-export class API {
+export default class API {
   constructor({endPoint, authorization}) {
     this._endPoint = endPoint;
     this._authorization = authorization;

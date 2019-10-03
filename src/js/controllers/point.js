@@ -14,7 +14,6 @@ export class PointController {
     this._eventView = new Event(this._data);
     this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
     this._mode = mode; // ниже замени просто mode на this._mode если надо. Пусть будет везде одинаково
-    this
     // возможно тут должны быть onEditButtonClick и onSubmitButtonClick
     // this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
 
@@ -31,6 +30,7 @@ export class PointController {
       renderPosition = Position.AFTEREND;
     }
 
+    const minDateEnd = this._data.dateStart;
     const dateStartPicker = flatpickr(this._eventEdit.getElement().querySelector(`#event-start-time-1`), {
       altInput: true,
       allowInput: true,
@@ -40,8 +40,7 @@ export class PointController {
       enableTime: true,
       'time_24hr': true,
       onChange(selectedDates, dateStr) {
-        const date = minDateEnd.toISOString();
-        if (dateStr > date) { // доделать
+        if (dateStr > minDateEnd.toISOString()) {
           dateEndPicker.set(`minDate`, dateStr);
           dateEndPicker.setDate(dateStr);
         }
@@ -55,7 +54,7 @@ export class PointController {
       altFormat: `d/m/y H:i`,
       dateFormat: `Z`,
       defaultDate: this._data.dateEnd,
-      minDate: this._data.dateStart,
+      minDate: minDateEnd,
       enableTime: true,
       'time_24hr': true
     });

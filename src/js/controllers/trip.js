@@ -54,8 +54,8 @@ export class TripController {
         description: ``,
         pictures: []
       },
-      dateStart: Date.now(),
-      dateEnd: Date.now(),
+      dateStart: new Date(),
+      dateEnd: new Date(),
       price: 0,
       offers: [],
       isFavorite: false

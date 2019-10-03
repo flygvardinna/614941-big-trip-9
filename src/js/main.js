@@ -7,7 +7,7 @@ import {TripDetails} from './components/trip-details';
 import {Message} from './components/message';
 import {TripController} from './controllers/trip';
 
-const AUTHORIZATION = `Basic 48888287766`; // перед отправкой на проверку обнови код для сервера
+const AUTHORIZATION = `Basic 4889988287766`; // перед отправкой на проверку обнови код для сервера
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 
 const MENU_TABS = [`Table`, `Stats`];

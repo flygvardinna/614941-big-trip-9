@@ -31,9 +31,7 @@ export class PointController {
       renderPosition = Position.AFTEREND;
     }
 
-    let minDateEnd = this._data.dateStart;
-    let inputDateEnd = this._eventEdit.getElement().querySelector(`#event-end-time-1`);
-    flatpickr(this._eventEdit.getElement().querySelector(`#event-start-time-1`), {
+    const dateStartPicker = flatpickr(this._eventEdit.getElement().querySelector(`#event-start-time-1`), {
       altInput: true,
       allowInput: true,
       altFormat: `d/m/y H:i`,
@@ -42,24 +40,22 @@ export class PointController {
       enableTime: true,
       'time_24hr': true,
       onChange(selectedDates, dateStr) {
-        if (minDateEnd < dateStr) {
-          inputDateEnd.value = dateStr; // менять надо только в том случае, если дата стала больше, чем дата окончания!! ПОДУМАЙ
+        const date = minDateEnd.toISOString();
+        if (dateStr > date) { // доделать
+          dateEndPicker.set(`minDate`, dateStr);
+          dateEndPicker.setDate(dateStr);
         }
-        //minDateEnd = dateStr;
-        //inputDateEnd.minDate = dateStr; // как переопределить дату для второго пикера? пока не получилось ПОЧИТАЙ ЕЩЕ
-        //inputDateEnd.defaultDate = dateStr;
       }
       // в ТЗ указан другой формат, не как в макетах, такой "d.m.Y H:i"
-      // Дата окончания не может быть меньше даты начала события. У меня пока при изменения даты начала это не работает
     });
 
-    flatpickr(this._eventEdit.getElement().querySelector(`#event-end-time-1`), {
+    const dateEndPicker = flatpickr(this._eventEdit.getElement().querySelector(`#event-end-time-1`), {
       altInput: true,
       allowInput: true,
       altFormat: `d/m/y H:i`,
       dateFormat: `Z`,
       defaultDate: this._data.dateEnd,
-      minDate: minDateEnd,
+      minDate: this._data.dateStart,
       enableTime: true,
       'time_24hr': true
     });

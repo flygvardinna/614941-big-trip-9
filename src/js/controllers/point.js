@@ -13,14 +13,12 @@ export default class PointController {
     this._onDataChange = onDataChange;
     this._eventView = new Event(this._data);
     this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
-    this._mode = mode; // ниже замени просто mode на this._mode если надо. Пусть будет везде одинаково
-    // возможно тут должны быть onEditButtonClick и onSubmitButtonClick
-    // this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
+    this._mode = mode;
 
     this.init(mode);
   }
 
-  init(mode) { // метод init слишком длинный, вынести все лишнее наружу? не получится, можно вынести в отдельные методы только
+  init(mode) {
     let currentView = this._eventView;
     let renderPosition = Position.BEFOREEND;
     const noEventsMessage = document.querySelector(`.no-events-message`); //перенести в tripController?

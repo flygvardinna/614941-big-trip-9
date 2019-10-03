@@ -57,7 +57,6 @@ const createDestinationsList = (availableDestinations) => {
   let destinations = [];
   availableDestinations.forEach((destination) => destinations.push(`<option value="${destination.name}"></option>`));
   return destinations.join(``);
-  // мб поменять все подобные конструкции на map?
 };
 
 export default class EventEdit extends AbstractComponent {

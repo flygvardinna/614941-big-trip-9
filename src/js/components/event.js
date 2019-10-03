@@ -2,13 +2,15 @@ import AbstractComponent from './abstract-component';
 import {getPlaceholder, capitalize, countEventDuration, renderEventDuration} from '../utils';
 import moment from '../../../node_modules/moment/src/moment';
 
-const OFFERS_COUNT = 3;
+const OFFER_COUNT = 3;
 
 const createOffersList = (offersList) => {
   let selectedOffers = [];
   offersList.forEach((offer) => {
-    if (selectedOffers.length < OFFERS_COUNT) {
-      selectedOffers.push(offer.accepted ? getOfferTemplate(offer) : ``);
+    if (selectedOffers.length < OFFER_COUNT) {
+      if (offer.accepted) {
+        selectedOffers.push(getOfferTemplate(offer)); // проверь, нормально ли такой цикл или лишние итерации
+      }
     }
   });
   return selectedOffers.join(``);

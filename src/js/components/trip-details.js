@@ -1,9 +1,11 @@
 import AbstractComponent from './abstract-component';
 import moment from '../../../node_modules/moment/src/moment';
 
+const CITY_NAME_COUNT = 3;
+
 const getTripTitle = (eventsList) => {
   let tripRoute = Array.from(eventsList).map((event) => event.destination.name);
-  if (tripRoute.length > 3) {
+  if (tripRoute.length > CITY_NAME_COUNT) {
     let tripTitle = [];
     tripTitle.push(tripRoute.shift(), tripRoute.pop());
     return tripTitle.join(` — ... — `);
@@ -13,9 +15,9 @@ const getTripTitle = (eventsList) => {
 };
 
 const getTripDates = (eventsList) => {
-  let tripDates = [...Array(2)];
-  tripDates[0] = moment(eventsList[0].dateStart).format(`MMM DD`);
-  tripDates[1] = moment(eventsList[eventsList.length - 1].dateEnd).format(`MMM DD`);
+  let tripDates = [];
+  tripDates.push(moment(eventsList[0].dateStart).format(`MMM DD`));
+  tripDates.push(moment(eventsList[eventsList.length - 1].dateEnd).format(`MMM DD`));
   return tripDates.join(`&nbsp;—&nbsp;`);
 };
 

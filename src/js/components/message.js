@@ -1,6 +1,6 @@
 import AbstractComponent from './abstract-component';
 
-const MESSAGES = {
+const MessageText = {
   LOAD: `Loading...`,
   NO_EVENTS: `Click New Event to create your first point`,
 };
@@ -13,6 +13,6 @@ export default class Message extends AbstractComponent {
 
   getTemplate() {
     return `<p class="${this._message}-message" style="margin-left: 150px;">
-    ${this._message === `load` ? MESSAGES.LOAD : MESSAGES.NO_EVENTS}</p>`;
+    ${this._message === `load` ? MessageText.LOAD : MessageText.NO_EVENTS}</p>`;
   }
 }

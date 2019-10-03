@@ -3,6 +3,7 @@ import Sort from '../components/sort';
 import EventsList from '../components/events-list';
 import Day from '../components/day';
 import TripDetails from '../components/trip-details';
+import Message from '../components/message';
 import {Position, Mode, render, unrender, countEventDuration} from '../utils';
 import moment from '../../../node_modules/moment/src/moment';
 
@@ -41,7 +42,7 @@ export default class TripController {
     this._container.classList.remove(`trip-events--hidden`);
   }
 
-  addEvent() { // тоже сделать приватным?
+  addEvent() {
     if (this._addingEvent) {
       return;
     }
@@ -66,6 +67,11 @@ export default class TripController {
           this._onDataChange(...args);
         });
     this._addingEvent._onChangeView();
+  }
+
+  showNoEventsMessage() {
+    const noEventsMessage = new Message(`no-events`);
+    render(this._container, noEventsMessage.getElement(), Position.BEFOREEND);
   }
 
   _init() {
@@ -98,6 +104,12 @@ export default class TripController {
 
   _renderDays(eventsArray) {
     this._eventsList.getElement().innerHTML = ``;
+
+    if (eventsArray.length === 0) {
+      this._eventsList.getElement().innerHTML = ``;
+      this.showNoEventsMessage();
+      return;
+    }
 
     let days = new Set();
     eventsArray.forEach((event) => {

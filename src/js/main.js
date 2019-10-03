@@ -7,7 +7,7 @@ import Message from './components/message';
 import TripController from './controllers/trip';
 import {Position, render, unrender} from './utils';
 
-const AUTHORIZATION = `Basic 7997000797766`; // перед отправкой на проверку обнови код для сервера
+const AUTHORIZATION = `Basic kTy9gIdsz2317rD`; // перед отправкой на проверку обнови код для сервера
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 
 const MENU_TABS = [`Table`, `Stats`];
@@ -41,7 +41,7 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
         id: update.id,
         data: update.toRAW()
       }).then(() => tripController.show(eventsList))
-        .catch(() => onError()); //есть проблема, когда меняли чекнутые опции, случается ошибка, но иногда нормально чекаются
+      .catch(() => onError());
       break;
     case `create`:
       api.createEvent({
@@ -58,12 +58,15 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
       })
         .then(() => api.getEvents())
         .then((events) => {
-          console.log(events);
+          console.log(events); // потом сделай в одну строку, как апдейт
           tripController.show(events); //отрисовываются все события, и если их нет, тоже полный цикл
-          if (events.length === 0) {
+          /*if (events.length === 0) {
             showNoEventsMessage(); //не срабатывает
             // после удаления всех ивентов остается сортировка
-          }
+          }*/
+          // разберись с выводом сообщения о том, что нет событий. Перенесла в  trip контоллер
+          // в метод showNoEventsMessage
+          // сейчас работает так, что когда кликаешь по сортировке оно вызывается и появляется много сообщений
         })
         .catch(() => onError());
       break;
@@ -96,9 +99,9 @@ api.getDestinations()
     unrender(loadingMessage.getElement());
     eventsList = events.slice(); // чтобы не преобразовывать исходный массив? надо ли это?
     tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
-    if (events.length === 0) {
-      showNoEventsMessage();
-    }
+    /*if (events.length === 0) {
+      tripController.showNoEventsMessage();
+    }*/
     tripController.show(eventsList);
   });
 

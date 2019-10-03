@@ -22,7 +22,6 @@ export class TripController {
 
     this._subscriptions = [];
     this._onChangeView = this._onChangeView.bind(this);
-    // this._onDataChange = this._onDataChange.bind(this);
     this._info = document.querySelector(`.trip-info`);
     this._cost = this._info.querySelector(`.trip-info__cost-value`);
     this._details = false;
@@ -98,6 +97,8 @@ export class TripController {
   }
 
   _renderEvents(events) {
+    this._cost.innerHTML = this._countTripCost(events);
+
     if (this._sortedBy === "default") {
       this._events = this._sortByStartDate(events);
       this._renderDays(this._events);
@@ -110,15 +111,9 @@ export class TripController {
       this._events = events;
       this._applySorting(this._sortedBy);
     }
-
-    this._cost.innerHTML = this._countTripCost(this._events);
-    // ? вынести это в отдельные функции чтобы вызывать их после изменения порядка событий и стоимости? (после onDataChange)
-    // или просто каждый раз вызываем renderEvents?
   }
 
   _renderDays(eventsArray) {
-    // unrender(this._eventsList.getElement()); // зачем это?
-    // this._eventsList.removeElement(); // зачем это?
     this._eventsList.getElement().innerHTML = ``;
 
     let days = new Set();

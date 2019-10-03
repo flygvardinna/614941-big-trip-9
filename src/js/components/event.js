@@ -2,7 +2,6 @@ import {AbstractComponent} from './abstract-component';
 import {getPlaceholder, capitalize, countEventDuration, renderEventDuration} from '../utils';
 import moment from '../../../node_modules/moment/src/moment';
 
-// TODO: fix warning in console about moment.js
 const OFFERS_COUNT = 3;
 
 const createOffersList = (offersList) => {
@@ -13,7 +12,6 @@ const createOffersList = (offersList) => {
     }
   });
   return selectedOffers.join(``);
-  // убрать магические значения везде
 };
 
 const getOfferTemplate = (offer) => {

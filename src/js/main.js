@@ -7,7 +7,7 @@ import {TripDetails} from './components/trip-details';
 import {Message} from './components/message';
 import {TripController} from './controllers/trip';
 
-const AUTHORIZATION = `Basic 488928777777766`; // перед отправкой на проверку обнови код для сервера
+const AUTHORIZATION = `Basic 48877997000797766`; // перед отправкой на проверку обнови код для сервера
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 
 const MENU_TABS = [`Table`, `Stats`];
@@ -28,7 +28,6 @@ render(tripControls, filter.getElement(), Position.BEFOREEND);
 
 const statistics = new Statistics();
 
-// TODO: Put events sorting to controller also - ГОТОВО
 
 let availableDestinations = [];
 let availableOffers = [];
@@ -41,28 +40,17 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
       api.updateEvent({
         id: update.id,
         data: update.toRAW()
-      }).then((updatedEvent) => {
-        // console.log(updatedEvent); // поменять название event на point везде, чтоб не было путаницы, или так уже оставим?
-        for (let event of eventsList) {
-          if (updatedEvent.id === event.id) { // может быть это не надо, мы ведь уже изменили элемент, без копирования массива?
-            event = updatedEvent;
-            // console.log(eventsList);
-            // Во-вторых, внутри нашей функции мы больше не пезаписываем моки, а взаимодействуем с сервером.
-          }
-        }
-        tripController.show(eventsList); // карточка исчезает - удаляется, но после обновления стараницы все ок
-        // какая-то путаница с айдишниками
-      }).catch(() => onError());
+      }).then(() => tripController.show(eventsList))
+        .catch(() => onError()); //есть проблема, когда меняли чекнутые опции, случается ошибка, но иногда нормально чекаются
       break;
     case `create`:
       api.createEvent({
         event: update.toRAW()
       }).then((newEvent) => {
         onSuccessEventCreate();
-        eventsList.push(newEvent); // поменять название event на point везде, чтоб не было путаницы, или так уже оставим?
+        eventsList.push(newEvent);
         tripController.show(eventsList);
       }).catch(() => onError());
-      // В случае ошибки при создании новой точки нет красной обводки
       break;
     case `delete`:
       api.deleteEvent({
@@ -71,9 +59,9 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
         .then(() => api.getEvents())
         .then((events) => {
           console.log(events);
-          tripController.show(events);
+          tripController.show(events); //отрисовываются все события, и если их нет, тоже полный цикл
           if (events.length === 0) {
-            showNoEventsMessage();
+            showNoEventsMessage(); //не срабатывает
             // после удаления всех ивентов остается сортировка
           }
         })
@@ -128,16 +116,12 @@ menu.getElement().addEventListener(`click`, (evt) => {
     case `Table`:
       statistics.getElement().classList.add(`visually-hidden`);
       tripController._container.classList.remove(`trip-events--hidden`);
-      // tripController.show(eventsList); НЕ ОТРИСОВЫВАЮ ПОКА И ТАК
-      // возможно, тут не надо отрисовывать по новой, а просто убирать хидден с того, что было, старый вариант функции show
       break;
     case `Stats`:
       tripController.hide();
       render(eventsContainer, statistics.getElement(), Position.AFTEREND);
       statistics.getElement().classList.remove(`visually-hidden`);
       statistics.renderCharts(tripController._events);
-      // реши вопрос, что происходит, если при клике на новый ивент открыта статитстика
-      // пусть в этом случае переключается вкладка на таблицу
       break;
   }
 });

@@ -10,7 +10,6 @@ const createFilters = (eventFilters) => {
     </div>`);
   });
   return filtersToRender.join(``);
-  // TODO: mark first filter as checked
 };
 
 export class Filter extends AbstractComponent {

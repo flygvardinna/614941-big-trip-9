@@ -51,10 +51,6 @@ export class Statistics extends AbstractComponent {
         },
         scales: {
           xAxes: [{
-            // categoryPercentage: 1.0,
-            // barThickness: 10,
-            // maxBarThickness: 8,
-            // minBarLength: 2,
             minBarLength: 400,
             gridLines: {
               display: false,
@@ -66,7 +62,7 @@ export class Statistics extends AbstractComponent {
           }],
           yAxes: [{
             barPercentage: 1.0,
-            categoryPercentage: 1.0, // если событий мало, то расстояние между полосками все равно будет гигантским
+            categoryPercentage: 1.0,
             barThickness: 50,
             maxBarThickness: 50,
             gridLines: {
@@ -109,7 +105,6 @@ export class Statistics extends AbstractComponent {
 
   renderMoneyChart() {
     const labels = [...new Set(this._events.map((event) => event.type.toUpperCase()))];
-    // наверное нужно сортировать ивенты по убыванию цены, по количеству упоминаний и по длительности. В ТЗ не указано
 
     let data = [];
     labels.forEach((label) => {
@@ -117,8 +112,6 @@ export class Statistics extends AbstractComponent {
       this._events.map((event) => {
         if (label === event.type.toUpperCase()) {
           labelCost = labelCost + event.price;
-          // было: при ховере после добавления нового ивента все пересчитывается почему-то в статистике
-          // ПРО ХОВЕР - только если ошибка и ввели строку, вместо числа, например. Надо сделать защиту от ввода не в том формате
         }
       });
       data.push(labelCost);

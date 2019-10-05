@@ -7,18 +7,6 @@ const Method = {
   DELETE: `DELETE`
 };
 
-const checkStatus = (response) => {
-  if (response.status >= 200 && response.status < 300) {
-    return response;
-  } else {
-    throw new Error(`${response.status}: ${response.statusText}`);
-  }
-};
-
-const toJSON = (response) => {
-  return response.json();
-};
-
 export default class API {
   constructor({endPoint, authorization}) {
     this._endPoint = endPoint;
@@ -27,7 +15,7 @@ export default class API {
 
   getEvents() {
     return this._load({url: `points`})
-      .then(toJSON)
+      .then(API.toJSON)
       .then(ModelEvent.parseEvents);
   }
 
@@ -38,7 +26,7 @@ export default class API {
       body: JSON.stringify(event),
       headers: new Headers({'Content-Type': `application/json`})
     })
-      .then(toJSON)
+      .then(API.toJSON)
       .then(ModelEvent.parseEvent);
   }
 
@@ -49,7 +37,7 @@ export default class API {
       body: JSON.stringify(event),
       headers: new Headers({'Content-Type': `application/json`})
     })
-      .then(toJSON)
+      .then(API.toJSON)
       .then(ModelEvent.parseEvent);
   }
 
@@ -59,22 +47,33 @@ export default class API {
 
   getDestinations() {
     return this._load({url: `destinations`})
-      .then(toJSON)
+      .then(API.toJSON);
   }
 
   getOffers() {
     return this._load({url: `offers`})
-      .then(toJSON)
+      .then(API.toJSON);
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {
     headers.append(`Authorization`, this._authorization);
 
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
-      .then(checkStatus)
+      .then(API.checkStatus)
       .catch((err) => {
-        console.error(`fetch error: ${err}`);
         throw err;
       });
+  }
+
+  static toJSON(response) {
+    return response.json();
+  }
+
+  static checkStatus(response) {
+    if (response.status >= 200 && response.status < 300) {
+      return response;
+    }
+
+    throw new Error(`${response.status}: ${response.statusText}`);
   }
 }

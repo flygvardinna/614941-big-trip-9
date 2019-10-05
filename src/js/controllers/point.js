@@ -27,7 +27,6 @@ export default class PointController {
   _init(mode) {
     let currentView = this._eventView;
     let renderPosition = Position.BEFOREEND;
-    const noEventsMessage = document.querySelector(`.no-events-message`); //перенести в tripController?
 
     if (mode === Mode.ADDING) {
       currentView = this._eventEdit;
@@ -35,121 +34,41 @@ export default class PointController {
     }
 
     const minDateEnd = this._data.dateStart;
-    const dateStartPicker = flatpickr(this._eventEdit.getElement().querySelector(`#event-start-time-1`), {
+    flatpickr(this._eventEdit.getElement().querySelector(`#event-start-time-1`), {
       altInput: true,
       allowInput: true,
-      altFormat: `d/m/y H:i`,
+      altFormat: `d.m.Y H:i`,
       dateFormat: `Z`,
       defaultDate: this._data.dateStart,
       enableTime: true,
-      'time_24hr': true,
+      [`time_24hr`]: true,
       onChange(selectedDates, dateStr) {
         if (dateStr > minDateEnd.toISOString()) {
           dateEndPicker.set(`minDate`, dateStr);
           dateEndPicker.setDate(dateStr);
         }
       }
-      // в ТЗ указан другой формат, не как в макетах, такой "d.m.Y H:i"
     });
 
     const dateEndPicker = flatpickr(this._eventEdit.getElement().querySelector(`#event-end-time-1`), {
       altInput: true,
       allowInput: true,
-      altFormat: `d/m/y H:i`,
+      altFormat: `d.m.Y H:i`,
       dateFormat: `Z`,
       defaultDate: this._data.dateEnd,
       minDate: minDateEnd,
       enableTime: true,
-      'time_24hr': true
+      [`time_24hr`]: true
     });
 
-    const onSubmitButtonClick = (evt) => {
-      evt.preventDefault();
-
-      const form = this._eventEdit.getElement();
-      const formData = new FormData(form);
-
-      const pictures = Array.from(form.querySelectorAll(`.event__photo`)).map((picture) => ({
-        src: picture.getAttribute(`src`),
-        description: picture.getAttribute(`alt`)
-      }));
-
-      const eventOffers = Array.from(form.querySelectorAll(`.event__offer-selector`)).map((offer) => ({
-        title: offer.querySelector(`.event__offer-title`).textContent,
-        price: Number(offer.querySelector(`.event__offer-price`).textContent),
-        accepted: offer.querySelector(`.event__offer-checkbox`).checked
-      }));
-
-      let destinationDescription = ``;
-      if (form.querySelector(`.event__destination-description`)) {
-        destinationDescription = form.querySelector(`.event__destination-description`).textContent;
-      }
-
-      this._data.type = formData.get(`event-type`);
-      this._data.destination = {
-        name: formData.get(`event-destination`),
-        description: destinationDescription,
-        pictures: pictures
-      };
-      this._data.dateStart = new Date(formData.get(`event-start-time`));
-      this._data.dateEnd = new Date(formData.get(`event-end-time`));
-      this._data.price = Number(formData.get(`event-price`));
-      this._data.offers = eventOffers;
-      if (mode === Mode.DEFAULT) {
-        this._data.isFavorite = form.querySelector(`.event__favorite-checkbox`).checked;
-      }
-      this._data.toRAW = () => {
-        return {
-          id: this._data.id,
-          type: this._data.type,
-          destination: this._data.destination,
-          date_from: this._data.dateStart,
-          date_to: this._data.dateEnd,
-          base_price: this._data.price,
-          offers: this._data.offers,
-          is_favorite: this._data.isFavorite,
-        };
-      }
-
-      this._toggleFormBlock(form, `save`, true);
-
-      if (mode === Mode.DEFAULT) {
-        this._onDataChange(`update`, this._data, this._onError.bind(this, `save`));
-      } else {
-        this._onDataChange(`create`, this._data, this._onError.bind(this, `save`), this._onSuccesEventCreate.bind(this)); //убрать последнее?
-      }
-    };
-
-    const onEscKeyDown = (evt) => {
-      if (evt.key === Key.ESCAPE || evt.key === Key.ESCAPE_IE) {
-        if (this._container.contains(this._eventEdit.getElement())) {
-          this._container.replaceChild(this._eventView.getElement(), this._eventEdit.getElement());
-        }
-        document.removeEventListener(`keydown`, onEscKeyDown);
-      }
-    };
-
-    const checkSelectedType = (type) => {
-      const options = Array.from(this._eventEdit.getElement().querySelectorAll(`.event__type-input`));
-      for (const option of options) {
-        if (option.value === type) {
-          option.setAttribute(`checked`, `checked`);
-          return;
-        }
-      }
-    };
-
-    checkSelectedType(this._data.type);
-
-    this._eventEdit.getElement()
-      .addEventListener(`submit`, onSubmitButtonClick);
+    this._checkSelectedType(this._data.type);
 
     this._eventView.getElement()
       .querySelector(`.event__rollup-btn`)
       .addEventListener(`click`, () => {
         this._onChangeView();
         this._container.replaceChild(this._eventEdit.getElement(), this._eventView.getElement());
-        document.addEventListener(`keydown`, onEscKeyDown);
+        document.addEventListener(`keydown`, this._onEscKeyDown);
       });
 
     if (mode === Mode.DEFAULT) {
@@ -157,9 +76,12 @@ export default class PointController {
         .querySelector(`.event__rollup-btn`)
         .addEventListener(`click`, () => {
           this._container.replaceChild(this._eventView.getElement(), this._eventEdit.getElement());
-          document.removeEventListener(`keydown`, onEscKeyDown);
+          document.removeEventListener(`keydown`, this._onEscKeyDown);
         });
     }
+
+    this._eventEdit.getElement()
+      .addEventListener(`submit`, this._onSubmitButtonClick.bind(this));
 
     const eventTypes = Array.from(this._eventEdit.getElement().querySelectorAll(`.event__type-input`));
     for (const type of eventTypes) {
@@ -180,20 +102,25 @@ export default class PointController {
 
     this._eventEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {
-        this._toggleFormBlock(this._eventEdit.getElement(), `delete`, true);
-        this._onDataChange(`delete`, this._data, this._onError.bind(this, `delete`));
-
-        if (mode === Mode.ADDING) {
-          unrender(this._eventEdit.getElement());
-          document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
-          // этот код дублируется внизу в onSuccesEventCreate, разберись. можно вынести в отдельную функцию Закрыть форму редактирования
+        if (mode === Mode.DEFAULT) {
+          this._toggleFormBlock(this._eventEdit.getElement(), `delete`, true);
+          this._onDataChange(`delete`, this._data, this._onError.bind(this, `delete`));
+        } else {
+          this._unrenderNewEventForm();
         }
       });
 
-    if (noEventsMessage) {
-      unrender(noEventsMessage);
-    }
     render(this._container, currentView.getElement(), renderPosition);
+  }
+
+  _checkSelectedType(type) {
+    const options = Array.from(this._eventEdit.getElement().querySelectorAll(`.event__type-input`));
+    for (const option of options) {
+      if (option.value === type) {
+        option.setAttribute(`checked`, `checked`);
+        return;
+      }
+    }
   }
 
   _toggleFormBlock(form, button, value) {
@@ -209,8 +136,14 @@ export default class PointController {
     form.querySelector(`.event__type-toggle`).disabled = value;
     form.querySelector(`.event__save-btn`).disabled = value;
     form.querySelector(`.event__reset-btn`).disabled = value;
-    Array.from(form.querySelectorAll(`.event__input`)).map((input) => input.disabled = value);
-    Array.from(form.querySelectorAll(`.event__offer-checkbox`)).map((offer) => offer.disabled = value);
+    const inputs = Array.from(form.querySelectorAll(`.event__input`));
+    const offers = Array.from(form.querySelectorAll(`.event__offer-checkbox`));
+    for (const input of inputs) {
+      input.disabled = value;
+    }
+    for (const offer of offers) {
+      offer.disabled = value;
+    }
     if (this._mode === Mode.DEFAULT) {
       form.querySelector(`.event__favorite-checkbox`).disabled = value;
       form.querySelector(`.event__rollup-btn`).disabled = value;
@@ -222,8 +155,79 @@ export default class PointController {
     this._eventEdit.getElement().style.animation = `shake ${ANIMATION_TIMEOUT / 1000}s`;
 
     setTimeout(() => {
-      this._eventEdit.getElement().style.animation = ``
+      this._eventEdit.getElement().style.animation = ``;
     }, ANIMATION_TIMEOUT);
+  }
+
+  _unrenderNewEventForm() {
+    unrender(this._eventEdit.getElement());
+    document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
+  }
+
+  _onEscKeyDown(evt) {
+    if (evt.key === Key.ESCAPE || evt.key === Key.ESCAPE_IE) {
+      if (this._container.contains(this._eventEdit.getElement())) {
+        this._container.replaceChild(this._eventView.getElement(), this._eventEdit.getElement());
+      }
+      document.removeEventListener(`keydown`, this._onEscKeyDown);
+    }
+  }
+
+  _onSubmitButtonClick(evt) {
+    evt.preventDefault();
+
+    const form = evt.target;
+    const formData = new FormData(form);
+
+    const photos = Array.from(form.querySelectorAll(`.event__photo`)).map((photo) => ({
+      src: photo.getAttribute(`src`),
+      description: photo.getAttribute(`alt`)
+    }));
+
+    const eventOffers = Array.from(form.querySelectorAll(`.event__offer-selector`)).map((offer) => ({
+      title: offer.querySelector(`.event__offer-title`).textContent,
+      price: Number(offer.querySelector(`.event__offer-price`).textContent),
+      accepted: offer.querySelector(`.event__offer-checkbox`).checked
+    }));
+
+    let destinationDescription = ``;
+    if (form.querySelector(`.event__destination-description`)) {
+      destinationDescription = form.querySelector(`.event__destination-description`).textContent;
+    }
+
+    this._data.type = formData.get(`event-type`);
+    this._data.destination = {
+      name: formData.get(`event-destination`),
+      description: destinationDescription,
+      pictures: photos
+    };
+    this._data.dateStart = new Date(formData.get(`event-start-time`));
+    this._data.dateEnd = new Date(formData.get(`event-end-time`));
+    this._data.price = Number(formData.get(`event-price`));
+    this._data.offers = eventOffers;
+    if (this._mode === Mode.DEFAULT) {
+      this._data.isFavorite = form.querySelector(`.event__favorite-checkbox`).checked;
+    }
+    this._data.toRAW = () => {
+      return {
+        id: this._data.id,
+        type: this._data.type,
+        destination: this._data.destination,
+        [`date_from`]: this._data.dateStart,
+        [`date_to`]: this._data.dateEnd,
+        [`base_price`]: this._data.price,
+        offers: this._data.offers,
+        [`is_favorite`]: this._data.isFavorite,
+      };
+    };
+
+    this._toggleFormBlock(form, `save`, true);
+
+    if (this._mode === Mode.DEFAULT) {
+      this._onDataChange(`update`, this._data, this._onError.bind(this, `save`));
+    } else {
+      this._onDataChange(`create`, this._data, this._onError.bind(this, `save`), this._onSuccesEventCreate.bind(this));
+    }
   }
 
   _onError(string) {
@@ -235,7 +239,5 @@ export default class PointController {
   _onSuccesEventCreate() {
     unrender(this._eventEdit.getElement());
     document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
-    // код дублируется выше если делаем кансель на создании объекта, вынести в отдельную функцию?
-      // ПРОБЛЕМА - ЕСЛИ ПРИ СОЗДАНИИ ИВЕНТА ОШИБКА, ТО ФОРМА ИСЧЕЗАЕТ И НЕ СРАБАТЫВАЕТ НОРМАЛЬНО ON ERROR. НЕПОНЯТНО, ОСТАЛОСЬ ИЛИ НЕТ
   }
 }

@@ -6,7 +6,7 @@ import Message from './components/message';
 import TripController from './controllers/trip';
 import {Position, render, unrender} from './utils';
 
-const AUTHORIZATION = `Basic kTy9gIdsz882317rD`; // перед отправкой на проверку обнови код для сервера
+const AUTHORIZATION = `Basic kTy9g8877745454D`;
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 const MENU_TABS = [`Table`, `Stats`];
 const FILTER_TABS = [`everything`, `future`, `past`];
@@ -50,26 +50,11 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
         id: update.id
       })
         .then(() => api.getEvents())
-        .then((events) => {
-          console.log(events); // потом сделай в одну строку, как апдейт
-          tripController.show(events); //отрисовываются все события, и если их нет, тоже полный цикл
-          /*if (events.length === 0) {
-            showNoEventsMessage(); //не срабатывает
-            // после удаления всех ивентов остается сортировка
-          }*/
-          // разберись с выводом сообщения о том, что нет событий. Перенесла в  trip контоллер
-          // в метод showNoEventsMessage
-          // сейчас работает так, что когда кликаешь по сортировке оно вызывается и появляется много сообщений
-        })
+        .then(() => tripController.show(tripEvents))
         .catch(() => onError());
       break;
   }
 };
-
-/*const showNoEventsMessage = () => {
-  const noEventsMessage = new Message(`no-events`);
-  render(eventsContainer, noEventsMessage.getElement(), Position.BEFOREEND);
-}*/
 
 render(tripMenuTitle, menu.getElement(), Position.AFTEREND);
 render(tripControls, filter.getElement(), Position.BEFOREEND);
@@ -77,23 +62,17 @@ render(eventsContainer, loadingMessage.getElement(), Position.BEFOREEND);
 
 api.getDestinations()
   .then((destinations) => {
-    console.log(destinations);
     availableDestinations = destinations;
   })
   .then(() => api.getOffers())
   .then((offers) => {
-    console.log(offers);
     availableOffers = offers;
   })
   .then(() => api.getEvents())
   .then((events) => {
-    console.log(events);
     unrender(loadingMessage.getElement());
-    tripEvents = events.slice(); // чтобы не преобразовывать исходный массив? надо ли это?
+    tripEvents = events.slice();
     tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
-    /*if (events.length === 0) {
-      tripController.showNoEventsMessage();
-    }*/
     tripController.show(tripEvents);
   });
 

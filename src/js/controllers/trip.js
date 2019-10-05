@@ -15,7 +15,7 @@ export default class TripController {
     this._destinations = destinations;
     this._offers = offers;
     this._sort = new Sorting();
-    this._sortedBy = "default";
+    this._sortedBy = `default`;
     this._eventsList = new EventsList();
     this._addingEvent = null;
 
@@ -24,6 +24,7 @@ export default class TripController {
     this._info = document.querySelector(`.trip-info`);
     this._cost = this._info.querySelector(`.trip-info__cost-value`);
     this._details = false;
+    this._noEventsMessage = null;
 
     this._init();
   }
@@ -33,13 +34,19 @@ export default class TripController {
   }
 
   show(events) {
+    this._cost.textContent = this._countTripCost(this._events);
+    if (this._details) {
+      unrender(this._details.getElement());
+    }
+
+    if (events.length === 0) {
+      this._showNoEventsMessage();
+      return;
+    }
+
     if (events !== this._events) {
       this._events = this._sortByStartDate(events);
-      this._cost.textContent = this._countTripCost(this._events);
 
-      if (this._details) {
-        unrender(this._details.getElement());
-      }
       this._details = new TripDetails(this._events);
       render(this._info, this._details.getElement(), Position.AFTERBEGIN);
 
@@ -71,17 +78,18 @@ export default class TripController {
       isFavorite: false
     };
 
-    this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, this._destinations, this._offers, Mode.ADDING,
+    if (this._noEventsMessage) {
+      unrender(this._noEventsMessage.getElement());
+    }
+
+    let newPointContainer = this._events.length === 0 ? this._container : this._sort.getElement();
+
+    this._addingEvent = new PointController(newPointContainer, defaultEvent, this._destinations, this._offers, Mode.ADDING,
         this._onChangeView, (...args) => {
           this._addingEvent = null;
           this._onDataChange(...args);
         });
     this._addingEvent._onChangeView();
-  }
-
-  showNoEventsMessage() { // пока публичный, но в main я сейчас его закомментила, тогда приватный
-    const noEventsMessage = new Message(`no-events`);
-    render(this._container, noEventsMessage.getElement(), Position.BEFOREEND);
   }
 
   _init() {
@@ -92,7 +100,7 @@ export default class TripController {
   }
 
   _renderEvents(events) {
-    if (this._sortedBy === "default") {
+    if (this._sortedBy === `default`) {
       this._renderDays(events);
     } else {
       this._applySorting(this._sortedBy, events);
@@ -104,7 +112,7 @@ export default class TripController {
 
     if (events.length === 0) {
       this._eventsList.getElement().innerHTML = ``;
-      this.showNoEventsMessage();
+      this._showNoEventsMessage();
       return;
     }
 
@@ -190,6 +198,11 @@ export default class TripController {
     }
   }
 
+  _showNoEventsMessage() {
+    this._noEventsMessage = new Message(`no-events`);
+    render(this._container, this._noEventsMessage.getElement(), Position.BEFOREEND);
+  }
+
   _onChangeView() {
     for (const subscription of this._subscriptions) {
       subscription();
@@ -209,7 +222,7 @@ export default class TripController {
     evt.preventDefault();
 
     const activeFilter = document.querySelector(`.trip-filters__filter-input[checked]`);
-    const target = evt.target.textContent.toLowerCase() ;
+    const target = evt.target.textContent.toLowerCase();
 
     if (evt.target.tagName !== `LABEL` || target === activeFilter.value) {
       return;

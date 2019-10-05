@@ -39,12 +39,13 @@ export default class Statistics extends AbstractComponent {
             align: `start`,
             anchor: `end`,
             formatter(value) {
-              if (title === `TIME-SPEND`) {
-                return renderEventDuration(value);
-              } else if (title === `TRANSPORT`) {
-                return `${value}x`;
-              } else {
-                return `€ ${value}`;
+              switch (title) {
+                case `TIME-SPEND`:
+                  return renderEventDuration(value);
+                case `TRANSPORT`:
+                  return `${value}x`;
+                default:
+                  return `€ ${value}`;
               }
             }
           }
@@ -145,7 +146,7 @@ export default class Statistics extends AbstractComponent {
   renderTimeChart() {
     const labels = [...new Set(this._events.map((event) => event.type.toUpperCase()))];
 
-    const durations= [];
+    const durations = [];
     for (const label of labels) {
       let labelDuration = 0;
       this._events.map((event) => {

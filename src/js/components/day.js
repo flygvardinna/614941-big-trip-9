@@ -1,5 +1,4 @@
 import AbstractComponent from './abstract-component';
-import moment from '../../../node_modules/moment/src/moment';
 
 export default class Day extends AbstractComponent {
   constructor(date, dayIndex) {

@@ -9,9 +9,9 @@ const getTitle = (eventsList) => {
     const points = [];
     points.push(destinations.shift(), destinations.pop());
     return points.join(` — ... — `);
-  } else {
-    return destinations.join(` — `);
   }
+
+  return destinations.join(` — `);
 };
 
 const getDates = (eventsList) => {

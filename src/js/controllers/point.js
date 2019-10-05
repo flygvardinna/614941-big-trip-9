@@ -78,7 +78,6 @@ export default class PointController {
         title: offer.querySelector(`.event__offer-title`).textContent,
         price: Number(offer.querySelector(`.event__offer-price`).textContent),
         accepted: offer.querySelector(`.event__offer-checkbox`).checked
-        // сломался выбор опций, нажимаешь save после изменения чекбоксов, не работает
       }));
 
       let destinationDescription = ``;
@@ -114,17 +113,11 @@ export default class PointController {
 
       this._toggleFormBlock(form, `save`, true);
 
-      // сейчас при изменении опции (выбранная) не отрисовывается в списке ивентов (не в форме)
-      // Отрисовывается при сохранении, без сохранения нет, это ок. Но если кликнуть и не сохранить, то она визуально остается
-      // голубой чекнутой
-
       if (mode === Mode.DEFAULT) {
         this._onDataChange(`update`, this._data, this._onError.bind(this, `save`));
       } else {
         this._onDataChange(`create`, this._data, this._onError.bind(this, `save`), this._onSuccesEventCreate.bind(this)); //убрать последнее?
       }
-
-      document.removeEventListener(`keydown`, onEscKeyDown); // ТОЖЕ ДОЛЖНО УБИРАТЬСЯ ТОЛЬКО ПРИ УСПЕХЕ?
     };
 
     const onEscKeyDown = (evt) => {
@@ -138,29 +131,15 @@ export default class PointController {
 
     const checkSelectedType = (type) => {
       const options = Array.from(this._eventEdit.getElement().querySelectorAll(`.event__type-input`));
-      options.forEach((option) => {
-        if (option.getAttribute(`value`) === type) {
+      for (const option of options) {
+        if (option.value === type) {
           option.setAttribute(`checked`, `checked`);
+          return;
         }
-      });
+      }
     };
 
     checkSelectedType(this._data.type);
-
-    const updateIfOfferAccepted = () => {
-      const offers = Array.from(this._eventEdit.getElement().querySelectorAll(`.event__offer-checkbox`));
-      offers.forEach((offer) => {
-        offer.addEventListener(`click`, () => {
-          if (offer.checked === true) {
-            offer.setAttribute(`checked`, `checked`);
-          } else {
-            offer.setAttribute(`checked`, false);
-          }
-        });
-      });
-    };
-
-    updateIfOfferAccepted();
 
     this._eventEdit.getElement()
       .addEventListener(`submit`, onSubmitButtonClick);
@@ -173,11 +152,6 @@ export default class PointController {
         document.addEventListener(`keydown`, onEscKeyDown);
       });
 
-      // Если в форме что-то поменяли, например, удалили данные инпута, возникла ошибка и форма не отправлена,
-      // то если нажать Esc или стрелочку форма закроется в измененном виде, при повторном открытии останется красная
-      // обводка (это легко убрать) и данные будут изменены, хотя у eventView все будет в исходном виде
-      // СЕРЬЕЗНЫЙ КОСЯК
-
     if (mode === Mode.DEFAULT) {
       this._eventEdit.getElement()
         .querySelector(`.event__rollup-btn`)
@@ -187,15 +161,16 @@ export default class PointController {
         });
     }
 
-    Array.from(this._eventEdit.getElement().querySelectorAll(`.event__type-input`)).forEach((option) => {
-      option.addEventListener(`click`, () => {
-        if (this._data.type !== option.value) {
-          this._data.type = option.value;
-          option.closest(`.event__type-wrapper`).querySelector(`.event__type-toggle`).checked = false;
-          this._eventEdit.onEventTypeChange(this._eventEdit.getElement(), option.value);
+    const eventTypes = Array.from(this._eventEdit.getElement().querySelectorAll(`.event__type-input`));
+    for (const type of eventTypes) {
+      type.addEventListener(`click`, () => {
+        if (this._data.type !== type.value) {
+          this._data.type = type.value;
+          type.closest(`.event__type-wrapper`).querySelector(`.event__type-toggle`).checked = false;
+          this._eventEdit.onTypeChange(this._eventEdit.getElement(), type.value);
         }
       });
-    });
+    }
 
     this._eventEdit.getElement()
       .querySelector(`.event__input--destination`)

@@ -11,6 +11,7 @@ export const getPlaceholder = (type) => {
 export const Position = {
   AFTERBEGIN: `afterbegin`,
   AFTEREND: `afterend`,
+  BEFOREBEGIN: `beforebegin`,
   BEFOREEND: `beforeend`
 };
 

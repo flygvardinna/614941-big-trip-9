@@ -6,10 +6,10 @@ import Message from './components/message';
 import TripController from './controllers/trip';
 import {Position, render, unrender} from './utils';
 
-const AUTHORIZATION = `Basic kTy9gIdsz2317rD`; // перед отправкой на проверку обнови код для сервера
+const AUTHORIZATION = `Basic kTy9gIdsz882317rD`; // перед отправкой на проверку обнови код для сервера
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 const MENU_TABS = [`Table`, `Stats`];
-const FILTER_OPTIONS = [`everything`, `future`, `past`];
+const FILTER_TABS = [`everything`, `future`, `past`];
 
 let availableDestinations = [];
 let availableOffers = [];
@@ -18,7 +18,7 @@ let tripController;
 
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 const menu = new Menu(MENU_TABS);
-const filter = new Filter(FILTER_OPTIONS);
+const filter = new Filter(FILTER_TABS);
 const statistics = new Statistics();
 const loadingMessage = new Message(`load`);
 

@@ -2,9 +2,9 @@ import AbstractComponent from './abstract-component';
 
 const createTabs = (tabsToRender) => {
   const menuTabs = [];
-  tabsToRender.forEach((tab) => {
+  for (const tab of tabsToRender) {
     menuTabs.push(`<a class="trip-tabs__btn ${tab === `Table` ? `trip-tabs__btn--active` : ``}" href="#">${tab}</a>`);
-  });
+  }
   return menuTabs.join(``);
 };
 

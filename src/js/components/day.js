@@ -5,13 +5,13 @@ export default class Day extends AbstractComponent {
   constructor(date, dayIndex) {
     super();
     this._date = date;
-    this._dayIndex = dayIndex;
+    this._index = dayIndex;
   }
 
   getTemplate() {
     return `<li class="trip-days__item  day">
       <div class="day__info">
-        <span class="day__counter">${this._dayIndex}</span>
+        <span class="day__counter">${this._index}</span>
         <time class="day__date" datetime="${this._date}">${this._date}</time>
       </div>
 

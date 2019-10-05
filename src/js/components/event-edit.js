@@ -6,7 +6,9 @@ import 'flatpickr/dist/themes/light.css';
 
 const renderPictures = (picturesToRender) => {
   const pictures = [];
-  picturesToRender.forEach((picture) => pictures.push(`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`));
+  for (const picture of picturesToRender) {
+    pictures.push(`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`);
+  }
   return pictures.join(``);
 };
 
@@ -55,7 +57,9 @@ const getDestinationTemplate = (eventDestination) => {
 
 const createDestinationsList = (availableDestinations) => {
   const destinations = [];
-  availableDestinations.forEach((destination) => destinations.push(`<option value="${destination.name}"></option>`));
+  for (const destination of availableDestinations) {
+    destinations.push(`<option value="${destination.name}"></option>`);
+  }
   return destinations.join(``);
 };
 
@@ -75,7 +79,7 @@ export default class EventEdit extends AbstractComponent {
     this._destinations = destinations;
     this._offersByType = offers;
 
-    this.onEventTypeChange = this.onEventTypeChange.bind(this);
+    this.onTypeChange = this.onTypeChange.bind(this);
     this.onDestinationChange = this.onDestinationChange.bind(this);
   }
 
@@ -315,7 +319,7 @@ export default class EventEdit extends AbstractComponent {
     }
   }
 
-  onEventTypeChange(element, type) {
+  onTypeChange(element, type) {
     element.querySelector(`.event__type-icon`).setAttribute(`src`, `img/icons/${type}.png`);
     element.querySelector(`.event__type-output`).innerHTML = `${capitalize(type)} ${getPlaceholder(type)}`;
     const eventDetails = element.querySelector(`.event__details`);
@@ -343,12 +347,11 @@ export default class EventEdit extends AbstractComponent {
         const destinationRendered = eventDetails.querySelector(`.event__section--destination`);
         if (destinationRendered) {
           unrender(destinationRendered);
-        } else {
-          eventDetails.classList.remove(`visually-hidden`);
         }
         if (destination.description || destination.pictures) {
           const newDestination = getDestinationTemplate(destination);
           render(eventDetails, createElement(newDestination), Position.BEFOREEND);
+          eventDetails.classList.remove(`visually-hidden`);
         }
         return;
       }

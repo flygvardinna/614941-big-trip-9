@@ -107,7 +107,7 @@ export default class Statistics extends AbstractComponent {
     const labels = [...new Set(this._events.map((event) => event.type.toUpperCase()))];
 
     const costs = [];
-    labels.forEach((label) => {
+    for (const label of labels) {
       let labelCost = 0;
       this._events.map((event) => {
         if (label === event.type.toUpperCase()) {
@@ -115,7 +115,7 @@ export default class Statistics extends AbstractComponent {
         }
       });
       costs.push(labelCost);
-    });
+    }
 
     this._moneyChart = this.renderChart(`MONEY`, this._moneyCtx, labels, costs);
   }
@@ -129,7 +129,7 @@ export default class Statistics extends AbstractComponent {
     });
 
     const counts = [];
-    labels.forEach((label) => {
+    for (const label of labels) {
       let labelCount = 0;
       this._events.map((event) => {
         if (label === event.type.toUpperCase()) {
@@ -137,7 +137,7 @@ export default class Statistics extends AbstractComponent {
         }
       });
       counts.push(labelCount);
-    });
+    }
 
     this._transportChart = this.renderChart(`TRANSPORT`, this._transportCtx, [...labels], counts);
   }
@@ -146,20 +146,16 @@ export default class Statistics extends AbstractComponent {
     const labels = [...new Set(this._events.map((event) => event.type.toUpperCase()))];
 
     const durations= [];
-    labels.forEach((label) => {
+    for (const label of labels) {
       let labelDuration = 0;
       this._events.map((event) => {
         if (label === event.type.toUpperCase()) {
           const eventDuration = countEventDuration(event.dateStart, event.dateEnd);
-          if (labelDuration) {
-            labelDuration = labelDuration.add(eventDuration);
-          } else {
-            labelDuration = eventDuration;
-          }
+          labelDuration = labelDuration ? labelDuration.add(eventDuration) : eventDuration;
         }
       });
       durations.push(labelDuration);
-    });
+    }
 
     this._timeChart = this.renderChart(`TIME-SPEND`, this._timeCtx, labels, durations);
   }

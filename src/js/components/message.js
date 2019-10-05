@@ -6,13 +6,13 @@ const MessageText = {
 };
 
 export default class Message extends AbstractComponent {
-  constructor(message) {
+  constructor(content) {
     super();
-    this._message = message;
+    this._content = content;
   }
 
   getTemplate() {
     return `<p class="${this._message}-message" style="margin-left: 150px;">
-    ${this._message === `load` ? MessageText.LOAD : MessageText.NO_EVENTS}</p>`;
+    ${this._content === `load` ? MessageText.LOAD : MessageText.NO_EVENTS}</p>`;
   }
 }

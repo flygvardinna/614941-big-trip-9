@@ -6,14 +6,14 @@ const OFFER_COUNT = 3;
 
 const createOffersList = (offers) => {
   const selectedOffers = [];
-  offers.forEach((offer) => {
+  for (const offer of offers) {
     if (selectedOffers.length === OFFER_COUNT) {
-      return selectedOffers.join(``);
+      break;
     }
     if (offer.accepted) {
       selectedOffers.push(getOfferTemplate(offer));
     }
-  });
+  }
   return selectedOffers.join(``);
 };
 

@@ -34,7 +34,19 @@ export default class TripController {
 
   show(events) {
     if (events !== this._events) {
-      this._renderEvents(events);
+      this._events = this._sortByStartDate(events);
+      this._cost.textContent = this._countTripCost(this._events);
+
+      if (this._details) {
+        unrender(this._details.getElement());
+      }
+      this._details = new TripDetails(this._events);
+      render(this._info, this._details.getElement(), Position.AFTERBEGIN);
+
+      render(this._container, this._sort.getElement(), Position.AFTERBEGIN);
+      this._sort.getElement().addEventListener(`click`, (evt) => this._onSortItemClick(evt));
+
+      this._renderEvents(this._events);
     }
 
     this._container.classList.remove(`trip-events--hidden`);
@@ -75,28 +87,15 @@ export default class TripController {
   _init() {
     const filter = document.querySelector(`.trip-filters`);
 
-    render(this._container, this._sort.getElement(), Position.BEFOREEND);
     render(this._container, this._eventsList.getElement(), Position.BEFOREEND);
-
-    this._sort.getElement().addEventListener(`click`, (evt) => this._onSortItemClick(evt));
-
     filter.addEventListener(`click`, (evt) => this._onFilterClick(evt));
   }
 
   _renderEvents(events) {
-    this._cost.innerHTML = this._countTripCost(events);
-
     if (this._sortedBy === "default") {
-      this._events = this._sortByStartDate(events);
-      this._renderDays(this._events);
-      if (this._details) {
-        unrender(this._details.getElement());
-      }
-      this._details = new TripDetails(this._events);
-      render(this._info, this._details.getElement(), Position.AFTERBEGIN);
+      this._renderDays(events);
     } else {
-      this._events = events;
-      this._applySorting(this._sortedBy);
+      this._applySorting(this._sortedBy, events);
     }
   }
 
@@ -110,22 +109,20 @@ export default class TripController {
     }
 
     const days = new Set();
-    events.forEach((event) => {
+    for (const event of events) {
       const date = moment(event.dateStart).format(`MMM DD`);
-      if (!days.has(date)) {
-        days.add(date);
-      }
-    });
+      days.add(date);
+    }
     Array.from(days).forEach((day, index) => {
-      const dayElement = new Day(day, index + 1).getElement();
-      render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
-      events.forEach((event) => {
+      const dayContainer = new Day(day, index + 1).getElement();
+      render(this._eventsList.getElement(), dayContainer, Position.BEFOREEND);
+      for (const event of events) {
         const eventDayStart = moment(event.dateStart).format(`MMM DD`);
         if (day === eventDayStart) {
-          const eventsContainer = dayElement.querySelector(`.trip-events__list`);
+          const eventsContainer = dayContainer.querySelector(`.trip-events__list`);
           this._renderEvent(eventsContainer, event);
         }
-      });
+      }
     });
   }
 
@@ -160,39 +157,30 @@ export default class TripController {
     return Math.floor(cost);
   }
 
-  _onChangeView() {
-    this._subscriptions.forEach((subscription) => subscription());
-  }
-
-  _onSortItemClick(evt) {
-    if (evt.target.tagName !== `LABEL` || evt.target.dataset.sortType === this._sortedBy) {
-      return;
-    }
-
-    this._sortedBy = evt.target.dataset.sortType;
-    this._applySorting(this._sortedBy);
-  }
-
   _renderDayContainerForAllEvents() {
     this._eventsList.getElement().innerHTML = ``;
     this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = ``;
-    const dayElement = new Day(``, ``).getElement();
-    render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
-    dayElement.querySelector(`.day__info`).innerHTML = ``;
-    return dayElement.querySelector(`.trip-events__list`);
+    const dayContainer = new Day(``, ``).getElement();
+    render(this._eventsList.getElement(), dayContainer, Position.BEFOREEND);
+    dayContainer.querySelector(`.day__info`).innerHTML = ``;
+    return dayContainer.querySelector(`.trip-events__list`);
   }
 
-  _applySorting(sorting) {
+  _applySorting(sorting, events) {
     switch (sorting) {
       case `time-down`:
         const container = this._renderDayContainerForAllEvents();
-        const sortedByTimeDownEvents = this._events.sort((a, b) => countEventDuration(b.dateStart, b.dateEnd) - countEventDuration(a.dateStart, a.dateEnd));
-        sortedByTimeDownEvents.forEach((event) => this._renderEvent(container, event, this._destinations, this._offers));
+        const sortedByTimeDownEvents = events.sort((a, b) => countEventDuration(b.dateStart, b.dateEnd) - countEventDuration(a.dateStart, a.dateEnd));
+        for (const event of sortedByTimeDownEvents) {
+          this._renderEvent(container, event, this._destinations, this._offers);
+        }
         break;
       case `price-down`:
         const eventsContainer = this._renderDayContainerForAllEvents();
-        const sortedByPriceDownEvents = this._events.sort((a, b) => b.price - a.price);
-        sortedByPriceDownEvents.forEach((event) => this._renderEvent(eventsContainer, event, this._destinations, this._offers));
+        const sortedByPriceDownEvents = events.sort((a, b) => b.price - a.price);
+        for (const event of sortedByPriceDownEvents) {
+          this._renderEvent(eventsContainer, event, this._destinations, this._offers);
+        }
         break;
       case `default`:
         this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = `Day`;
@@ -202,12 +190,23 @@ export default class TripController {
     }
   }
 
-  _onFilterClick(evt) {
-    evt.preventDefault();
+  _onChangeView() {
+    for (const subscription of this._subscriptions) {
+      subscription();
+    }
+  }
 
-    if (this._sortedBy !== "default") {
+  _onSortItemClick(evt) {
+    if (evt.target.tagName !== `LABEL` || evt.target.dataset.sortType === this._sortedBy) {
       return;
     }
+
+    this._sortedBy = evt.target.dataset.sortType;
+    this._applySorting(this._sortedBy, this._events);
+  }
+
+  _onFilterClick(evt) {
+    evt.preventDefault();
 
     const activeFilter = document.querySelector(`.trip-filters__filter-input[checked]`);
     const target = evt.target.textContent.toLowerCase() ;
@@ -228,7 +227,7 @@ export default class TripController {
             futureEvents.push(event);
           }
         });
-        this._renderDays(futureEvents);
+        this._renderEvents(futureEvents);
         break;
       case `past`:
         const pastEvents = [];
@@ -237,10 +236,10 @@ export default class TripController {
             pastEvents.push(event);
           }
         });
-        this._renderDays(pastEvents);
+        this._renderEvents(pastEvents);
         break;
       case `everything`:
-        this._renderDays(this._events);
+        this._renderEvents(this._events);
     }
   }
 }

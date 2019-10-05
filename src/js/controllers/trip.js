@@ -84,9 +84,10 @@ export default class TripController {
       unrender(this._noEventsMessage.getElement());
     }
 
-    let newPointContainer = this._events.length === 0 ? this._container : this._sorting.getElement();
+    const sorting = document.querySelector(`.trip-events__trip-sort`);
+    const newPointPosition = sorting ? sorting : this._container;
 
-    this._addingEvent = new PointController(newPointContainer, defaultEvent, this._destinations, this._offers, Mode.ADDING,
+    this._addingEvent = new PointController(newPointPosition, defaultEvent, this._destinations, this._offers, Mode.ADDING,
         this._onChangeView, (...args) => {
           this._addingEvent = null;
           this._onDataChange(...args);

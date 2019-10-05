@@ -1,29 +1,30 @@
+import PointController from './point';
+import Sorting from '../components/sorting';
+import EventsList from '../components/events-list';
+import Day from '../components/day';
+import TripDetails from '../components/trip-details';
+import Message from '../components/message';
 import {Position, Mode, render, unrender, countEventDuration} from '../utils';
-import {PointController} from './point';
-import {Sort} from '../components/sort';
-import {EventsList} from '../components/events-list';
-import {Day} from '../components/day';
-import {TripDetails} from '../components/trip-details';
+import moment from '../../../node_modules/moment/src/moment';
 
-const PointControllerMode = Mode;
-
-export class TripController {
+export default class TripController {
   constructor(container, onDataChange, destinations, offers) {
     this._container = container;
     this._onDataChange = onDataChange;
     this._events = [];
     this._destinations = destinations;
     this._offers = offers;
-    this._sort = new Sort();
+    this._sorting = new Sorting();
+    this._sortedBy = `default`;
     this._eventsList = new EventsList();
-    // this._addingEvent = null; // или расскомментить это? используется для создания ивента
+    this._addingEvent = null;
 
     this._subscriptions = [];
     this._onChangeView = this._onChangeView.bind(this);
-    // this._onDataChange = this._onDataChange.bind(this);
     this._info = document.querySelector(`.trip-info`);
     this._cost = this._info.querySelector(`.trip-info__cost-value`);
     this._details = false;
+    this._noEventsMessage = null;
 
     this._init();
   }
@@ -33,112 +34,110 @@ export class TripController {
   }
 
   show(events) {
+    this._cost.textContent = this._countTripCost(events);
+    if (this._details) {
+      unrender(this._details.getElement());
+    }
+
+    if (events.length === 0) {
+      unrender(this._sorting.getElement());
+      this._eventsList.getElement().innerHTML = ``;
+      this._showNoEventsMessage();
+      return;
+    }
+
     if (events !== this._events) {
-      this._renderEvents(events);
+      this._events = this._sortByStartDate(events);
+
+      this._details = new TripDetails(this._events);
+      render(this._info, this._details.getElement(), Position.AFTERBEGIN);
+
+      render(this._container, this._sorting.getElement(), Position.AFTERBEGIN);
+      this._sorting.getElement().addEventListener(`click`, (evt) => this._onSortItemClick(evt));
+
+      this._renderEvents(this._events);
     }
 
     this._container.classList.remove(`trip-events--hidden`);
   }
 
-  addEvent() { // тоже сделать приватным?
+  addEvent() {
     if (this._addingEvent) {
       return;
     }
 
     const defaultEvent = {
       type: `sightseeing`,
-      destination: ``,
-      dateStart: Date.now(),
-      dateEnd: Date.now(),
-      price: ``,
-      offers() {
-        return [];
+      destination: {
+        name: ``,
+        description: ``,
+        pictures: []
       },
-      description() {
-        return ``;
-      },
-      pictures: []
+      dateStart: new Date(),
+      dateEnd: new Date(),
+      price: 0,
+      offers: [],
+      isFavorite: false
     };
 
-    this._addingEvent = new PointController(this._sort.getElement(), this._destination, this._offers, defaultEvent, PointControllerMode.ADDING,
-        this._onChangeView, () => {
+    if (this._noEventsMessage) {
+      unrender(this._noEventsMessage.getElement());
+    }
+
+    const sorting = document.querySelector(`.trip-events__trip-sort`);
+    const newPointPosition = sorting ? sorting : this._container;
+
+    this._addingEvent = new PointController(newPointPosition, defaultEvent, this._destinations, this._offers, Mode.ADDING,
+        this._onChangeView, (...args) => {
           this._addingEvent = null;
-          this._onDataChange(`create`, event); // пока не будет работать, придумай, как записать event правильно
+          this._onDataChange(...args);
         });
-    // this._events.push(defaultEvent);
-    // const newEventForm = new EventAdd();
-    // render(this._sort.getElement(), newEventForm.getElement(), Position.AFTEREND);
-    // когда форму закрываем кнопка add New Event должна снова стать активной
-    // форма ведет себя так же, как форма редактирования, то есть у нее должны быть те же функции по изменению данных
-    // Из демки, в ТЗ ничего не указано, наверное, тоже так:
-    // Новая карточка должна сразу отображаться в режиме редактирования и не закрываться по ESC (у меня это так и работает)
-    // только у меня убирается обработчик эскейпа даже в том случае если он не был навешан (если форма добавления)
-    // это можно поправить
+    this._addingEvent._onChangeView();
   }
 
   _init() {
-
     const filter = document.querySelector(`.trip-filters`);
 
-    render(this._container, this._sort.getElement(), Position.BEFOREEND);
     render(this._container, this._eventsList.getElement(), Position.BEFOREEND);
-    // this._renderDays(this._events); // убрать это отсюда?
-
-    // this._events.forEach((eventMock) => this._renderEvent(eventMock));
-
-    this._sort.getElement()
-    .addEventListener(`click`, (evt) => this._onSortItemClick(evt));
-
     filter.addEventListener(`click`, (evt) => this._onFilterClick(evt));
   }
 
   _renderEvents(events) {
-    this._events = this._sortByStartDate(events);
-
-    this._renderDays(this._events);
-    if (this._details) {
-      unrender(this._details.getElement());
+    if (this._sortedBy === `default`) {
+      this._renderDays(events);
+    } else {
+      this._applySorting(this._sortedBy, events);
     }
-    this._details = new TripDetails(this._events);
-    render(this._info, this._details.getElement(), Position.AFTERBEGIN);
-    this._cost.innerHTML = this._countTripCost(this._events);
-    // ? вынести это в отдельные функции чтобы вызывать их после изменения порядка событий и стоимости? (после onDataChange)
-    // или просто каждый раз вызываем renderEvents?
   }
 
-  _renderDays(eventsArray) {
-    // unrender(this._eventsList.getElement()); // зачем это?
-    // this._eventsList.removeElement(); // зачем это?
+  _renderDays(events) {
     this._eventsList.getElement().innerHTML = ``;
 
-    let days = new Set();
-    eventsArray.forEach((event) => {
-      const date = new Date(event.dateStart).toString().slice(4, 10);
-      if (!days.has(date)) {
-        days.add(date);
-      }
-    });
+    const days = new Set();
+    for (const event of events) {
+      const date = moment(event.dateStart).format(`MMM DD`);
+      days.add(date);
+    }
     Array.from(days).forEach((day, index) => {
-      const dayElement = new Day(day, index + 1).getElement();
-      render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
-      eventsArray.forEach((event) => {
-        const eventDayStart = event.dateStart.toString().slice(4, 10); // здесь можно не отрезать, а сделать momentom как у дня
+      const dayContainer = new Day(day, index + 1).getElement();
+      render(this._eventsList.getElement(), dayContainer, Position.BEFOREEND);
+      for (const event of events) {
+        const eventDayStart = moment(event.dateStart).format(`MMM DD`);
         if (day === eventDayStart) {
-          const eventsContainer = dayElement.querySelector(`.trip-events__list`);
+          const eventsContainer = dayContainer.querySelector(`.trip-events__list`);
           this._renderEvent(eventsContainer, event);
         }
-        // везде привести в порядок форматирование дат? сейчас у меня у дня в таблице дата в iso string
-      });
+      }
     });
   }
 
   _renderEvent(container, event) {
-    const pointController = new PointController(container, event, this._destinations, this._offers, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
+    const pointController = new PointController(container, event, this._destinations, this._offers, Mode.DEFAULT, this._onChangeView, this._onDataChange);
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 
-  _sortByStartDate(array) {
-    return array.slice().sort((a, b) => {
+  _sortByStartDate(events) {
+    return events.slice().sort((a, b) => {
       if (a.dateStart < b.dateStart) {
         return -1;
       }
@@ -163,71 +162,94 @@ export class TripController {
     return Math.floor(cost);
   }
 
+  _renderDayContainerForAllEvents() {
+    this._eventsList.getElement().innerHTML = ``;
+    this._sorting.getElement().querySelector(`.trip-sort__item--day`).innerHTML = ``;
+    const dayContainer = new Day(``, ``).getElement();
+    render(this._eventsList.getElement(), dayContainer, Position.BEFOREEND);
+    dayContainer.querySelector(`.day__info`).innerHTML = ``;
+    return dayContainer.querySelector(`.trip-events__list`);
+  }
+
+  _applySorting(sorting, events) {
+    switch (sorting) {
+      case `time-down`:
+        const container = this._renderDayContainerForAllEvents();
+        const sortedByTimeDownEvents = events.sort((a, b) => countEventDuration(b.dateStart, b.dateEnd) - countEventDuration(a.dateStart, a.dateEnd));
+        for (const event of sortedByTimeDownEvents) {
+          this._renderEvent(container, event, this._destinations, this._offers);
+        }
+        break;
+      case `price-down`:
+        const eventsContainer = this._renderDayContainerForAllEvents();
+        const sortedByPriceDownEvents = events.sort((a, b) => b.price - a.price);
+        for (const event of sortedByPriceDownEvents) {
+          this._renderEvent(eventsContainer, event, this._destinations, this._offers);
+        }
+        break;
+      case `default`:
+        this._sorting.getElement().querySelector(`.trip-sort__item--day`).innerHTML = `Day`;
+        this._events = this._sortByStartDate(this._events);
+        this._renderDays(this._events);
+        break;
+    }
+  }
+
+  _showNoEventsMessage() {
+    this._noEventsMessage = new Message(`no-events`);
+    render(this._container, this._noEventsMessage.getElement(), Position.BEFOREEND);
+  }
+
   _onChangeView() {
-    this._subscriptions.forEach((subscription) => subscription());
+    for (const subscription of this._subscriptions) {
+      subscription();
+    }
   }
 
   _onSortItemClick(evt) {
-    if (evt.target.tagName !== `LABEL`) {
+    if (evt.target.tagName !== `LABEL` || evt.target.dataset.sortType === this._sortedBy) {
       return;
     }
 
-    // Maybe this code should be separated in function applySorting which is called only when time or price sorting applied
-    this._eventsList.getElement().innerHTML = ``;
-    this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = ``;
-    const dayElement = new Day(``, ``).getElement();
-    render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
-    dayElement.querySelector(`.day__info`).innerHTML = ``;
-    const eventsContainer = dayElement.querySelector(`.trip-events__list`);
-
-    switch (evt.target.dataset.sortType) {
-      case `time-down`:
-        const sortedByTimeDownEvents = this._events.slice().sort((a, b) => countEventDuration(b.dateStart, b.dateEnd) - countEventDuration(a.dateStart, a.dateEnd));
-        sortedByTimeDownEvents.forEach((event) => this._renderEvent(eventsContainer, event, this._destinations, this._offers));
-        break;
-      case `price-down`:
-        const sortedByPriceDownEvents = this._events.slice().sort((a, b) => b.price - a.price);
-        sortedByPriceDownEvents.forEach((event) => this._renderEvent(eventsContainer, event, this._destinations, this._offers));
-        break;
-      case `default`:
-        // render(this._container, this._tripDays.getElement(), Position.BEFOREEND);
-        // this._events.forEach((eventMock) => this._renderEvent(eventMock));
-        this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = `Day`;
-        this._renderDays(this._events);
-        break;
-        // проблема с сортировкой, после изменения ивента снова отрисовываются дни, а не та сортировка, какая была
-    }
+    this._sortedBy = evt.target.dataset.sortType;
+    this._applySorting(this._sortedBy, this._events);
   }
 
-  _onFilterClick(evt) { // фильтры не работают на вкладке статитстика, это ок?
+  _onFilterClick(evt) {
     evt.preventDefault();
-    const dateToday = new Date();
 
-    if (evt.target.tagName !== `LABEL`) {
+    const activeFilter = document.querySelector(`.trip-filters__filter-input[checked]`);
+    const target = evt.target.textContent.toLowerCase();
+
+    if (evt.target.tagName !== `LABEL` || target === activeFilter.value) {
       return;
     }
 
-    switch (evt.target.innerHTML) {
-      case `Future`:
+    const dateToday = new Date();
+    activeFilter.removeAttribute(`checked`);
+    evt.target.parentElement.querySelector(`.trip-filters__filter-input`).setAttribute(`checked`, `checked`);
+
+    switch (target) {
+      case `future`:
         const futureEvents = [];
         this._events.map((event) => {
           if (new Date(event.dateStart) > dateToday) {
             futureEvents.push(event);
           }
         });
-        this._renderDays(futureEvents);
+        this._renderEvents(futureEvents);
         break;
-      case `Past`:
+      case `past`:
         const pastEvents = [];
         this._events.map((event) => {
           if (new Date(event.dateEnd) < dateToday) {
             pastEvents.push(event);
           }
         });
-        this._renderDays(pastEvents);
+        this._renderEvents(pastEvents);
         break;
-      case `Everything`:
-        this._renderDays(this._events);
+      case `everything`:
+        this._renderEvents(this._events);
     }
   }
 }

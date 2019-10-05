@@ -1,18 +1,20 @@
-import {AbstractComponent} from './abstract-component';
+import AbstractComponent from './abstract-component';
 import {Position, Mode, createElement, render, unrender, getPlaceholder, capitalize} from '../utils';
 import moment from '../../../node_modules/moment/src/moment';
 import 'flatpickr/dist/flatpickr.min.css';
 import 'flatpickr/dist/themes/light.css';
 
 const renderPictures = (picturesToRender) => {
-  let picturesFeed = [];
-  picturesToRender.forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`));
-  return picturesFeed.join(``);
+  const pictures = [];
+  for (const picture of picturesToRender) {
+    pictures.push(`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`);
+  }
+  return pictures.join(``);
 };
 
-const createOffersList = (offersList, type) => {
-  let selectedOffers = [];
-  offersList.forEach((offer, index) => selectedOffers.push(getOfferTemplate(offer, index + 1, type)));
+const createOffersList = (offers, type) => {
+  const selectedOffers = [];
+  offers.forEach((offer, index) => selectedOffers.push(getOfferTemplate(offer, index + 1, type)));
   return selectedOffers.join(``);
 };
 
@@ -54,13 +56,15 @@ const getDestinationTemplate = (eventDestination) => {
 };
 
 const createDestinationsList = (availableDestinations) => {
-  let destinations = [];
-  availableDestinations.forEach((destination) => destinations.push(`<option value="${destination.name}"></option>`));
+  const destinations = [];
+  for (const destination of availableDestinations) {
+    destinations.push(`<option value="${destination.name}"></option>`);
+  }
   return destinations.join(``);
 };
 
-export class EventEdit extends AbstractComponent {
-  constructor(mode, data, destinationsList, offersList) {
+export default class EventEdit extends AbstractComponent {
+  constructor(mode, data, destinations, offers) {
     super();
     this._mode = mode;
     this._id = data.id;
@@ -72,11 +76,11 @@ export class EventEdit extends AbstractComponent {
     this._price = data.price;
     this._offers = data.offers;
     this._isFavorite = data.isFavorite;
-    this._destinationsList = destinationsList;
-    this._offersList = offersList;
+    this._destinations = destinations;
+    this._offersByType = offers;
 
-    this._onEventTypeChange = this._onEventTypeChange.bind(this);
-    this._onDestinationChange = this._onDestinationChange.bind(this);
+    this.onTypeChange = this.onTypeChange.bind(this);
+    this.onDestinationChange = this.onDestinationChange.bind(this);
   }
 
   getTemplate() {
@@ -157,7 +161,7 @@ export class EventEdit extends AbstractComponent {
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
-              ${createDestinationsList(this._destinationsList)}
+              ${createDestinationsList(this._destinations)}
             </datalist>
           </div>
 
@@ -165,12 +169,12 @@ export class EventEdit extends AbstractComponent {
             <label class="visually-hidden" for="event-start-time-1">
               From
             </label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${moment(this._dateStart).format(`DD.MM.YYYY HH:mm`)}">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${this._dateStart}">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">
               To
             </label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${moment(this._dateEnd).format(`DD.MM.YYYY HH:mm`)}">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${this._dateEnd}">
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -197,7 +201,7 @@ export class EventEdit extends AbstractComponent {
           </button>
         </header>
 
-        <section class="event__details">
+        <section class="event__details ${this._offers ? `` : `visually-hidden`}${this._destination.description ? `` : `visually-hidden`}">
 
           ${getAvailableOffersTemplate(this._offers, this._type)}
 
@@ -282,7 +286,7 @@ export class EventEdit extends AbstractComponent {
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="" list="destination-list-1">
             <datalist id="destination-list-1">
-              ${createDestinationsList(this._destinationsList)}
+              ${createDestinationsList(this._destinations)}
             </datalist>
           </div>
 
@@ -310,43 +314,48 @@ export class EventEdit extends AbstractComponent {
           <button class="event__reset-btn" type="reset">Cancel</button>
         </header>
 
-        <section class="event__details">
-
-          ${getAvailableOffersTemplate(this._offers)}
-
-          ${this._destination.description ? getDestinationTemplate(this._destination) : ``}
-
-        </section>
+        <section class="event__details visually-hidden"></section>
       </form>`;
     }
   }
 
-  // Вынести в контроллер, в компоненте быть наверное не должно?
-  _onEventTypeChange(element, type) {
+  onTypeChange(element, type) {
     element.querySelector(`.event__type-icon`).setAttribute(`src`, `img/icons/${type}.png`);
     element.querySelector(`.event__type-output`).innerHTML = `${capitalize(type)} ${getPlaceholder(type)}`;
-    unrender(element.querySelector(`.event__section--offers`));
-    for (const offer of this._offersList) {
+    const eventDetails = element.querySelector(`.event__details`);
+    const offersRendered = eventDetails.querySelector(`.event__section--offers`);
+    if (offersRendered) {
+      unrender(offersRendered);
+    } else {
+      eventDetails.classList.remove(`visually-hidden`);
+    }
+    for (const offer of this._offersByType) {
       if (offer.type === type) {
-        const newOffers = getAvailableOffersTemplate(offer.offers);
+        const newOffers = getAvailableOffersTemplate(offer.offers, type);
         if (newOffers) {
           render(element.querySelector(`.event__details`), createElement(newOffers), Position.AFTERBEGIN);
         }
+        break;
       }
     }
   }
 
-  _onDestinationChange(element, destinationValue) { // запретить пользовательский ввод, сейчас можно ввести херню и пропустит
-    for (let destination of this._destinationsList) {
-      if (destination.name === destinationValue) {
-        element.querySelector(`.event__destination-description`).innerHTML = ``;
+  onDestinationChange(element, input) {
+    for (const destination of this._destinations) {
+      if (destination.name === input.value) {
+        const eventDetails = element.querySelector(`.event__details`);
+        const destinationRendered = eventDetails.querySelector(`.event__section--destination`);
+        if (destinationRendered) {
+          unrender(destinationRendered);
+        }
         if (destination.description || destination.pictures) {
-          unrender(element.querySelector(`.event__section--destination`));
           const newDestination = getDestinationTemplate(destination);
-          render(element.querySelector(`.event__details`), createElement(newDestination), Position.BEFOREEND);
+          render(eventDetails, createElement(newDestination), Position.BEFOREEND);
+          eventDetails.classList.remove(`visually-hidden`);
         }
         return;
       }
     }
+    input.value = ``;
   }
 }

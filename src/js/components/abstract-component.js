@@ -1,6 +1,6 @@
 import {createElement} from '../utils';
 
-export class AbstractComponent {
+export default class AbstractComponent {
   constructor() {
     if (new.target === AbstractComponent) {
       throw new Error(`Can't instantiate AbstractComponent, only concrete one.`);
@@ -20,13 +20,4 @@ export class AbstractComponent {
   getTemplate() {
     throw new Error(`Abstract method not implemented: getTemplate`);
   }
-
-  removeElement() { // нужно ли это? сейчас нигде не используется
-    if (this._element) {
-      this._element.remove();
-      this._element = null;
-    }
-  }
-
-  update() {}
 }

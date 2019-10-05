@@ -11,6 +11,7 @@ export const getPlaceholder = (type) => {
 export const Position = {
   AFTERBEGIN: `afterbegin`,
   AFTEREND: `afterend`,
+  BEFOREBEGIN: `beforebegin`,
   BEFOREEND: `beforeend`
 };
 
@@ -30,7 +31,7 @@ export const createElement = (template) => {
   return newElement.firstChild;
 };
 
-export const render = (container, element, place) => { // перенести в AbstractComponent?
+export const render = (container, element, place) => {
   switch (place) {
     case Position.AFTERBEGIN:
       container.prepend(element);
@@ -44,12 +45,10 @@ export const render = (container, element, place) => { // перенести в 
   }
 };
 
-export const unrender = (element) => { // удалить или перенести в AbstractComponent? метод используется и не только у компонентов
+export const unrender = (element) => {
   if (element) {
     element.remove();
-    // element.removeElement();
-    // задание 4.1 Не забудьте после удаления элемента из DOM удалить ссылку на него
-    // с помощью метода класса removeElement, который мы описали в пятом пункте.
+    element = null;
   }
 };
 
@@ -62,10 +61,15 @@ export const countEventDuration = (dateStart, dateEnd) => {
 };
 
 export const renderEventDuration = (duration) => {
+  const months = duration.months();
   const days = duration.days();
   const hours = duration.hours();
   const minutes = duration.minutes();
   let durationToRender = ``;
+  if (months) {
+    durationToRender = `More than a month`;
+    return durationToRender;
+  }
   if (days) {
     durationToRender = `${days}D`;
   }

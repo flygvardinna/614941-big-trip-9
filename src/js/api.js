@@ -1,6 +1,4 @@
-import {ModelEvent} from './models/model-event';
-import {ModelDestination} from './models/model-destination';
-import {ModelOffer} from './models/model-offer';
+import ModelEvent from './model-event';
 
 const Method = {
   GET: `GET`,
@@ -9,19 +7,7 @@ const Method = {
   DELETE: `DELETE`
 };
 
-const checkStatus = (response) => {
-  if (response.status >= 200 && response.status < 300) {
-    return response;
-  } else {
-    throw new Error(`${response.status}: ${response.statusText}`);
-  }
-};
-
-const toJSON = (response) => {
-  return response.json();
-};
-
-export class API {
+export default class API {
   constructor({endPoint, authorization}) {
     this._endPoint = endPoint;
     this._authorization = authorization;
@@ -29,7 +15,7 @@ export class API {
 
   getEvents() {
     return this._load({url: `points`})
-      .then(toJSON)
+      .then(API.toJSON)
       .then(ModelEvent.parseEvents);
   }
 
@@ -40,18 +26,18 @@ export class API {
       body: JSON.stringify(event),
       headers: new Headers({'Content-Type': `application/json`})
     })
-      .then(toJSON)
+      .then(API.toJSON)
       .then(ModelEvent.parseEvent);
   }
 
-  updateEvent({id, data}) {
+  updateEvent({id, event}) {
     return this._load({
       url: `points/${id}`,
       method: Method.PUT,
-      body: JSON.stringify(data),
+      body: JSON.stringify(event),
       headers: new Headers({'Content-Type': `application/json`})
     })
-      .then(toJSON)
+      .then(API.toJSON)
       .then(ModelEvent.parseEvent);
   }
 
@@ -61,24 +47,33 @@ export class API {
 
   getDestinations() {
     return this._load({url: `destinations`})
-      .then(toJSON)
-      .then(ModelDestination.parseDestinations);
+      .then(API.toJSON);
   }
 
   getOffers() {
     return this._load({url: `offers`})
-      .then(toJSON)
-      .then(ModelOffer.parseOffers);
+      .then(API.toJSON);
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {
     headers.append(`Authorization`, this._authorization);
 
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
-      .then(checkStatus)
+      .then(API.checkStatus)
       .catch((err) => {
-        // console.error(`fetch error: ${err}`);
         throw err;
       });
+  }
+
+  static toJSON(response) {
+    return response.json();
+  }
+
+  static checkStatus(response) {
+    if (response.status >= 200 && response.status < 300) {
+      return response;
+    }
+
+    throw new Error(`${response.status}: ${response.statusText}`);
   }
 }

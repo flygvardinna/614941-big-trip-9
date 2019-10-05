@@ -1,19 +1,17 @@
-import {AbstractComponent} from './abstract-component';
-import moment from '../../../node_modules/moment/src/moment';
+import AbstractComponent from './abstract-component';
 
-export class Day extends AbstractComponent {
+export default class Day extends AbstractComponent {
   constructor(date, dayIndex) {
     super();
     this._date = date;
-    this._dayIndex = dayIndex;
-    // this._eventCount = eventCount;
+    this._index = dayIndex;
   }
 
   getTemplate() {
     return `<li class="trip-days__item  day">
       <div class="day__info">
-        <span class="day__counter">${this._dayIndex}</span>
-        <time class="day__date" datetime="${moment(this._date).toISOString()}">${moment(this._date).format(`MMM DD`)}</time>
+        <span class="day__counter">${this._index}</span>
+        <time class="day__date" datetime="${this._date}">${this._date}</time>
       </div>
 
       <ul class="trip-events__list">

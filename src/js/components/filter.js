@@ -1,27 +1,27 @@
-import {AbstractComponent} from './abstract-component';
+import AbstractComponent from './abstract-component';
 import {capitalize} from '../utils';
 
-const createFilters = (eventFilters) => {
-  let filtersToRender = [];
-  eventFilters.forEach((filter) => {
-    filtersToRender.push(`<div class="trip-filters__filter">
-      <input id="filter-${filter}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filter}">
-      <label class="trip-filters__filter-label" for="filter-${filter}">${capitalize(filter)}</label>
+const createTabs = (tabsToRender) => {
+  const filterTabs = [];
+  for (const tab of tabsToRender) {
+    filterTabs.push(`<div class="trip-filters__filter">
+      <input id="filter-${tab}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter"
+      value="${tab}" ${tab === `everything` ? `checked` : ``}>
+      <label class="trip-filters__filter-label" for="filter-${tab}">${capitalize(tab)}</label>
     </div>`);
-  });
-  return filtersToRender.join(``);
-  // TODO: mark first filter as checked
+  }
+  return filterTabs.join(``);
 };
 
-export class Filter extends AbstractComponent {
-  constructor(filters) {
+export default class Filter extends AbstractComponent {
+  constructor(tabs) {
     super();
-    this._filters = filters;
+    this._tabs = tabs;
   }
 
   getTemplate() {
     return `<form class="trip-filters" action="#" method="get">
-      ${createFilters(this._filters)}
+      ${createTabs(this._tabs)}
       <button class="visually-hidden" type="submit">Accept filter</button>
     </form>`;
   }

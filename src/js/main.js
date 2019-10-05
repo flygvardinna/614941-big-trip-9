@@ -6,7 +6,7 @@ import Message from './components/message';
 import TripController from './controllers/trip';
 import {Position, render, unrender} from './utils';
 
-const AUTHORIZATION = `Basic kTy9g8877745454D`;
+const AUTHORIZATION = `Basic 777558dhd6665454D`;
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 const MENU_TABS = [`Table`, `Stats`];
 const FILTER_TABS = [`everything`, `future`, `past`];
@@ -33,7 +33,15 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
       api.updateEvent({
         id: update.id,
         event: update.toRAW()
-      }).then(() => tripController.show(tripEvents))
+      }).then((updatedEvent) => {
+        for (let event of tripEvents) {
+          if (updatedEvent.id === event.id) {
+            event = updatedEvent;
+            break;
+          }
+        }
+        tripController.show(tripEvents);
+      })
       .catch(() => onError());
       break;
     case `create`:
@@ -50,7 +58,10 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
         id: update.id
       })
         .then(() => api.getEvents())
-        .then(() => tripController.show(tripEvents))
+        .then((events) => {
+          tripEvents = events;
+          tripController.show(tripEvents);
+        })
         .catch(() => onError());
       break;
   }

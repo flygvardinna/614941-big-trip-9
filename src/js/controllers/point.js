@@ -30,7 +30,9 @@ export default class PointController {
 
     if (mode === Mode.ADDING) {
       currentView = this._eventEdit;
-      renderPosition = Position.AFTEREND;
+      if (document.querySelector(`.trip-events__trip-sort`)) {
+        renderPosition = Position.AFTEREND;
+      }
     }
 
     const minDateEnd = this._data.dateStart;

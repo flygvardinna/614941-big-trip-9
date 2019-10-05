@@ -14,7 +14,7 @@ export default class TripController {
     this._events = [];
     this._destinations = destinations;
     this._offers = offers;
-    this._sort = new Sorting();
+    this._sorting = new Sorting();
     this._sortedBy = `default`;
     this._eventsList = new EventsList();
     this._addingEvent = null;
@@ -34,12 +34,14 @@ export default class TripController {
   }
 
   show(events) {
-    this._cost.textContent = this._countTripCost(this._events);
+    this._cost.textContent = this._countTripCost(events);
     if (this._details) {
       unrender(this._details.getElement());
     }
 
     if (events.length === 0) {
+      unrender(this._sorting.getElement());
+      this._eventsList.getElement().innerHTML = ``;
       this._showNoEventsMessage();
       return;
     }
@@ -50,8 +52,8 @@ export default class TripController {
       this._details = new TripDetails(this._events);
       render(this._info, this._details.getElement(), Position.AFTERBEGIN);
 
-      render(this._container, this._sort.getElement(), Position.AFTERBEGIN);
-      this._sort.getElement().addEventListener(`click`, (evt) => this._onSortItemClick(evt));
+      render(this._container, this._sorting.getElement(), Position.AFTERBEGIN);
+      this._sorting.getElement().addEventListener(`click`, (evt) => this._onSortItemClick(evt));
 
       this._renderEvents(this._events);
     }
@@ -82,7 +84,7 @@ export default class TripController {
       unrender(this._noEventsMessage.getElement());
     }
 
-    let newPointContainer = this._events.length === 0 ? this._container : this._sort.getElement();
+    let newPointContainer = this._events.length === 0 ? this._container : this._sorting.getElement();
 
     this._addingEvent = new PointController(newPointContainer, defaultEvent, this._destinations, this._offers, Mode.ADDING,
         this._onChangeView, (...args) => {
@@ -109,12 +111,6 @@ export default class TripController {
 
   _renderDays(events) {
     this._eventsList.getElement().innerHTML = ``;
-
-    if (events.length === 0) {
-      this._eventsList.getElement().innerHTML = ``;
-      this._showNoEventsMessage();
-      return;
-    }
 
     const days = new Set();
     for (const event of events) {
@@ -167,7 +163,7 @@ export default class TripController {
 
   _renderDayContainerForAllEvents() {
     this._eventsList.getElement().innerHTML = ``;
-    this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = ``;
+    this._sorting.getElement().querySelector(`.trip-sort__item--day`).innerHTML = ``;
     const dayContainer = new Day(``, ``).getElement();
     render(this._eventsList.getElement(), dayContainer, Position.BEFOREEND);
     dayContainer.querySelector(`.day__info`).innerHTML = ``;
@@ -191,7 +187,7 @@ export default class TripController {
         }
         break;
       case `default`:
-        this._sort.getElement().querySelector(`.trip-sort__item--day`).innerHTML = `Day`;
+        this._sorting.getElement().querySelector(`.trip-sort__item--day`).innerHTML = `Day`;
         this._events = this._sortByStartDate(this._events);
         this._renderDays(this._events);
         break;

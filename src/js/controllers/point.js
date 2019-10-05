@@ -13,6 +13,7 @@ export default class PointController {
     this._onDataChange = onDataChange;
     this._eventView = new Event(this._data);
     this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
+    this._onEscKeyDown = this._onEscKeyDown.bind(this);
     this._mode = mode;
 
     this._init(mode);

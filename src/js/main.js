@@ -2,36 +2,30 @@ import API from './api';
 import Menu from './components/menu';
 import Filter from './components/filter';
 import Statistics from './components/statistics';
-import TripDetails from './components/trip-details';
 import Message from './components/message';
 import TripController from './controllers/trip';
 import {Position, render, unrender} from './utils';
 
 const AUTHORIZATION = `Basic kTy9gIdsz2317rD`; // перед отправкой на проверку обнови код для сервера
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
-
 const MENU_TABS = [`Table`, `Stats`];
 const FILTER_OPTIONS = [`everything`, `future`, `past`];
-
-const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
-
-const tripControls = document.querySelector(`.trip-controls`);
-const tripMenuTitle = tripControls.querySelector(`h2`);
-const eventsContainer = document.querySelector(`.trip-events`);
-const addNewEventButton = document.querySelector(`.trip-main__event-add-btn`);
-
-const menu = new Menu(MENU_TABS);
-render(tripMenuTitle, menu.getElement(), Position.AFTEREND);
-
-const filter = new Filter(FILTER_OPTIONS);
-render(tripControls, filter.getElement(), Position.BEFOREEND);
-
-const statistics = new Statistics();
 
 let availableDestinations = [];
 let availableOffers = [];
 let tripEvents = [];
 let tripController;
+
+const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
+const menu = new Menu(MENU_TABS);
+const filter = new Filter(FILTER_OPTIONS);
+const statistics = new Statistics();
+const loadingMessage = new Message(`load`);
+
+const tripControls = document.querySelector(`.trip-controls`);
+const tripMenuTitle = tripControls.querySelector(`h2`);
+const eventsContainer = document.querySelector(`.trip-events`);
+const addNewEventButton = document.querySelector(`.trip-main__event-add-btn`);
 
 const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
   switch (actionType) {
@@ -72,15 +66,14 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
   }
 };
 
-
-
-const loadingMessage = new Message(`load`);
-render(eventsContainer, loadingMessage.getElement(), Position.BEFOREEND);
-
-const showNoEventsMessage = () => {
+/*const showNoEventsMessage = () => {
   const noEventsMessage = new Message(`no-events`);
   render(eventsContainer, noEventsMessage.getElement(), Position.BEFOREEND);
-}
+}*/
+
+render(tripMenuTitle, menu.getElement(), Position.AFTEREND);
+render(tripControls, filter.getElement(), Position.BEFOREEND);
+render(eventsContainer, loadingMessage.getElement(), Position.BEFOREEND);
 
 api.getDestinations()
   .then((destinations) => {

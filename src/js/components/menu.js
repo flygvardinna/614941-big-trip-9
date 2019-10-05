@@ -1,7 +1,7 @@
 import AbstractComponent from './abstract-component';
 
 const createTabs = (tabsToRender) => {
-  let menuTabs = [];
+  const menuTabs = [];
   tabsToRender.forEach((tab) => {
     menuTabs.push(`<a class="trip-tabs__btn ${tab === `Table` ? `trip-tabs__btn--active` : ``}" href="#">${tab}</a>`);
   });

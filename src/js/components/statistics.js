@@ -9,9 +9,9 @@ export default class Statistics extends AbstractComponent {
     this._moneyCtx = this.getElement().querySelector(`.statistics__chart--money`);
     this._transportCtx = this.getElement().querySelector(`.statistics__chart--transport`);
     this._timeCtx = this.getElement().querySelector(`.statistics__chart--time`);
-    this.moneyChart = null;
-    this.transportChart = null;
-    this.timeChart = null;
+    this._moneyChart = null;
+    this._transportChart = null;
+    this._timeChart = null;
   }
 
   renderChart(title, container, labels, data) {
@@ -51,7 +51,7 @@ export default class Statistics extends AbstractComponent {
         },
         scales: {
           xAxes: [{
-            minBarLength: 400,
+            minBarLength: 500,
             gridLines: {
               display: false,
               drawBorder: false
@@ -106,7 +106,7 @@ export default class Statistics extends AbstractComponent {
   renderMoneyChart() {
     const labels = [...new Set(this._events.map((event) => event.type.toUpperCase()))];
 
-    let costs = [];
+    const costs = [];
     labels.forEach((label) => {
       let labelCost = 0;
       this._events.map((event) => {
@@ -117,18 +117,18 @@ export default class Statistics extends AbstractComponent {
       costs.push(labelCost);
     });
 
-    this.moneyChart = this.renderChart(`MONEY`, this._moneyCtx, labels, costs);
+    this._moneyChart = this.renderChart(`MONEY`, this._moneyCtx, labels, costs);
   }
 
   renderTransportChart() {
-    let labels = new Set();
+    const labels = new Set();
     this._events.map((event) => {
       if (typesOfTransport.has(event.type)) {
         labels.add(event.type.toUpperCase());
       }
     });
 
-    let counts = [];
+    const counts = [];
     labels.forEach((label) => {
       let labelCount = 0;
       this._events.map((event) => {
@@ -139,18 +139,18 @@ export default class Statistics extends AbstractComponent {
       counts.push(labelCount);
     });
 
-    this.transportChart = this.renderChart(`TRANSPORT`, this._transportCtx, [...labels], counts);
+    this._transportChart = this.renderChart(`TRANSPORT`, this._transportCtx, [...labels], counts);
   }
 
   renderTimeChart() {
     const labels = [...new Set(this._events.map((event) => event.type.toUpperCase()))];
 
-    let durations= [];
+    const durations= [];
     labels.forEach((label) => {
       let labelDuration = 0;
       this._events.map((event) => {
         if (label === event.type.toUpperCase()) {
-          let eventDuration = countEventDuration(event.dateStart, event.dateEnd);
+          const eventDuration = countEventDuration(event.dateStart, event.dateEnd);
           if (labelDuration) {
             labelDuration = labelDuration.add(eventDuration);
           } else {
@@ -161,7 +161,7 @@ export default class Statistics extends AbstractComponent {
       durations.push(labelDuration);
     });
 
-    this.timeChart = this.renderChart(`TIME-SPEND`, this._timeCtx, labels, durations);
+    this._timeChart = this.renderChart(`TIME-SPEND`, this._timeCtx, labels, durations);
   }
 
   getTemplate() {

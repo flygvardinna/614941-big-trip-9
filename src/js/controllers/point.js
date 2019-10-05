@@ -15,10 +15,16 @@ export default class PointController {
     this._eventEdit = new EventEdit(mode, this._data, this._destinations, this._offers);
     this._mode = mode;
 
-    this.init(mode);
+    this._init(mode);
   }
 
-  init(mode) {
+  setDefaultView() {
+    if (this._container.contains(this._eventEdit.getElement())) {
+      this._container.replaceChild(this._eventView.getElement(), this._eventEdit.getElement());
+    }
+  }
+
+  _init(mode) {
     let currentView = this._eventView;
     let renderPosition = Position.BEFOREEND;
     const noEventsMessage = document.querySelector(`.no-events-message`); //перенести в tripController?
@@ -106,16 +112,16 @@ export default class PointController {
         };
       }
 
-      this.toggleFormBlock(form, `save`, true);
+      this._toggleFormBlock(form, `save`, true);
 
       // сейчас при изменении опции (выбранная) не отрисовывается в списке ивентов (не в форме)
       // Отрисовывается при сохранении, без сохранения нет, это ок. Но если кликнуть и не сохранить, то она визуально остается
       // голубой чекнутой
 
       if (mode === Mode.DEFAULT) {
-        this._onDataChange(`update`, this._data, this.onError.bind(this, `save`));
+        this._onDataChange(`update`, this._data, this._onError.bind(this, `save`));
       } else {
-        this._onDataChange(`create`, this._data, this.onError.bind(this, `save`), this.onSuccesEventCreate.bind(this)); //убрать последнее?
+        this._onDataChange(`create`, this._data, this._onError.bind(this, `save`), this._onSuccesEventCreate.bind(this)); //убрать последнее?
       }
 
       document.removeEventListener(`keydown`, onEscKeyDown); // ТОЖЕ ДОЛЖНО УБИРАТЬСЯ ТОЛЬКО ПРИ УСПЕХЕ?
@@ -186,7 +192,7 @@ export default class PointController {
         if (this._data.type !== option.value) {
           this._data.type = option.value;
           option.closest(`.event__type-wrapper`).querySelector(`.event__type-toggle`).checked = false;
-          this._eventEdit._onEventTypeChange(this._eventEdit.getElement(), option.value);
+          this._eventEdit.onEventTypeChange(this._eventEdit.getElement(), option.value);
         }
       });
     });
@@ -194,13 +200,13 @@ export default class PointController {
     this._eventEdit.getElement()
       .querySelector(`.event__input--destination`)
       .addEventListener(`change`, (evt) => {
-        this._eventEdit._onDestinationChange(this._eventEdit.getElement(), evt.target);
+        this._eventEdit.onDestinationChange(this._eventEdit.getElement(), evt.target);
       });
 
     this._eventEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {
-        this.toggleFormBlock(this._eventEdit.getElement(), `delete`, true);
-        this._onDataChange(`delete`, this._data, this.onError.bind(this, `delete`));
+        this._toggleFormBlock(this._eventEdit.getElement(), `delete`, true);
+        this._onDataChange(`delete`, this._data, this._onError.bind(this, `delete`));
 
         if (mode === Mode.ADDING) {
           unrender(this._eventEdit.getElement());
@@ -215,7 +221,7 @@ export default class PointController {
     render(this._container, currentView.getElement(), renderPosition);
   }
 
-  toggleFormBlock(form, button, value) {
+  _toggleFormBlock(form, button, value) {
     const style = this._eventEdit.getElement().getAttribute(`style`);
     if (style) {
       this._eventEdit.getElement().style = `border: none`;
@@ -236,7 +242,7 @@ export default class PointController {
     }
   }
 
-  shake() {
+  _shake() {
     const ANIMATION_TIMEOUT = 600;
     this._eventEdit.getElement().style.animation = `shake ${ANIMATION_TIMEOUT / 1000}s`;
 
@@ -245,19 +251,13 @@ export default class PointController {
     }, ANIMATION_TIMEOUT);
   }
 
-  setDefaultView() {
-    if (this._container.contains(this._eventEdit.getElement())) {
-      this._container.replaceChild(this._eventView.getElement(), this._eventEdit.getElement());
-    }
-  }
-
-  onError(string) {
-    this.toggleFormBlock(this._eventEdit.getElement(), string, false);
+  _onError(string) {
+    this._toggleFormBlock(this._eventEdit.getElement(), string, false);
     this._eventEdit.getElement().style = `border: 3px red solid`;
-    this.shake();
+    this._shake();
   }
 
-  onSuccesEventCreate() {
+  _onSuccesEventCreate() {
     unrender(this._eventEdit.getElement());
     document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
     // код дублируется выше если делаем кансель на создании объекта, вынести в отдельную функцию?

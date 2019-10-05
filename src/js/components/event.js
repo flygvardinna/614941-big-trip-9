@@ -5,7 +5,7 @@ import moment from '../../../node_modules/moment/src/moment';
 const OFFER_COUNT = 3;
 
 const createOffersList = (offers) => {
-  let selectedOffers = [];
+  const selectedOffers = [];
   offers.forEach((offer) => {
     if (selectedOffers.length === OFFER_COUNT) {
       return selectedOffers.join(``);

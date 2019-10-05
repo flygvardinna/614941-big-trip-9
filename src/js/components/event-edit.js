@@ -5,13 +5,13 @@ import 'flatpickr/dist/flatpickr.min.css';
 import 'flatpickr/dist/themes/light.css';
 
 const renderPictures = (picturesToRender) => {
-  let pictures = [];
+  const pictures = [];
   picturesToRender.forEach((picture) => pictures.push(`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`));
   return pictures.join(``);
 };
 
 const createOffersList = (offers, type) => {
-  let selectedOffers = [];
+  const selectedOffers = [];
   offers.forEach((offer, index) => selectedOffers.push(getOfferTemplate(offer, index + 1, type)));
   return selectedOffers.join(``);
 };
@@ -54,7 +54,7 @@ const getDestinationTemplate = (eventDestination) => {
 };
 
 const createDestinationsList = (availableDestinations) => {
-  let destinations = [];
+  const destinations = [];
   availableDestinations.forEach((destination) => destinations.push(`<option value="${destination.name}"></option>`));
   return destinations.join(``);
 };
@@ -75,8 +75,8 @@ export default class EventEdit extends AbstractComponent {
     this._destinations = destinations;
     this._offersByType = offers;
 
-    this._onEventTypeChange = this._onEventTypeChange.bind(this);
-    this._onDestinationChange = this._onDestinationChange.bind(this);
+    this.onEventTypeChange = this.onEventTypeChange.bind(this);
+    this.onDestinationChange = this.onDestinationChange.bind(this);
   }
 
   getTemplate() {
@@ -315,7 +315,7 @@ export default class EventEdit extends AbstractComponent {
     }
   }
 
-  _onEventTypeChange(element, type) {
+  onEventTypeChange(element, type) {
     element.querySelector(`.event__type-icon`).setAttribute(`src`, `img/icons/${type}.png`);
     element.querySelector(`.event__type-output`).innerHTML = `${capitalize(type)} ${getPlaceholder(type)}`;
     const eventDetails = element.querySelector(`.event__details`);
@@ -327,16 +327,17 @@ export default class EventEdit extends AbstractComponent {
     }
     for (const offer of this._offersByType) {
       if (offer.type === type) {
-        const newOffers = getAvailableOffersTemplate(offer.offers);
+        const newOffers = getAvailableOffersTemplate(offer.offers, type);
         if (newOffers) {
           render(element.querySelector(`.event__details`), createElement(newOffers), Position.AFTERBEGIN);
         }
+        break;
       }
     }
   }
 
-  _onDestinationChange(element, input) {
-    for (let destination of this._destinations) {
+  onDestinationChange(element, input) {
+    for (const destination of this._destinations) {
       if (destination.name === input.value) {
         const eventDetails = element.querySelector(`.event__details`);
         const destinationRendered = eventDetails.querySelector(`.event__section--destination`);

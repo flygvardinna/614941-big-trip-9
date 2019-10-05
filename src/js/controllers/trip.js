@@ -1,13 +1,11 @@
 import PointController from './point';
-import Sort from '../components/sort';
+import Sorting from '../components/sorting';
 import EventsList from '../components/events-list';
 import Day from '../components/day';
 import TripDetails from '../components/trip-details';
 import Message from '../components/message';
 import {Position, Mode, render, unrender, countEventDuration} from '../utils';
 import moment from '../../../node_modules/moment/src/moment';
-
-const PointControllerMode = Mode;
 
 export default class TripController {
   constructor(container, onDataChange, destinations, offers) {
@@ -16,7 +14,7 @@ export default class TripController {
     this._events = [];
     this._destinations = destinations;
     this._offers = offers;
-    this._sort = new Sort();
+    this._sort = new Sorting();
     this._sortedBy = "default";
     this._eventsList = new EventsList();
     this._addingEvent = null;
@@ -61,7 +59,7 @@ export default class TripController {
       isFavorite: false
     };
 
-    this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, this._destinations, this._offers, PointControllerMode.ADDING,
+    this._addingEvent = new PointController(this._sort.getElement(), defaultEvent, this._destinations, this._offers, Mode.ADDING,
         this._onChangeView, (...args) => {
           this._addingEvent = null;
           this._onDataChange(...args);
@@ -69,7 +67,7 @@ export default class TripController {
     this._addingEvent._onChangeView();
   }
 
-  showNoEventsMessage() {
+  showNoEventsMessage() { // пока публичный, но в main я сейчас его закомментила, тогда приватный
     const noEventsMessage = new Message(`no-events`);
     render(this._container, noEventsMessage.getElement(), Position.BEFOREEND);
   }
@@ -111,7 +109,7 @@ export default class TripController {
       return;
     }
 
-    let days = new Set();
+    const days = new Set();
     events.forEach((event) => {
       const date = moment(event.dateStart).format(`MMM DD`);
       if (!days.has(date)) {
@@ -132,7 +130,7 @@ export default class TripController {
   }
 
   _renderEvent(container, event) {
-    const pointController = new PointController(container, event, this._destinations, this._offers, PointControllerMode.DEFAULT, this._onChangeView, this._onDataChange);
+    const pointController = new PointController(container, event, this._destinations, this._offers, Mode.DEFAULT, this._onChangeView, this._onDataChange);
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 

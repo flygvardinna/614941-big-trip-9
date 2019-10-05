@@ -2,7 +2,7 @@ import AbstractComponent from './abstract-component';
 import {capitalize} from '../utils';
 
 const createFilters = (filtersToRender) => {
-  let eventFilters = [];
+  const eventFilters = [];
   filtersToRender.forEach((filter) => {
     eventFilters.push(`<div class="trip-filters__filter">
       <input id="filter-${filter}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filter}" ${filter === `everything` ? `checked` : ``}>

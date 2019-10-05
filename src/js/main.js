@@ -28,10 +28,9 @@ render(tripControls, filter.getElement(), Position.BEFOREEND);
 
 const statistics = new Statistics();
 
-
 let availableDestinations = [];
 let availableOffers = [];
-let eventsList = [];
+let tripEvents = [];
 let tripController;
 
 const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
@@ -39,8 +38,8 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
     case `update`:
       api.updateEvent({
         id: update.id,
-        data: update.toRAW()
-      }).then(() => tripController.show(eventsList))
+        event: update.toRAW()
+      }).then(() => tripController.show(tripEvents))
       .catch(() => onError());
       break;
     case `create`:
@@ -48,8 +47,8 @@ const onDataChange = (actionType, update, onError, onSuccessEventCreate) => {
         event: update.toRAW()
       }).then((newEvent) => {
         onSuccessEventCreate();
-        eventsList.push(newEvent);
-        tripController.show(eventsList);
+        tripEvents.push(newEvent);
+        tripController.show(tripEvents);
       }).catch(() => onError());
       break;
     case `delete`:
@@ -97,12 +96,12 @@ api.getDestinations()
   .then((events) => {
     console.log(events);
     unrender(loadingMessage.getElement());
-    eventsList = events.slice(); // чтобы не преобразовывать исходный массив? надо ли это?
+    tripEvents = events.slice(); // чтобы не преобразовывать исходный массив? надо ли это?
     tripController = new TripController(eventsContainer, onDataChange, availableDestinations, availableOffers);
     /*if (events.length === 0) {
       tripController.showNoEventsMessage();
     }*/
-    tripController.show(eventsList);
+    tripController.show(tripEvents);
   });
 
 menu.getElement().addEventListener(`click`, (evt) => {

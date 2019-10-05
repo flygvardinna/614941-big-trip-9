@@ -1,11 +1,11 @@
 import AbstractComponent from './abstract-component';
 
-const createTabs = (menuTabs) => {
-  let tabsToRender = [];
-  menuTabs.forEach((tab) => {
-    tabsToRender.push(`<a class="trip-tabs__btn ${tab === `Table` ? `trip-tabs__btn--active` : ``}" href="#">${tab}</a>`);
+const createTabs = (tabsToRender) => {
+  let menuTabs = [];
+  tabsToRender.forEach((tab) => {
+    menuTabs.push(`<a class="trip-tabs__btn ${tab === `Table` ? `trip-tabs__btn--active` : ``}" href="#">${tab}</a>`);
   });
-  return tabsToRender.join(``);
+  return menuTabs.join(``);
 };
 
 export default class Menu extends AbstractComponent {

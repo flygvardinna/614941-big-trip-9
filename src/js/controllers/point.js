@@ -63,12 +63,12 @@ export default class PointController {
       const form = this._eventEdit.getElement();
       const formData = new FormData(form);
 
-      const picturesArray = Array.from(form.querySelectorAll(`.event__photo`)).map((picture) => ({
+      const pictures = Array.from(form.querySelectorAll(`.event__photo`)).map((picture) => ({
         src: picture.getAttribute(`src`),
         description: picture.getAttribute(`alt`)
       }));
 
-      const offersArray = Array.from(form.querySelectorAll(`.event__offer-selector`)).map((offer) => ({
+      const eventOffers = Array.from(form.querySelectorAll(`.event__offer-selector`)).map((offer) => ({
         title: offer.querySelector(`.event__offer-title`).textContent,
         price: Number(offer.querySelector(`.event__offer-price`).textContent),
         accepted: offer.querySelector(`.event__offer-checkbox`).checked
@@ -84,12 +84,12 @@ export default class PointController {
       this._data.destination = {
         name: formData.get(`event-destination`),
         description: destinationDescription,
-        pictures: picturesArray
+        pictures: pictures
       };
       this._data.dateStart = new Date(formData.get(`event-start-time`));
       this._data.dateEnd = new Date(formData.get(`event-end-time`));
       this._data.price = Number(formData.get(`event-price`));
-      this._data.offers = offersArray;
+      this._data.offers = eventOffers;
       if (mode === Mode.DEFAULT) {
         this._data.isFavorite = form.querySelector(`.event__favorite-checkbox`).checked;
       }

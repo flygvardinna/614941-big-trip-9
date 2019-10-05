@@ -102,17 +102,17 @@ export default class TripController {
     }
   }
 
-  _renderDays(eventsArray) {
+  _renderDays(events) {
     this._eventsList.getElement().innerHTML = ``;
 
-    if (eventsArray.length === 0) {
+    if (events.length === 0) {
       this._eventsList.getElement().innerHTML = ``;
       this.showNoEventsMessage();
       return;
     }
 
     let days = new Set();
-    eventsArray.forEach((event) => {
+    events.forEach((event) => {
       const date = moment(event.dateStart).format(`MMM DD`);
       if (!days.has(date)) {
         days.add(date);
@@ -121,7 +121,7 @@ export default class TripController {
     Array.from(days).forEach((day, index) => {
       const dayElement = new Day(day, index + 1).getElement();
       render(this._eventsList.getElement(), dayElement, Position.BEFOREEND);
-      eventsArray.forEach((event) => {
+      events.forEach((event) => {
         const eventDayStart = moment(event.dateStart).format(`MMM DD`);
         if (day === eventDayStart) {
           const eventsContainer = dayElement.querySelector(`.trip-events__list`);
@@ -136,8 +136,8 @@ export default class TripController {
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 
-  _sortByStartDate(array) {
-    return array.slice().sort((a, b) => {
+  _sortByStartDate(events) {
+    return events.slice().sort((a, b) => {
       if (a.dateStart < b.dateStart) {
         return -1;
       }

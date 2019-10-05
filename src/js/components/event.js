@@ -4,13 +4,14 @@ import moment from '../../../node_modules/moment/src/moment';
 
 const OFFER_COUNT = 3;
 
-const createOffersList = (offersList) => {
+const createOffersList = (offers) => {
   let selectedOffers = [];
-  offersList.forEach((offer) => {
-    if (selectedOffers.length < OFFER_COUNT) {
-      if (offer.accepted) {
-        selectedOffers.push(getOfferTemplate(offer)); // проверь, нормально ли такой цикл или лишние итерации
-      }
+  offers.forEach((offer) => {
+    if (selectedOffers.length === OFFER_COUNT) {
+      return selectedOffers.join(``);
+    }
+    if (offer.accepted) {
+      selectedOffers.push(getOfferTemplate(offer));
     }
   });
   return selectedOffers.join(``);

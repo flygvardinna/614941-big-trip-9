@@ -10,11 +10,11 @@ export default class ModelEvent {
     this.isFavorite = Boolean(data[`is_favorite`]);
   }
 
-  static parseEvent(data) {
-    return new ModelEvent(data);
+  static parseEvent(eventData) {
+    return new ModelEvent(eventData);
   }
 
-  static parseEvents(data) {
-    return data.map(ModelEvent.parseEvent);
+  static parseEvents(eventsData) {
+    return eventsData.map(ModelEvent.parseEvent);
   }
 }

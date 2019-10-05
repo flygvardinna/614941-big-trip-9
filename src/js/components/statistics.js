@@ -106,7 +106,7 @@ export default class Statistics extends AbstractComponent {
   renderMoneyChart() {
     const labels = [...new Set(this._events.map((event) => event.type.toUpperCase()))];
 
-    let data = [];
+    let costs = [];
     labels.forEach((label) => {
       let labelCost = 0;
       this._events.map((event) => {
@@ -114,10 +114,10 @@ export default class Statistics extends AbstractComponent {
           labelCost = labelCost + event.price;
         }
       });
-      data.push(labelCost);
+      costs.push(labelCost);
     });
 
-    this.moneyChart = this.renderChart(`MONEY`, this._moneyCtx, labels, data);
+    this.moneyChart = this.renderChart(`MONEY`, this._moneyCtx, labels, costs);
   }
 
   renderTransportChart() {
@@ -128,7 +128,7 @@ export default class Statistics extends AbstractComponent {
       }
     });
 
-    let data = [];
+    let counts = [];
     labels.forEach((label) => {
       let labelCount = 0;
       this._events.map((event) => {
@@ -136,16 +136,16 @@ export default class Statistics extends AbstractComponent {
           labelCount = labelCount + 1;
         }
       });
-      data.push(labelCount);
+      counts.push(labelCount);
     });
 
-    this.transportChart = this.renderChart(`TRANSPORT`, this._transportCtx, [...labels], data);
+    this.transportChart = this.renderChart(`TRANSPORT`, this._transportCtx, [...labels], counts);
   }
 
   renderTimeChart() {
     const labels = [...new Set(this._events.map((event) => event.type.toUpperCase()))];
 
-    let data = [];
+    let durations= [];
     labels.forEach((label) => {
       let labelDuration = 0;
       this._events.map((event) => {
@@ -158,10 +158,10 @@ export default class Statistics extends AbstractComponent {
           }
         }
       });
-      data.push(labelDuration);
+      durations.push(labelDuration);
     });
 
-    this.timeChart = this.renderChart(`TIME-SPEND`, this._timeCtx, labels, data);
+    this.timeChart = this.renderChart(`TIME-SPEND`, this._timeCtx, labels, durations);
   }
 
   getTemplate() {

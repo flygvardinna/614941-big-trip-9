@@ -42,11 +42,11 @@ export default class API {
       .then(ModelEvent.parseEvent);
   }
 
-  updateEvent({id, data}) {
+  updateEvent({id, event}) {
     return this._load({
       url: `points/${id}`,
       method: Method.PUT,
-      body: JSON.stringify(data),
+      body: JSON.stringify(event),
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON)

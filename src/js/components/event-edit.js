@@ -5,14 +5,14 @@ import 'flatpickr/dist/flatpickr.min.css';
 import 'flatpickr/dist/themes/light.css';
 
 const renderPictures = (picturesToRender) => {
-  let picturesFeed = [];
-  picturesToRender.forEach((picture) => picturesFeed.push(`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`));
-  return picturesFeed.join(``);
+  let pictures = [];
+  picturesToRender.forEach((picture) => pictures.push(`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`));
+  return pictures.join(``);
 };
 
-const createOffersList = (offersList, type) => {
+const createOffersList = (offers, type) => {
   let selectedOffers = [];
-  offersList.forEach((offer, index) => selectedOffers.push(getOfferTemplate(offer, index + 1, type)));
+  offers.forEach((offer, index) => selectedOffers.push(getOfferTemplate(offer, index + 1, type)));
   return selectedOffers.join(``);
 };
 
@@ -60,7 +60,7 @@ const createDestinationsList = (availableDestinations) => {
 };
 
 export default class EventEdit extends AbstractComponent {
-  constructor(mode, data, destinationsList, offersList) {
+  constructor(mode, data, destinations, offers) {
     super();
     this._mode = mode;
     this._id = data.id;
@@ -72,8 +72,8 @@ export default class EventEdit extends AbstractComponent {
     this._price = data.price;
     this._offers = data.offers;
     this._isFavorite = data.isFavorite;
-    this._destinationsList = destinationsList;
-    this._offersList = offersList;
+    this._destinations = destinations;
+    this._offersByType = offers;
 
     this._onEventTypeChange = this._onEventTypeChange.bind(this);
     this._onDestinationChange = this._onDestinationChange.bind(this);
@@ -157,7 +157,7 @@ export default class EventEdit extends AbstractComponent {
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
-              ${createDestinationsList(this._destinationsList)}
+              ${createDestinationsList(this._destinations)}
             </datalist>
           </div>
 
@@ -282,7 +282,7 @@ export default class EventEdit extends AbstractComponent {
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="" list="destination-list-1">
             <datalist id="destination-list-1">
-              ${createDestinationsList(this._destinationsList)}
+              ${createDestinationsList(this._destinations)}
             </datalist>
           </div>
 
@@ -325,7 +325,7 @@ export default class EventEdit extends AbstractComponent {
     } else {
       eventDetails.classList.remove(`visually-hidden`);
     }
-    for (const offer of this._offersList) {
+    for (const offer of this._offersByType) {
       if (offer.type === type) {
         const newOffers = getAvailableOffersTemplate(offer.offers);
         if (newOffers) {
@@ -336,7 +336,7 @@ export default class EventEdit extends AbstractComponent {
   }
 
   _onDestinationChange(element, input) {
-    for (let destination of this._destinationsList) {
+    for (let destination of this._destinations) {
       if (destination.name === input.value) {
         const eventDetails = element.querySelector(`.event__details`);
         const destinationRendered = eventDetails.querySelector(`.event__section--destination`);

@@ -326,8 +326,9 @@ export default class EventEdit extends AbstractComponent {
     const offersRendered = eventDetails.querySelector(`.event__section--offers`);
     if (offersRendered) {
       unrender(offersRendered);
+    } else {
+      eventDetails.classList.remove(`visually-hidden`);
     }
-    eventDetails.classList.remove(`visually-hidden`);
 
     for (const offer of this._offersByType) {
       if (offer.type === type) {

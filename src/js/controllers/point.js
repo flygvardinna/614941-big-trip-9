@@ -229,7 +229,7 @@ export default class PointController {
     if (this._mode === Mode.DEFAULT) {
       this._onDataChange(`update`, this._data, this._onError.bind(this, `save`));
     } else {
-      this._onDataChange(`create`, this._data, this._onError.bind(this, `save`), this._onSuccesEventCreate.bind(this));
+      this._onDataChange(`create`, this._data, this._onError.bind(this, `save`), this._unrenderNewEventForm.bind(this));
     }
   }
 
@@ -237,10 +237,5 @@ export default class PointController {
     this._toggleFormBlock(this._eventEdit.getElement(), string, false);
     this._eventEdit.getElement().style = `border: 3px red solid`;
     this._shake();
-  }
-
-  _onSuccesEventCreate() {
-    unrender(this._eventEdit.getElement());
-    document.querySelector(`.trip-main__event-add-btn`).removeAttribute(`disabled`);
   }
 }

@@ -29,10 +29,6 @@ export default class TripController {
     this._init();
   }
 
-  hide() {
-    this._container.classList.add(`trip-events--hidden`);
-  }
-
   show(events) {
     this._cost.textContent = this._countTripCost(events);
     if (this._details) {
@@ -57,8 +53,6 @@ export default class TripController {
 
       this._renderEvents(this._events);
     }
-
-    this._container.classList.remove(`trip-events--hidden`);
   }
 
   addEvent() {

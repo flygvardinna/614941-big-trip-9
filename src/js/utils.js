@@ -74,8 +74,8 @@ export const renderEventDuration = (duration) => {
     durationToRender = `${days}D`;
   }
   if (hours) {
-    durationToRender = durationToRender + ` ${hours}H`;
+    durationToRender = `${durationToRender} ${hours}H`;
   }
-  durationToRender = durationToRender + ` ${minutes}M`;
+  durationToRender = `${durationToRender} ${minutes}M`;
   return durationToRender;
 };

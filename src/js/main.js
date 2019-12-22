@@ -6,7 +6,7 @@ import Message from './components/message';
 import TripController from './controllers/trip';
 import {Position, render, unrender} from './utils';
 
-const AUTHORIZATION = `Basic 7775586446gf6665454D`;
+const AUTHORIZATION = `Basic 7775fd4gf6665454D`;
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
 const MENU_TABS = [`Table`, `Stats`];
 const FILTER_TABS = [`everything`, `future`, `past`];
@@ -100,13 +100,13 @@ menu.getElement().addEventListener(`click`, (evt) => {
   switch (evt.target.innerHTML) {
     case `Table`:
       statistics.getElement().classList.add(`visually-hidden`);
-      tripController._container.classList.remove(`trip-events--hidden`);
+      eventsContainer.classList.remove(`trip-events--hidden`);
       break;
     case `Stats`:
-      tripController.hide();
+      eventsContainer.classList.add(`trip-events--hidden`);
       render(eventsContainer, statistics.getElement(), Position.AFTEREND);
       statistics.getElement().classList.remove(`visually-hidden`);
-      statistics.renderCharts(tripController._events);
+      statistics.renderCharts(tripEvents);
       break;
   }
 });

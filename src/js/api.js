@@ -13,6 +13,16 @@ export default class API {
     this._authorization = authorization;
   }
 
+  getDestinations() {
+    return this._load({url: `destinations`})
+      .then(API.toJSON);
+  }
+
+  getOffers() {
+    return this._load({url: `offers`})
+      .then(API.toJSON);
+  }
+
   getEvents() {
     return this._load({url: `points`})
       .then(API.toJSON)
@@ -43,16 +53,6 @@ export default class API {
 
   deleteEvent({id}) {
     return this._load({url: `points/${id}`, method: Method.DELETE});
-  }
-
-  getDestinations() {
-    return this._load({url: `destinations`})
-      .then(API.toJSON);
-  }
-
-  getOffers() {
-    return this._load({url: `offers`})
-      .then(API.toJSON);
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {

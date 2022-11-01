@@ -97,11 +97,15 @@ export default class PointController {
       });
     }
 
-    this._eventEdit.getElement()
-      .querySelector(`.event__input--destination`)
-      .addEventListener(`change`, (evt) => {
-        this._eventEdit.onDestinationChange(this._eventEdit.getElement(), evt.target);
-      });
+    const eventDestinationInput = this._eventEdit.getElement().querySelector(`.event__input--destination`);
+
+    eventDestinationInput.addEventListener(`click`, (evt) => {
+      evt.target.value = ``;
+    });
+
+    eventDestinationInput.addEventListener(`change`, (evt) => {
+      this._eventEdit.onDestinationChange(this._eventEdit.getElement(), evt.target);
+    });
 
     this._eventEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {

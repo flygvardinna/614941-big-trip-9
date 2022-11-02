@@ -10,9 +10,8 @@ const createOffersList = (offers) => {
     if (selectedOffers.length === OFFER_COUNT) {
       break;
     }
-    if (offer.accepted) {
-      selectedOffers.push(getOfferTemplate(offer));
-    }
+
+    selectedOffers.push(getOfferTemplate(offer));
   }
   return selectedOffers.join(``);
 };

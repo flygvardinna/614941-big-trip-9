@@ -191,11 +191,14 @@ export default class PointController {
       description: photo.getAttribute(`alt`)
     }));
 
-    const eventOffers = Array.from(form.querySelectorAll(`.event__offer-selector`)).map((offer) => ({
-      title: offer.querySelector(`.event__offer-title`).textContent,
-      price: Number(offer.querySelector(`.event__offer-price`).textContent),
-      accepted: offer.querySelector(`.event__offer-checkbox`).checked
-    }));
+    const eventOffers = Array.from(form.querySelectorAll(`.event__offer-checkbox:checked`)).map((offer) => {
+      const offerSelector = offer.closest(`.event__offer-selector`);
+      return {
+        id: Number(offer.getAttribute(`data-offer-id`)),
+        title: offerSelector.querySelector(`.event__offer-title`).textContent,
+        price: Number(offerSelector.querySelector(`.event__offer-price`).textContent)
+      };
+    });
 
     let destinationDescription = ``;
     if (form.querySelector(`.event__destination-description`)) {

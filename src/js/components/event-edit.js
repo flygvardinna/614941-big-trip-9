@@ -1,5 +1,15 @@
 import AbstractComponent from './abstract-component';
-import {Position, Mode, createElement, render, unrender, getPlaceholder, capitalize} from '../utils';
+import {
+  ACTIVITY_TYPES,
+  TRANSPORT_TYPES,
+  Position,
+  Mode,
+  createElement,
+  render,
+  unrender,
+  getPlaceholder,
+  capitalize
+} from '../utils';
 import moment from '../../../node_modules/moment/src/moment';
 import 'flatpickr/dist/flatpickr.min.css';
 import 'flatpickr/dist/themes/light.css';
@@ -12,16 +22,23 @@ const renderPictures = (picturesToRender) => {
   return pictures.join(``);
 };
 
-const createOffersList = (offers, type) => {
-  const selectedOffers = [];
-  offers.forEach((offer, index) => selectedOffers.push(getOfferTemplate(offer, index + 1, type)));
-  return selectedOffers.join(``);
+const checkIsOfferChecked = (offers, title) => {
+  return offers.find((offer) => offer.title === title);
 };
 
-const getOfferTemplate = (offer, index, type) => {
+const createOffersList = (allOffers, type, checkedOffers) => {
+  const offers = allOffers.map((offer) => {
+    const isChecked = checkedOffers.length ? checkIsOfferChecked(checkedOffers, offer.title) : false;
+    return getOfferTemplate(offer, type, isChecked);
+  });
+  return offers.join(``);
+};
+
+const getOfferTemplate = (offer, type, isChecked) => {
   return `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${type}-${index}" type="checkbox" name="event-offer-${type}" ${offer.accepted ? `checked` : ``}>
-    <label class="event__offer-label" for="event-offer-${type}-${index}">
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${type}-${offer.id}" type="checkbox"
+    name="event-offer-${type}" data-offer-id="${offer.id}" ${isChecked ? `checked` : ``}>
+    <label class="event__offer-label" for="event-offer-${type}-${offer.id}">
       <span class="event__offer-title">${offer.title}</span>
       &plus;
       &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
@@ -29,13 +46,13 @@ const getOfferTemplate = (offer, index, type) => {
   </div>`;
 };
 
-const getAvailableOffersTemplate = (offersToRender, eventType) => {
-  if (offersToRender.length > 0) {
+const getOffersListTemplate = (allOffers, eventType, checkedOffers = []) => {
+  if (allOffers.length > 0) {
     return `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
-      ${createOffersList(offersToRender, eventType)}
+      ${createOffersList(allOffers, eventType, checkedOffers)}
       </div>
     </section>`;
   }
@@ -63,6 +80,17 @@ const createDestinationsList = (availableDestinations) => {
   return destinations.join(``);
 };
 
+const getTypeTemplate = (type) => {
+  return `<div class="event__type-item">
+    <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">
+    <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${capitalize(type)}</label>
+  </div>`;
+};
+
+const createTypesList = (typesToRender) => {
+  return typesToRender.map((type) => getTypeTemplate(type)).join(``);
+};
+
 export default class EventEdit extends AbstractComponent {
   constructor(mode, data, destinations, offers) {
     super();
@@ -78,12 +106,16 @@ export default class EventEdit extends AbstractComponent {
     this._isFavorite = data.isFavorite;
     this._destinations = destinations;
     this._offersByType = offers;
+    this._transportTypes = Array.from(TRANSPORT_TYPES);
+    this._activityTypes = Array.from(ACTIVITY_TYPES);
 
     this.onTypeChange = this.onTypeChange.bind(this);
     this.onDestinationChange = this.onDestinationChange.bind(this);
   }
 
   getTemplate() {
+    const renderedOffers = this._renderOffersList();
+
     if (this._mode === Mode.DEFAULT) {
       return `<form class="event  event--edit" action="#" method="post">
         <header class="event__header">
@@ -98,59 +130,13 @@ export default class EventEdit extends AbstractComponent {
               <fieldset class="event__type-group">
                 <legend class="visually-hidden">Transfer</legend>
 
-                <div class="event__type-item">
-                  <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi">
-                  <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
-                </div>
-
-                <div class="event__type-item">
-                  <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus">
-                  <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
-                </div>
-
-                <div class="event__type-item">
-                  <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train">
-                  <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
-                </div>
-
-                <div class="event__type-item">
-                  <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship">
-                  <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-                </div>
-
-                <div class="event__type-item">
-                  <input id="event-type-transport-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="transport">
-                  <label class="event__type-label  event__type-label--transport" for="event-type-transport-1">Transport</label>
-                </div>
-
-                <div class="event__type-item">
-                  <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive">
-                  <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
-                </div>
-
-                <div class="event__type-item">
-                  <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight">
-                  <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
-                </div>
+                ${createTypesList(this._transportTypes)}
               </fieldset>
 
               <fieldset class="event__type-group">
                 <legend class="visually-hidden">Activity</legend>
 
-                <div class="event__type-item">
-                  <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in">
-                  <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
-                </div>
-
-                <div class="event__type-item">
-                  <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing">
-                  <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
-                </div>
-
-                <div class="event__type-item">
-                  <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant">
-                  <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
-                </div>
+                ${createTypesList(this._activityTypes)}
               </fieldset>
             </div>
           </div>
@@ -201,13 +187,14 @@ export default class EventEdit extends AbstractComponent {
           </button>
         </header>
 
-        <section class="event__details ${this._offers ? `` : `visually-hidden`}${this._destination.description ? `` : `visually-hidden`}">
+        ${renderedOffers || this._destination.description ? `<section class="event__details">
 
-          ${getAvailableOffersTemplate(this._offers, this._type)}
+          ${renderedOffers}
 
           ${this._destination.description ? getDestinationTemplate(this._destination) : ``}
 
-        </section>
+        </section>` : ``}
+
       </form>`.trim();
     }
 
@@ -224,59 +211,13 @@ export default class EventEdit extends AbstractComponent {
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Transfer</legend>
 
-              <div class="event__type-item">
-                <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi">
-                <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus">
-                <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train">
-                <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship">
-                <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-transport-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="transport">
-                <label class="event__type-label  event__type-label--transport" for="event-type-transport-1">Transport</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive">
-                <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight" checked>
-                <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
-              </div>
+              ${createTypesList(this._transportTypes)}
             </fieldset>
 
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Activity</legend>
 
-              <div class="event__type-item">
-                <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in">
-                <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing">
-                <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant">
-                <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
-              </div>
+              ${createTypesList(this._activityTypes)}
             </fieldset>
           </div>
         </div>
@@ -330,9 +271,9 @@ export default class EventEdit extends AbstractComponent {
       eventDetails.classList.remove(`visually-hidden`);
     }
 
-    for (const offer of this._offersByType) {
-      if (offer.type === type) {
-        const newOffers = getAvailableOffersTemplate(offer.offers, type);
+    for (const item of this._offersByType) {
+      if (item.type === type) {
+        const newOffers = getOffersListTemplate(item.offers, type);
         if (newOffers) {
           render(element.querySelector(`.event__details`), createElement(newOffers), Position.AFTERBEGIN);
         }
@@ -358,5 +299,11 @@ export default class EventEdit extends AbstractComponent {
       }
     }
     input.value = ``;
+  }
+
+  _renderOffersList() {
+    const allOffers = this._offersByType.find((item) => item.type === this._type).offers;
+
+    return getOffersListTemplate(allOffers, this._type, this._offers);
   }
 }

@@ -147,11 +147,9 @@ export default class TripController {
     for (const event of eventsToSum) {
       let offersPrice = 0;
       for (const offer of event.offers) {
-        if (offer.accepted) {
-          offersPrice = offersPrice + offer.price;
-        }
+        offersPrice += offer.price;
       }
-      cost = cost + event.price + offersPrice;
+      cost += event.price + offersPrice;
     }
     return Math.floor(cost);
   }

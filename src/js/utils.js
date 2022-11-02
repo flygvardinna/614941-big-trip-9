@@ -1,11 +1,11 @@
 import moment from '../../node_modules/moment/src/moment';
 
-const typesOfPlace = new Set([`check-in`, `sightseeing`, `restaurant`]);
+export const ACTIVITY_TYPES = new Set([`check-in`, `sightseeing`, `restaurant`]);
 
-export const typesOfTransport = new Set([`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`]);
+export const TRANSPORT_TYPES = new Set([`taxi`, `bus`, `train`, `ship`, `drive`, `flight`]);
 
 export const getPlaceholder = (type) => {
-  return typesOfPlace.has(type) ? `in` : `to`;
+  return ACTIVITY_TYPES.has(type) ? `in` : `to`;
 };
 
 export const Position = {

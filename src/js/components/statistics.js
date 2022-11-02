@@ -1,5 +1,5 @@
 import AbstractComponent from './abstract-component';
-import {typesOfTransport, countEventDuration, renderEventDuration} from '../utils';
+import {TRANSPORT_TYPES, countEventDuration, renderEventDuration} from '../utils';
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
@@ -142,7 +142,7 @@ export default class Statistics extends AbstractComponent {
   renderTransportChart() {
     const labels = new Set();
     this._events.map((event) => {
-      if (typesOfTransport.has(event.type)) {
+      if (TRANSPORT_TYPES.has(event.type)) {
         labels.add(event.type.toUpperCase());
       }
     });
